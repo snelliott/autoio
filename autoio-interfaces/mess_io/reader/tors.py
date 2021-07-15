@@ -10,6 +10,16 @@ import autoparse.find as apf
 from phydat import phycon
 
 
+def min_energy_value(output_str):
+""" Reads the minumum energy on the spline fit
+"""
+    pattern(potential spline minimal value[kcal/mol]
+    pattern = (app.escape('potential spline minimal value[kcal/mol] =') +
+               app.one_or_more(app.SPACE) +
+               app.capturing(app.NUMBER))
+    return apf.all_captures(pattern, output_str)
+
+
 def analytic_frequencies(output_str):
     """ Reads the analytic frequencies for each of the
         hindered rotors from MESS output file string.
