@@ -11,7 +11,7 @@ ${geo}
   Axis                         ${axis}
   Symmetry                     ${symmetry}
 % if potential_form == 'spline':
-  PotentialSpline[kcal/mol]    ${npotential}
+  PotentialSpline[kcal/mol]    ${npotential}   20
 ${pot_coords} 
 ${pot_enes} 
 % elif potential_form == 'fourier':

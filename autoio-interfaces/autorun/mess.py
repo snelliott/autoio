@@ -20,15 +20,19 @@ def torsions(script_str, run_dir, geo, hind_rot_str):
 
     # Run the direct function
     input_name = 'pf.inp'
-    output_names = ('pf.out', 'pf.log')
+    output_names = ('pf.out', 'pf.log','pf.aux')
     output_strs = direct(script_str, run_dir, input_str,
                          aux_dct=None,
                          input_name=input_name,
                          output_names=output_names)
     
     # Read the torsional freqs from output file
-    out_str = output_strs[0]
+    out_str = output_strs[2]
     tors_freqs = mess_io.reader.tors.first_point_harmonic_frequencies(out_str)
+    # tors_mins = mess_io.reader.tors.min_energy_value(out_str)
+    # for val in tors_mins:
+        # print(tors_mins
+    # if tors_mins not None
 
     # Read the torsional freqs and zpves from log file
     log_str = output_strs[1]
