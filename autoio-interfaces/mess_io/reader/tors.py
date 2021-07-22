@@ -13,6 +13,7 @@ from phydat import phycon
 def min_energy_value(output_str):
     """ Reads the minumum energy on the spline fit
     """
+
     pattern = (app.escape('potential spline minimal value[kcal/mol] =') +
                app.one_or_more(app.SPACE) +
                app.capturing(app.NUMBER))
