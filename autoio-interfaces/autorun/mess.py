@@ -10,9 +10,13 @@ OUTPUT_NAMES = ('rate.out', 'mess.aux', 'mess.log')
 
 
 # Specilialized runners
-def torsions(script_str, run_dir, geo, hind_rot_str):
+def torsions(script_str, run_dir, geo, hind_rot_str, minthresh=-0.2):
     """ Calculate the frequencies and ZPVES of the hindered rotors
         create a messpf input and run messpf to get tors_freqs and tors_zpes
+
+        :param minthresh: threshold to assess if fits done to potential by MESS
+            produce singularities
+        :type minthresh: float
     """
 
     # Write the MESSPF input file
@@ -39,6 +43,12 @@ def torsions(script_str, run_dir, geo, hind_rot_str):
     # tors_freqs = mess_io.reader.tors.analytic_frequencies(log_str)
     tors_zpes = mess_io.reader.tors.zero_point_vibrational_energies(
         log_str)
+
+    # Read the fitted potential, report errors that are found
+    # tors_pot_mins = mess_io.reader....()
+    # for pot_min in tors_pot_mins:
+    #     if pot_min < minthresh:
+    #         print('WARNING: Potential fit from MESS has singularities')
 
     return tors_freqs, tors_zpes
 

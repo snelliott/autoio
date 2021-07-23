@@ -86,18 +86,23 @@ def test__constraint():
 
 
 def __pivot():
-    """ test varecof_io.writer.build_pivot_frames
+    """ test varecof_io.writer.fragment_geometries
+        test varecof_io.writer.build_pivot_frames
         test varecof_io.writer.calc_pivot_angles
         test varecof_io.writer.calc_pivot_xyzs
     """
 
-    tot_geo, isol_fgeos = varecof_io.writer.fragment_geometries(
+    tot_geo, isol_fgeos, a1_idxs = varecof_io.writer.fragment_geometries(
         CH3CH2_H_ZMA, (CH3CH2_ZMA, H_ZMA), FRM_KEYS)
-    print(tot_geo)
-    print(isol_fgeos[0])
-    print(isol_fgeos[1])
+    print(automol.geom.string(tot_geo))
+    print()
+    print(automol.geom.string(isol_fgeos[0]))
+    print()
+    print(automol.geom.string(isol_fgeos[1]))
+    print()
+    print(a1_idxs)
     frames, npivots = varecof_io.writer.build_pivot_frames(
-        tot_geo, isol_fgeos, FRM_KEYS)
+        isol_fgeos, a1_idxs)
     angles = varecof_io.writer.calc_pivot_angles(
         isol_fgeos, frames)
     xyzs = varecof_io.writer.calc_pivot_xyzs(
@@ -124,6 +129,4 @@ def test__face_symm():
 
 
 if __name__ == '__main__':
-    test__constraint()
     __pivot()
-    test__face_symm()
