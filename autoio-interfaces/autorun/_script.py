@@ -12,7 +12,7 @@ MESSPF = (
     "export OMP_NUM_THREADS=10\n"
     "ulimit -c 0\n"
     # "messpf pf.inp >& pf.out"
-    "~/bin/messpf pf.inp >& pf.out"
+    "~b49793/bin/messpf pf.inp >& pf.out"
 )
 MESSRATE = (
     "#!/usr/bin/env bash\n"
