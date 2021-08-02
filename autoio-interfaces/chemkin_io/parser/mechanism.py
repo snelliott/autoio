@@ -24,6 +24,8 @@ def species_block(mech_str, remove_comments=True):
         end_pattern='END'
     )
 
+    _check_if_empty(block_str, 'SPECIES')
+
     return block_str
 
 
@@ -43,6 +45,8 @@ def reaction_block(mech_str, remove_comments=True):
         start_pattern=app.one_of_these(['REACTIONS', 'REAC']),
         end_pattern='END'
     )
+
+    _check_if_empty(block_str, 'REACTIONS')
 
     return block_str
 
@@ -65,6 +69,8 @@ def thermo_block(mech_str, remove_comments=True):
         end_pattern='END'
     )
 
+    _check_if_empty(block_str, 'THERMO')
+
     return block_str
 
 
@@ -85,6 +91,8 @@ def element_block(mech_str, remove_comments=True):
         end_pattern='END'
     )
 
+    _check_if_empty(block_str, 'ELEMENTS')
+
     return block_str
 
 
@@ -95,6 +103,7 @@ def _block(string, start_pattern, end_pattern):
         app.one_or_more(app.WILDCARD, greedy=False))
     pattern = start_pattern + contents_pattern + end_pattern
     contents = apf.first_capture(pattern, string)
+
     return contents
 
 
@@ -203,3 +212,20 @@ def _convert_comment_lines(mech_str):
         mech_str = apf.replace(inline, outline, mech_str, case=True)
 
     return mech_str
+
+
+def _check_if_empty(block_str, block_type):
+    """ Checks if a block str is None and prints a message if so
+
+        :param block_str: string containing some kind of Chemkin block
+        :type block_str: str
+        :param block_type: the type of block ('species', 'reaction', etc.)
+        :type block_type: str
+    """
+
+    if block_str is None:
+        print(f'No Chemkin {block_type} block detected. Check start and end.')
+    
+
+
+
