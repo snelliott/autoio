@@ -1,6 +1,7 @@
 """ functions operating on the reactions block string
 """
 
+import sys
 import collections
 import itertools
 import math
@@ -119,13 +120,15 @@ def reactant_names(rxn_dstr):
     pattern = _first_line_pattern(
         rct_ptt=app.capturing(SPECIES_NAMES_PATTERN),
         prd_ptt=SPECIES_NAMES_PATTERN,
-        param_ptt=app.maybe(COEFF_PATTERN)
+        param_ptt=COEFF_PATTERN
     )
     string = apf.first_capture(pattern, rxn_dstr)
     try:
         names = _split_reagent_string(string)
     except TypeError:
-        print('Error with this reaction\n', rxn_dstr)
+        print('Reaction line not formatted correctly:\n', rxn_dstr)
+        print('Check that there are three numbers after the rxn equation')
+        sys.exit()
 
     return names
 
@@ -149,7 +152,9 @@ def product_names(rxn_dstr):
     try:
         names = _split_reagent_string(string)
     except TypeError:
-        print('Error with this reaction\n', rxn_dstr)
+        print('Reaction line not formatted correctly:\n', rxn_dstr)
+        print('Check that there are three numbers after the rxn equation')
+        sys.exit()
 
     return names
 
