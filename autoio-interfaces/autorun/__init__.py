@@ -10,6 +10,7 @@ from autorun._run import write_input
 from autorun._run import read_output
 from autorun._host import host_node
 from autorun._host import process_id
+from autorun._proc import timeout
 
 # Single Program Runners
 from autorun import mess
