@@ -10,6 +10,7 @@ from autorun._run import write_input
 from autorun._run import read_output
 from autorun._host import host_node
 from autorun._host import process_id
+from autorun._proc import execute_function_in_parallel
 from autorun._proc import timeout
 
 # Single Program Runners
@@ -35,6 +36,8 @@ __all__ = [
     'read_output',
     'host_node',
     'process_id',
+    'execute_function_in_parallel',
+    'timeout',
     # Single Program Runners
     'mess',
     'onedmin',
