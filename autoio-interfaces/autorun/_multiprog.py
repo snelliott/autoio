@@ -79,9 +79,11 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
     if saddle:
         if len(proj_imag) > 1:
             print(
-               'There is more than one imaginary frequency')
+                'There is more than one imaginary frequency')
         proj_imag = max(proj_imag)
     else:
+        for _ in proj_imag:
+            rt_freqs1 += (0.00001,)
         proj_imag = None
 
     # Check if there are significant differences caused by the rotor projection
