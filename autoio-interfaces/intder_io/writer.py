@@ -1,14 +1,15 @@
 """ Write the INTDER main and auxiliary input file
 """
 
-import automol.geom
-import intder_io._util as intder_util
+import intder_io._format as intder_format
 
 
-def input_file(geo, zma=None):
+def input_file(geo, zma):
     """ Write the main INTDER input file. Currently
         just supports a basic harmonic frequency and
         total energy distribution calculation.
+
+        zma and geo must align
 
         :param geo: geometry to build input for
         :type geo: automol geometry data structure
@@ -17,14 +18,11 @@ def input_file(geo, zma=None):
         :rtype: str
     """
 
-    if zma is None:
-        zma = automol.geom.zmatrix(geo)
-
     inp_str = (
-        intder_util.header_format(geo) + '\n' +
-        intder_util.internals_format(zma) + '\n' +
-        intder_util.geometry_format(geo) + '\n' +
-        intder_util.symbols_format(geo)
+        intder_format.header_format(geo) + '\n' +
+        intder_format.internals_format(zma) + '\n' +
+        intder_format.geometry_format(geo) + '\n' +
+        intder_format.symbols_format(geo)
     )
 
     return inp_str
@@ -39,8 +37,8 @@ def cart_hess_file(hess):
         :rtype: str
     """
 
-    natom = len(hess)
-    hess_str = '{0:>6d}{1:>6d}\n'.format(natom, natom*3)
-    hess_str += intder_util.hessian_format(hess)
+    natom = len(hess) // 3
+    hess_str = '{0:>5d}{1:>5d}\n'.format(natom, natom*3)
+    hess_str += intder_format.hessian_format(hess)
 
     return hess_str

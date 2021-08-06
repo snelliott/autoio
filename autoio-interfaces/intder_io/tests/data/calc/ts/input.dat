@@ -1,0 +1,36 @@
+%mem=20GB
+%NProcShared=10
+#P wb97xd/6-31g*
+# SCF=(xqc)
+# POpt=(CALCFC,TS,NOEIGEN,MAXCYCLES=60)
+# int=ultrafine
+# Freq
+
+comment: 
+
+0 2
+C  
+H  1    R1 
+H  1    R2  2    A2 
+H  1    R3  2    A3  3    D3 
+H  1    R4  2    A4  3    D4 
+X  5    R5  1    A5  2    D5 
+H  5    R6  6    A6  1    D6 
+  Variables:
+R1   =   1.090300
+R2   =   1.090300
+R3   =   1.090300
+R4   =   1.254800
+R6   =   0.968600
+A2   = 112.719300
+A3   = 112.687000
+A4   = 106.068600
+A6   =  90.126200
+D3   = 231.109200
+D4   = 115.645900
+D6   = 180.008400
+  Constants:
+R5   =   1.000000
+A5   =  90.000000
+D5   =   0.000000
+

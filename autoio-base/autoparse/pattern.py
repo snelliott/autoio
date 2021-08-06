@@ -17,6 +17,7 @@ from autoparse._pattern import one_of_these
 from autoparse._pattern import capturing
 from autoparse._pattern import named_capturing
 from autoparse._pattern import series
+from autoparse._more_patterns import block_pattern
 from autoparse._more_patterns import lpadded
 from autoparse._more_patterns import rpadded
 from autoparse._more_patterns import padded
@@ -74,6 +75,7 @@ __all__ = [
     'capturing',
     'named_capturing',
     'series',
+    'block_pattern',
     'lpadded',
     'rpadded',
     'padded',
