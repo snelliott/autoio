@@ -36,13 +36,15 @@ def ted_zmatrix_coordinates(zma, mode_idx, intl_coords, ted_assignments):
     # Get the type and atom and use this to get zmat coordinate name
     ted_zmat_names = ()
     for intl_idx in ted_mode_intls:
-        typ, idxs = intl_coords[intl_idx]
+        typ, idxs = intl_coords[abs(intl_idx)]
+        print(typ, idxs)
         if typ == 'STRE':
             name = distance_coordinate_name(zma, *idxs)
         elif typ == 'BEND':
             name = central_angle_coordinate_name(zma, *idxs)
         elif typ == 'TORS':
             name = dihedral_angle_coordinate_name(zma, *idxs)
+        print(name)
         ted_zmat_names += (name,)
 
     return ted_zmat_names

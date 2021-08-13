@@ -28,7 +28,7 @@ def input_file(geo, zma):
     return inp_str
 
 
-def cart_hess_file(hess):
+def cartesian_hessian_file(hess):
     """ Write a file with the Cartesian Hessian auxiliary
         input that corresponds to the FCMINT file for CFOUR.
 

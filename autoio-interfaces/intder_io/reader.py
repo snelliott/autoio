@@ -78,10 +78,19 @@ def ted_assignments(output_str):
             # Get the mod frequency
             freq = float(line.split()[1])
             freqs += (freq,)
-            # Get the idx numbers of coordinates comprising mode (in 0-index)
             idxs = apf.all_captures(coord_ptt, line)
-            idxs = tuple(int(val.replace(' (', ''))-1 for val in idxs)
-            idxs_lst += (idxs,)
+
+            # Get the idx numbers of coordinates comprising mode (in 0-index)
+            # When subtracting 1 for 0-idx, be careful of negative values
+            idxs = tuple(int(val.replace(' (', '')) for val in idxs)
+            idxs0 = ()
+            for idx in idxs:
+                if idx > 0:
+                    idxs0 += (idx-1,)
+                else:
+                    idxs0 += (-1*(abs(idx)-1),)
+            idxs_lst += (idxs0,)
+
             # Get the percentages of coordinates comprising mode
             pcts = apf.all_captures(pct_ptt, line)
             pcts = tuple(float(val.strip()) for val in pcts)

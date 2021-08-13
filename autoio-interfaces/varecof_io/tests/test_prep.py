@@ -1,6 +1,7 @@
 """ test automol.varecof_io.writer.prep
 """
 
+import numpy
 import automol
 import varecof_io.writer
 
@@ -92,15 +93,43 @@ def __pivot():
         test varecof_io.writer.calc_pivot_xyzs
     """
 
+    ref_tot_geo = (
+        ('C', (0.0, 0.0, 0.0)),
+        ('C', (0.0, 0.0, 2.857375545788057)),
+        ('H', (0.0, 1.935727223564657, -0.726356297040919)),
+        ('H', (1.6763889117962993, -0.9678646210561269, -0.726357247087748)),
+        ('H', (-1.6763899924114845, -0.9678637852978632, -0.726356988473018)),
+        ('H', (4.287959697162433e-06, -1.9357277279070393, 3.583733020392789)),
+        ('H', (-1.6763904632916056, 0.9678616511395963, 3.583732176271997)),
+        ('H', (8.108209279316, 4.6812918417618885, 6.370557717988566)))
+
+    ref_isol_geos = (
+        (('C', (0.0, 0.0, 2.8034554750087315)),
+         ('C', (0.0, 0.0, 0.0)),
+         ('H', (0.8473387628772707, -1.7427409842207437, 3.5213402402323344)),
+         ('H', (1.0956829577601233, 1.5983181400102573, 3.521337399315168)),
+         ('H', (-1.9323777167961476, 0.1436340237618356, 3.5197633532363044)),
+         ('H', (0.0, 1.7695715856390393, -1.0304541736496604)),
+         ('H', (-0.2614848607838837, -1.7501380729830145, -1.030466152722124)),
+         ('X', (-1.3834863617693014, -9.2597795066476, -3.513182172200509))),
+        (('H', (8.108209279316, 4.6812918417618885, 6.370557717988566)),)
+    )
+
+    ref_a1_idxs = (1, 1)
+
     tot_geo, isol_fgeos, a1_idxs = varecof_io.writer.fragment_geometries(
         CH3CH2_H_ZMA, (CH3CH2_ZMA, H_ZMA), FRM_KEYS)
-    print(automol.geom.string(tot_geo))
-    print()
-    print(automol.geom.string(isol_fgeos[0]))
-    print()
-    print(automol.geom.string(isol_fgeos[1]))
-    print()
-    print(a1_idxs)
+
+    assert automol.geom.almost_equal_dist_matrix(ref_tot_geo, tot_geo)
+    assert automol.geom.almost_equal_dist_matrix(ref_isol_geos[0], tot_geo[0])
+    assert automol.geom.almost_equal_dist_matrix(ref_isol_geos[1], tot_geo[1])
+    assert ref_a1_idxs == a1_idxs
+
+    ref_frames = ((2, 1, 8, 2), (0, 0, 0, 0))
+    ref_npivots = (2, 1)
+    ref_angles = (1.9297750256469979, None)
+    ref_xyzs = ((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))
+
     frames, npivots = varecof_io.writer.build_pivot_frames(
         isol_fgeos, a1_idxs)
     angles = varecof_io.writer.calc_pivot_angles(
@@ -108,9 +137,12 @@ def __pivot():
     xyzs = varecof_io.writer.calc_pivot_xyzs(
         tot_geo, isol_fgeos, FRM_KEYS)
 
-    print(frames, npivots)
-    print(angles)
-    print(xyzs)
+    assert ref_frames == frames
+    assert ref_npivots == npivots
+    assert numpy.isclose(ref_angles[0], angles[0])
+    assert angles[1] is None
+    for ref_xyz, xyz in zip(ref_xyzs, xyzs):
+        assert numpy.allclose(ref_xyz, xyz)
 
 
 def test__face_symm():

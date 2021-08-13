@@ -26,8 +26,8 @@ def header_format(geo):
         nintl = 3 * natom - 5
 
     header_keys = {
-        'natom': natom,
-        'nintl': nintl,
+        'natom': '{:>5d}'.format(natom),
+        'nintl': '{:>5d}'.format(nintl),
         'comment': 'TED Calculation'
     }
 

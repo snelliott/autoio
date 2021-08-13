@@ -38,6 +38,19 @@ def pot_frequencies(script_str, geoms, grads, hessians, run_path):
     return hr_freqs
 
 
+def displacements(script_str, run_dir, geoms, grads, hessians,
+                  rotors_str='', aux_dct=None):
+    """ Calculate the vibrational frequencies for a single molecule
+        for the RT-projections and RTHr-projections.
+    """
+    
+    output_strs = direct(
+        script_str, run_dir, geoms, grads, hessians,
+        rotors_str=rotors_str, aux_dct=aux_dct)
+    
+    return output_strs[2]
+
+
 def frequencies(script_str, run_dir, geoms, grads, hessians,
                 rotors_str='', aux_dct=None):
     """ Calculate the vibrational frequencies for a single molecule

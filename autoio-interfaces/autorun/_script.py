@@ -1,6 +1,11 @@
 """ Library of BASH submission scripts for various programs
 """
 
+import os
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+EXTERN_PATH = os.path.join(PATH, 'extern')
+
 
 PROJROT = (
     "#!/usr/bin/env bash\n"
@@ -24,6 +29,11 @@ VARECOF = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/home/ygeorgi/build/rotd/multi tst.inp >& varecof.out"
+)
+INTDER = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "{}/INTDER < intder.inp >& intder.out".format(EXTERN_PATH)
 )
 MCFLUX = (
     "#!/usr/bin/env bash\n"
@@ -97,6 +107,7 @@ SCRIPT_DCT = {
     'messpf': MESSPF,
     'messrate': MESSRATE,
     'varecof': VARECOF,
+    'intder': INTDER,
     'mcflux': MCFLUX,
     'tstchk': TSTCHECK,
     'thermp': THERMP,

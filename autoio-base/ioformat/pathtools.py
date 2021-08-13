@@ -5,6 +5,7 @@
 
 import os
 from io import StringIO as _StringIO
+import errno
 import json
 import numpy
 from ioformat._format import remove_comment_lines
@@ -39,13 +40,27 @@ def prepare_path(path_lst, make=False):
         :rtype: str
     """
 
-    path_lst = [path.lstrip('/') for path in path_lst]
+    # Need to remove slashes from all parts of list except first
+    # for the os.path.join function to work properly
+    fmtd_path_lst = []
+    for i, path in enumerate(path_lst):
+        fmtd_path_lst.append(path.lstrip('/') if i != 0 else path)
+    full_path = os.path.join(*fmtd_path_lst)
 
-    path = os.path.join('/', *path_lst)
+    print('PATH test')
+    print(fmtd_path_lst)
+    print(full_path)
+
     if make:
-        os.makedirs(path)
+        try:
+            os.mkdir(full_path)
+        except OSError as exc:
+            # Only catch errors for directory existing
+            # Still dies on permission or spaces issues, etc
+            if exc.errno != errno.EEXIST:
+                raise
 
-    return path
+    return full_path
 
 
 # Handles writing and reading different file types

@@ -227,7 +227,7 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
         use the assumption about the a1 idx used in the fragment geoms?
     """
 
-    frames, npivots, = [], []
+    frames, npivots, = (), ()
     for i, (geo, a1_idx) in enumerate(zip(frag_geos_wdummy, frag_a1_idxs)):
 
         geom = automol.geom.without_dummy_atoms(geo)
@@ -236,12 +236,12 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
         if automol.geom.is_atom(geom):
             # Single pivot point centered on atom
             npivot = 1
-            frame = [0, 0, 0, 0]
+            frame = (0, 0, 0, 0)
         elif automol.geom.is_linear(geom):
             # For linear species we place the pivot point on radical
             # with no displacment, so no need to find coordinates
             npivot = 2
-            frame = [0, 0, 0, 0]
+            frame = (0, 0, 0, 0)
         else:
             # else we build an xy frame to easily place pivot point
             # explain the frame???
@@ -264,17 +264,17 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
             # Set up the frame indices for the divsur file
             if i == 0:
                 pivot_idx = len(geom)
-                frame = [a1_idx, bond_neighbor_idx, pivot_idx, a1_idx]
+                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
             else:
                 pivot_idx = 0
                 a1_idx += 1
                 bond_neighbor_idx += 1
-                frame = [a1_idx, bond_neighbor_idx, pivot_idx, a1_idx]
-            frame = [val+1 for val in frame]
+                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
+            frame = tuple(val+1 for val in frame)
 
         # Append to lists
-        frames.append(frame)
-        npivots.append(npivot)
+        frames += (frame,)
+        npivots += (npivot,)
 
     return frames, npivots
 

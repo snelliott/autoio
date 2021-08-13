@@ -14,6 +14,7 @@ from autorun._proc import execute_function_in_parallel
 from autorun._proc import timeout
 
 # Single Program Runners
+from autorun import intder
 from autorun import mess
 from autorun import onedmin
 from autorun import pac99
@@ -39,6 +40,7 @@ __all__ = [
     'execute_function_in_parallel',
     'timeout',
     # Single Program Runners
+    'intder',
     'mess',
     'onedmin',
     'pac99',

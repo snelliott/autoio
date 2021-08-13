@@ -31,19 +31,13 @@ def test__input():
 
     inp_str = intder_io.writer.input_file(C2H5OH_GEO, C2H5OH_ZMA)
 
-    pathtools.write_file(inp_str, DAT_PATH, 'intder.inp')
-
-    assert inp_str == pathtools.read_file(DAT_PATH, 'intder.inp')
+    assert inp_str == pathtools.read_file(DAT_PATH, 'intder.inp').rstrip()
 
 
 def test__hess():
     """ test intder_io.writer.cart_hess_file
     """
 
-    hess_str = intder_io.writer.cart_hess_file(C2H5OH_HESS)
-    pathtools.write_file(hess_str, DAT_PATH, 'file15')
+    hess_str = intder_io.writer.cartesian_hessian_file(C2H5OH_HESS)
 
     assert hess_str == pathtools.read_file(DAT_PATH, 'file15')
-
-test__input()
-test__hess()

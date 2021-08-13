@@ -17,7 +17,7 @@ def set_nprocs(nobjs, nprocs='auto'):
     if nprocs == 'auto':
         _nprocs = len(os.sched_getaffinity(0)) - 1
     elif isinstance(nprocs, int):
-        _nprocs = nprocs - 1
+        _nprocs = nprocs
     else:
         raise NotImplementedError
 
