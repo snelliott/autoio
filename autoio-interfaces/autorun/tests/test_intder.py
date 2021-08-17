@@ -1,4 +1,4 @@
-""" tests projrot
+""" test autorun.intder
 """
 
 import os

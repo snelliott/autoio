@@ -73,6 +73,9 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     geo_str, zmat_var_val_str, zmat_const_val_str = fill.geometry_strings(
         geo, frozen_coordinates)
 
+    # Round the memory since Gaussian doesn't deal with floats
+    memory = int(memory)
+
     # Set theory methods and options
     if elstruct.par.Method.is_correlated(method):
         assert not corr_options

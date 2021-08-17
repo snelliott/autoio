@@ -1,4 +1,4 @@
-""" test the autorun autoprocessor function
+""" test the autorun._proc
 """
 
 import autorun
