@@ -23,23 +23,30 @@ NNO_PROG = 'molpro2015'
 NNO_METHOD = 'caspt2'
 NNO_BASIS = 'aug-cc-pvdz'
 NNO_ORB_TYPE = 'RR'
-NNO_INI_KWARGS = {
-    'casscf_options': ('closed=5', 'wf,22,1,0,0'),
-    'core_options': ('shift=0.20',)
-}
+NNO_INI_KWARGS = (
+    {'casscf_options': ('closed=5', 'wf,22,1,0,0'),
+     'core_options': ('shift=0.20',)},
+    {'casscf_options': ('closed=5', 'wf,22,1,2,0'),
+     'core_options': ('shift=0.20',)}
+)
+# ^ need two sets of arguments? have two spin states
 
-# C2H4O - G09
-C2H4O_GEO = automol.geom.from_string(
-    pathtools.read_file(DAT_PATH, 'c2h4o_init.xyz'))
 
-C2H4O_PROG = 'gaussian09'
-C2H4O_METHOD = 'm062x'
-C2H4O_BASIS = 'cc-pvdz'
-C2H4O_ORB_TYPE = 'RU'
-C2H4O_INI_KWARGS = {
-    'gen_lines': {1: ('# int=ultrafine',)},
-    'machine_options': ('%NProcShared=10',)
-}
+# NCN - G09
+NCN_GEO = automol.geom.from_string(
+    pathtools.read_file(DAT_PATH, 'ncn_init.xyz'))
+
+NCN_PROG = 'gaussian09'
+NCN_METHOD = 'mp2'
+NCN_BASIS = 'cc-pvdz'
+NCN_ORB_TYPE = 'RU'
+NCN_INI_KWARGS = (
+    {'gen_lines': {1: ('# int=ultrafine',)},
+     'machine_options': ('%NProcShared=10',)},
+    {'gen_lines': {1: ('# int=ultrafine',)},
+     'machine_options': ('%NProcShared=10',)},
+)
+ZERO = -147.0596823175656
 
 
 def test__molpro_flux():
@@ -63,8 +70,8 @@ def test__gaussian_flux():
     # with tempfile.TemporaryDirectory(dir=PATH) as run_dir:
     isc = autorun.nst.isc_flux(
         run_dir,
-        C2H4O_PROG, C2H4O_GEO, CHARGE, MULTS,
-        C2H4O_METHOD, C2H4O_BASIS, C2H4O_ORB_TYPE, C2H4O_INI_KWARGS)
+        NCN_PROG, NCN_GEO, CHARGE, MULTS,
+        NCN_METHOD, NCN_BASIS, NCN_ORB_TYPE, NCN_INI_KWARGS)
     print(isc)
 
 

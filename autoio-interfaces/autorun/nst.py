@@ -47,7 +47,7 @@ def isc_flux(run_dir, prog, geo, charge, mults,
         print('Calculating Flux...')
         flux_str = isc_flux_from_hessians(
             run_dir, hessians,
-            prog, geo, charge, mults, zero_ene,
+            prog, rot_geo, charge, mults, zero_ene,
             method, basis, orb_label, ini_kwargs)
 
     return rot_geo, hessians, flux_str
@@ -64,9 +64,9 @@ def msx_geometry(run_dir,
 
     aux_dct = {
         'qc.1': _qc_input_str('grad', prog, 'GEOMETRY', charge, mults[0],
-                              method, basis, orb_label, ini_kwargs),
+                              method, basis, orb_label, ini_kwargs[0]),
         'qc.2': _qc_input_str('grad', prog, 'GEOMETRY', charge, mults[1],
-                              method, basis, orb_label, ini_kwargs),
+                              method, basis, orb_label, ini_kwargs[1]),
         'qc.x': _qc_script_str(prog)
     }
 
@@ -103,9 +103,9 @@ def isc_flux_from_hessians(run_dir, hessians,
 
     aux_dct = {
         'qc.1': _qc_input_str('grad', prog, 'GEOMETRY', charge, mults[0],
-                              method, basis, orb_label, ini_kwargs),
+                              method, basis, orb_label, ini_kwargs[0]),
         'qc.2': _qc_input_str('grad', prog, 'GEOMETRY', charge, mults[1],
-                              method, basis, orb_label, ini_kwargs),
+                              method, basis, orb_label, ini_kwargs[1]),
         'qc.x': _qc_script_str(prog),
         'hess.1': nst_io.writer.cartesian_hessian_file(hessians[0]),
         'hess.2': nst_io.writer.cartesian_hessian_file(hessians[1]),
@@ -130,10 +130,10 @@ def hessians_for_nst(run_dir,
 
     hessians = ()
     for idx, mult in enumerate(mults):
-        _run_dir = os.path.join(run_dir, 'HESS-{}'.format(idx))
+        _run_dir = os.path.join(run_dir, 'HESS-{}'.format(idx+1))
 
         inp_str = _qc_input_str('hess', prog, geo, charge, mult,
-                                method, basis, orb_label, ini_kwargs)
+                                method, basis, orb_label, ini_kwargs[idx])
 
         output_strs = from_input_string(qc_script_str, _run_dir, inp_str)
         hessians += (elstruct.reader.hessian(prog, output_strs[0]),)
