@@ -1,8 +1,0 @@
- -------------------------------
- Request to Optimize MSX Geometry
- -------------------------------
-
- MSX optimization
-
- Energies in kcal/mol
- step             E1             E2            <E>          E1-E2            dE1            dE2    gr.norm(lo)    gr.norm(up)

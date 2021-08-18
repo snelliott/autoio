@@ -10,7 +10,10 @@ from autorun._script import SCRIPT_DCT
 
 
 INPUT_NAME = 'input.dat'
-OUTPUT_NAMES = ('output.dat', 'ne.dat', 'nej.dat', 'hess.1', 'hess.2')
+OUTPUT_NAMES = ('output.dat',
+                'ne_lz.dat', 'nej_lz.dat',
+                'ne_wc.dat', 'nej_wc.dat',
+                'hess.1', 'hess.2')
 
 
 # Specialized runner
@@ -44,11 +47,12 @@ def isc_flux(run_dir, prog, geo, charge, mults,
             method, basis, orb_label, ini_kwargs)
 
         # Use Hessians to calculate intersystem crossing flux
-        print('Calculating Flux...')
-        flux_str = isc_flux_from_hessians(
-            run_dir, hessians,
-            prog, rot_geo, charge, mults, zero_ene,
-            method, basis, orb_label, ini_kwargs)
+        if hessians is not None:
+            print('Calculating Flux...')
+            flux_str = isc_flux_from_hessians(
+                run_dir, hessians,
+                prog, rot_geo, charge, mults, zero_ene,
+                method, basis, orb_label, ini_kwargs)
 
     return rot_geo, hessians, flux_str
 
@@ -115,7 +119,7 @@ def isc_flux_from_hessians(run_dir, hessians,
         _run_dir, 'HESSR',
         prog, geo, zero_ene,
         aux_dct=aux_dct,
-        output_names=('ne.dat', 'nej.dat'))
+        output_names=('ne_lz.dat', 'nej_lz.dat'))
 
     return output_strs[0]  # grab J-averaged file
 
@@ -197,7 +201,6 @@ def _qc_input_str(job, prog, geo, charge, mult,
         _nst_kwargs = copy.deepcopy(ini_kwargs)
         _nst_kwargs.update({
             'gen_lines': _nst_gen_lines,
-            'mol_options': ('nosym',)
         })
         _writer = (elstruct.writer.energy
                    if job == 'grad' else elstruct.writer.hessian)
@@ -213,8 +216,9 @@ def _qc_input_str(job, prog, geo, charge, mult,
         _writer = (elstruct.writer.gradient
                    if job == 'grad' else elstruct.writer.hessian)
 
-    # Set the modified orbital restriction label
+    # Set the memory and modified orbital restriction label
     _nst_kwargs.update({
+        'memory': 10,
         'orb_type': elstruct.util.set_orbital_restriction_label(orb_lbl, mult)
     })
 
