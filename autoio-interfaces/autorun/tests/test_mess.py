@@ -1,4 +1,4 @@
-""" tests projrot (maybe others)
+""" test autorun.mess
 """
 
 import os

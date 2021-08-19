@@ -85,6 +85,29 @@ def test__padded():
     )
 
 
+def test__block_pattern():
+    """ test autoparse.pattern.block_pattern
+    """
+
+    test_str = (
+        'begin'
+        '   3r230refkwepfkwpekfwekf2\n'
+        'qmvnboefe02-0943-102d29  \n'
+        'fkwef320f0wek   vdv2\n'
+        'end'
+    )
+    begin_ptt = 'begin'
+    end_ptt = 'end'
+
+    block_ptt = autoparse.pattern.block_pattern(begin_ptt, end_ptt)
+    block = autoparse.find.first_capture(block_ptt, test_str)
+    assert block == (
+        '   3r230refkwepfkwpekfwekf2\n'
+        'qmvnboefe02-0943-102d29  \n'
+        'fkwef320f0wek   vdv2\n'
+    )
+
+
 def test__named_capturing():
     """ test autoparse.pattern.named_capturing
     """

@@ -17,6 +17,7 @@ from autoparse._pattern import one_of_these
 from autoparse._pattern import capturing
 from autoparse._pattern import named_capturing
 from autoparse._pattern import series
+from autoparse._more_patterns import block_pattern
 from autoparse._more_patterns import lpadded
 from autoparse._more_patterns import rpadded
 from autoparse._more_patterns import padded
@@ -57,6 +58,7 @@ from autoparse._lib import EXPONENTIAL_FLOAT
 from autoparse._lib import NUMBER
 from autoparse._lib import EXPONENTIAL_INTEGER_D
 from autoparse._lib import EXPONENTIAL_FLOAT_D
+from autoparse._lib import VARIABLE_STRING
 from autoparse._lib import VARIABLE_NAME
 
 __all__ = [
@@ -73,6 +75,7 @@ __all__ = [
     'capturing',
     'named_capturing',
     'series',
+    'block_pattern',
     'lpadded',
     'rpadded',
     'padded',
@@ -113,5 +116,6 @@ __all__ = [
     'NUMBER',
     'EXPONENTIAL_INTEGER_D',
     'EXPONENTIAL_FLOAT_D',
+    'VARIABLE_STRING',
     'VARIABLE_NAME',
 ]

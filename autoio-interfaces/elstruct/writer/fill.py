@@ -96,6 +96,7 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='='):
             cval_dct, setval_sign=zma_sign).strip()
     elif geo in ('GEOMETRY', 'GEOMETRY_HERE'):
         geo_str = geo
+        zmat_cval_str = ''
         zmat_vval_str = ''
     else:
         raise ValueError("Invalid geometry value:\n{0}".format(geo))

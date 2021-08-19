@@ -48,78 +48,111 @@ def intramolecular_constraint_dct(inf_sep_zma, rct_zmas):
 
 
 def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
-    """ Generate the fragment geometries from the ts Z-matrix and the
-        indices involved in the forming bond
+    """ Generates geometries of each reacting species where a dummy atom has
+        been added at the location of an atom that will undergo bond formation
+        with the reacting fragment.
+
+        Notationally, for (R1-B1)---(B2--R2)
+
+        where R-B1 and R2-B2 represent two reacting radicals where we
+        have highlighted the Rn-Bn bond including the atom Bn which is involved
+        in bond formation (B1-b2)'of the two radicals.
+        We hope to generate geometriex
+
+        Function takes a ZMA along the reaction MEP where bond formation is
+        
+
+        For example: For CH3, a dummy atom would be placed perpendicular
+        to plane since any bond formed by CH3 will involve an atom located
+        in this direction. For radicals, this often mimics the location of
+        the reacting radical orbital.
+
+        The location of this dummy atom is determined by fragmenting a reactive
+        TS complex containing both fragments and severing it using the keys of
+        the forming/breaking bond.
+
+        Right now, it is assumed the atom ordering of each fragment in the
+        ts_zma matches that of the reactants provided separately in rct_zmas.
+
+        Also assumes ts_zma = frag1_zma + frag2_zma
+
+        :param ts_zma: TS Z-Matrix containing reactive fragment
+            at intermolecular distance where bond breaking/forming occuring
+        :param rct_zmas: Z-Matrix for each reacting species alone, without
+            influence of other fragment (species at infinite separation)
+        :param bond-keys: atom indices for forming/breaking bond
     """
 
-    min_idx, max_idx = min(bnd_keys), max(bnd_keys)
+    # Group the forming bond where higher value is first (MAX, MIN)
+    bnd_keys = sorted(list(bnd_keys), reverse=True)
 
-    # Get geometries of fragments from the ts_zma from the MEP
+    # Get the geometry and of the point on the MEP
     mep_total_geo = automol.zmat.geometry(ts_zma)
-    mep_fgeos = [mep_total_geo[:max_idx], mep_total_geo[max_idx:]]
+    mep_fgeos = [mep_total_geo[:bnd_keys[0]], mep_total_geo[bnd_keys[0]:]]
 
-    # Get geometries of isolated fragments at infinite sepearation
+    # Get isolated fragments opt'd at infinite separation, aligned to MEP geoms
     iso_fgeos = [automol.zmat.geometry(zma) for zma in rct_zmas]
-
-    # Reorder the iso_fgeos to line up with the mep_frag_geos
     (iso1_symbs, iso2_symbs) = (automol.geom.symbols(geo) for geo in iso_fgeos)
     (mep1_symbs, mep2_symbs) = (automol.geom.symbols(geo) for geo in mep_fgeos)
     if iso1_symbs != mep1_symbs or iso2_symbs != mep2_symbs:
         iso_fgeos[0], iso_fgeos[1] = iso_fgeos[1], iso_fgeos[0]
+    iso_fgeos = [automol.geom.align(geo, mep_fgeos[i])
+                 for i, geo in enumerate(iso_fgeos)]
 
-    # Get the geometries for the structure.inp file
+    # Now build the list of the indices for the following loops
+    # Used to define the X via set of internal coordinates
+    # x_idx: index for geom to place dummy X atom
+    # a1_idx: index corresponding to "bonding" atom in geometry
+    # a2_idx and a3_idx are just some atom down the line, no restriction
+    # Because of the align procedure we can assuem the idxs in MEP and iso same
+    # f1_a1 = isof1_a1 since presence of frag2 wont affect indexing
+    # For each reacting fragment of TS, determine idxs for A1-X bond, where
+    # X = dummy to add to frag, corresponds to other frag atom where bond forms
+    # A1 = idx of X neighbors with lower number ({idx < Xidxs}=frag1)
+    x_idx = len(mep_fgeos[0])
+    a1_idx = bnd_keys[1]
+    frag_idxs = (
+        (x_idx, a1_idx, a1_idx-1, a1_idx-2),
+        (0, 1, 2, 3)
+    )
+
+    # Add dummy to each isolated frag geom to simulate atom its bound to in TS
+    # Need to generate coordinates of dummy in isolated frag geom system by
+    # (1) Calculate values of internal coords that define X
+    #     relative to 4 atoms in the MEP geom
+    # (2) Use values from (1) and frag xyzs to calculate xyz of X in frag geom
     iso_fgeos_wdummy = []
-    mol_data = zip(mep_fgeos, iso_fgeos, (max_idx, min_idx))
-    for i, (mep_fgeo, iso_fgeo, idx) in enumerate(mol_data):
+    mol_data = zip(mep_fgeos, iso_fgeos, bnd_keys, frag_idxs)
+    for i, (mep_fgeo, iso_fgeo, bnd_key, fidxs) in enumerate(mol_data):
 
         if not automol.geom.is_atom(mep_fgeo):
 
             # Build MEPFragGeom+X coordinates using MEP geometry
-            # x_idx: index for geom to place dummy X atom
-            # a1_idx: index corresponding to "bonding" atom in geometry
-            x_coord = mep_total_geo[idx][1]
+            # x_coord defined by frm_keys
+            x_coord = mep_total_geo[bnd_key][1]
             dummy_row = ('X', x_coord)
             if i == 0:
-                mep_geo_wdummy = mep_fgeo + (dummy_row,)
-                x_idx = len(mep_geo_wdummy) - 1
-                a1_idx = 0
+                mep_geox = mep_fgeo + (dummy_row,)
             else:
-                mep_geo_wdummy = (dummy_row,) + mep_fgeo
-                x_idx = 0
-                a1_idx = 1
-
-            # Set a2_idx to a1_idx + 1; should not be any restrictions
-            a2_idx = a1_idx + 1
-
-            # Set a3_idx.
-            # Need to ensure idx does NOT correspond to atom where x = 0.0
-            # The internal xyzp routine dies in this case
-            for idx2 in range(a2_idx+1, len(iso_fgeo)):
-                if not iso_fgeo[idx2][1][0] == 0.0:
-                    a3_idx = idx2
-                    break
+                mep_geox = (dummy_row,) + mep_fgeo
 
             # Calculate coords to define X position in IsoFragGeom structure
-            xyz1 = iso_fgeo[a1_idx][1]
-            xyz2 = iso_fgeo[a2_idx][1]
-            xdistance = automol.geom.distance(
-                mep_geo_wdummy, x_idx, a1_idx)
-            xangle = automol.geom.central_angle(
-                mep_geo_wdummy, x_idx, a1_idx, a2_idx)
+            xdistance = automol.geom.distance(mep_geox, *fidxs[0:2])
+            xangle = automol.geom.central_angle(mep_geox, *fidxs[0:3])
             if len(mep_fgeo) > 2:
-                xyz3 = iso_fgeo[a3_idx][1]
-                xdihedral = automol.geom.dihedral_angle(
-                    mep_geo_wdummy, x_idx, a1_idx, a2_idx, a3_idx)
+                xdihedral = automol.geom.dihedral_angle(mep_geox, *fidxs[0:4])
             else:
-                xyz3 = 0.0
                 xdihedral = 0.0
+
+            # Set the coords for the IsoFragStructure
+            xyz1 = iso_fgeo[fidxs[1]][1]
+            xyz2 = iso_fgeo[fidxs[2]][1]
+            xyz3 = iso_fgeo[fidxs[3]][1] if len(mep_fgeo) > 2 else 0.0
 
             # Calculate the X Position for the IsoFrag structure
             xyzp = automol.util.vec.from_internals(
                 dist=xdistance, xyz1=xyz1, ang=xangle, xyz2=xyz2,
                 dih=xdihedral, xyz3=xyz3)
-            # xyzp = automol.geom.find_xyzp_using_internals(
-            #     xyz1, xyz2, xyz3, xdistance, xangle, xdihedral)
 
             # Generate the IsoFragGeom+X coordinates for the structure.inp file
             if i == 0:
@@ -134,8 +167,7 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
             # If atom, set IsoFragGeom+X coords equal to mep_geo
             iso_fgeos_wdummy.append(mep_fgeo)
 
-    # return mep_total_geo, iso_fgeos, iso_fgeos_wdummy
-    return mep_total_geo, iso_fgeos_wdummy
+    return mep_total_geo, iso_fgeos_wdummy, (frag_idxs[0][1], frag_idxs[1][1])
 
 
 # def assess_face_symmetries(divsur_out_string):
@@ -187,15 +219,16 @@ def assess_face_symmetries(fgeo1, fgeo2):
 
 
 # FUNCTIONS TO SET UP THE DIVIDING SURFACE FRAMES
-def build_pivot_frames(total_geom, frag_geos_wdummy, bnd_keys):
+def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
     """ Use geometries to get pivot info only set up for 1 or 2 pivot points
+
+        change to just pass the bonding atom idx (bonding atom, the one that
+        bonds to dummy)
+        use the assumption about the a1 idx used in the fragment geoms?
     """
 
-    bnd_keys = sorted(list(bnd_keys))
-    print('bndk', bnd_keys)
-
-    frames, npivots, = [], []
-    for i, (rxn_idx, geo) in enumerate(zip(bnd_keys, frag_geos_wdummy)):
+    frames, npivots, = (), ()
+    for i, (geo, a1_idx) in enumerate(zip(frag_geos_wdummy, frag_a1_idxs)):
 
         geom = automol.geom.without_dummy_atoms(geo)
 
@@ -203,29 +236,22 @@ def build_pivot_frames(total_geom, frag_geos_wdummy, bnd_keys):
         if automol.geom.is_atom(geom):
             # Single pivot point centered on atom
             npivot = 1
-            frame = [0, 0, 0, 0]
+            frame = (0, 0, 0, 0)
         elif automol.geom.is_linear(geom):
             # For linear species we place the pivot point on radical
             # with no displacment, so no need to find coordinates
             npivot = 2
-            frame = [0, 0, 0, 0]
+            frame = (0, 0, 0, 0)
         else:
             # else we build an xy frame to easily place pivot point
+            # explain the frame???
             npivot = 2
-
-            print('gota geom\n', total_geom)
-            # Find the idx in each fragment bonded to the atom at the pivot pt
-            for j, coords in enumerate(geom):
-                print(coords)
-                if coords == total_geom[rxn_idx]:
-                    coord_idx = j
-                    break
 
             # For each fragment, get indices for a
             # chain (up to three atoms, that terminates at the dummy atom)
             gra = automol.geom.graph(geom)
             gra_neighbor_dct = automol.graph.atoms_neighbor_atom_keys(gra)
-            bond_neighbors = gra_neighbor_dct[coord_idx]
+            bond_neighbors = gra_neighbor_dct[a1_idx]
 
             # Find idx in each fragment geom that corresponds to the bond index
             for j, idx in enumerate(bond_neighbors):
@@ -238,17 +264,17 @@ def build_pivot_frames(total_geom, frag_geos_wdummy, bnd_keys):
             # Set up the frame indices for the divsur file
             if i == 0:
                 pivot_idx = len(geom)
-                frame = [coord_idx, bond_neighbor_idx, pivot_idx, coord_idx]
+                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
             else:
                 pivot_idx = 0
-                coord_idx += 1
+                a1_idx += 1
                 bond_neighbor_idx += 1
-                frame = [coord_idx, bond_neighbor_idx, pivot_idx, coord_idx]
-            frame = [val+1 for val in frame]
+                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
+            frame = tuple(val+1 for val in frame)
 
         # Append to lists
-        frames.append(frame)
-        npivots.append(npivot)
+        frames += (frame,)
+        npivots += (npivot,)
 
     return frames, npivots
 

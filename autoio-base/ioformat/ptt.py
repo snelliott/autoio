@@ -304,14 +304,11 @@ def set_value_type(value):
         frmtd_value = None
     elif value.isdigit():
         frmtd_value = int(value)
-    elif 'e' in value:
+    elif 'e' in value or '.' in value:
         try:
             frmtd_value = float(value)
         except ValueError:
             frmtd_value = value
-    elif '.' in value:
-        if value.replace('.', '').replace('-', '').isdigit():
-            frmtd_value = float(value)
     else:
         frmtd_value = value
 

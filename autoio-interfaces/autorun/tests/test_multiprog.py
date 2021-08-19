@@ -1,4 +1,4 @@
-""" tests projrot (maybe others)
+""" test autorun._multiprog
 """
 
 import os

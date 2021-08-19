@@ -225,7 +225,3 @@ def _check_if_empty(block_str, block_type):
 
     if block_str is None:
         print(f'No Chemkin {block_type} block detected. Check start and end.')
-    
-
-
-
