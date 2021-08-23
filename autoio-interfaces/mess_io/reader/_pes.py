@@ -24,10 +24,10 @@ def pes(input_string, read_fake=False):
     input_lines = input_string.splitlines()
     for idx, line in enumerate(input_lines):
 
-        if 'Well ' in line:
+        if 'Well' in line:
 
-            line_lst = line.split()
-            if len(line_lst) == 2 and '!' not in line:
+            line_lst = line.strip().split()
+            if line_lst[0].strip() == 'Well' and '!' not in line:
                 # Get label
                 label = line_lst[1]
 
@@ -42,16 +42,17 @@ def pes(input_string, read_fake=False):
                     energy_dct[label] = ene
 
                     # Add value to PES dct
-                    prior_line = input_lines[idx-1]
-                    line_lst2 = prior_line.split('!')
-                    spc = line_lst2[1]
-                    # strip gets rid of the spaces before and after
-                    pes_label_dct[spc.strip()] = label
+                    # prior_line = input_lines[idx-1]
+                    # line_lst2 = prior_line.split('!')
+                    # spc = line_lst2[1]
+                    # # strip gets rid of the spaces before and after
+                    # pes_label_dct[spc.strip()] = label
 
-        if 'Bimolecular ' in line:
+        if 'Bimolecular' in line:
 
-            line_lst = line.split()
-            if len(line_lst) == 2 and '!' not in line:
+            line_lst = line.strip().split()
+
+            if line_lst[0].strip() == 'Bimolecular' and '!' not in line:
                 # Get label
                 label = line_lst[1]
 
@@ -68,16 +69,16 @@ def pes(input_string, read_fake=False):
                 energy_dct[label] = ene
 
                 # Add value to PES dct
-                prior_line = input_lines[idx-1]
-                line_lst2 = prior_line.split('!')
-                spc = line_lst2[1]
-                # strip gets rid of the spaces before and after
-                pes_label_dct[spc.strip()] = label
+                # prior_line = input_lines[idx-1]
+                # line_lst2 = prior_line.split('!')
+                # spc = line_lst2[1]
+                # # strip gets rid of the spaces before and after
+                # pes_label_dct[spc.strip()] = label
 
-        if 'Barrier ' in line:
+        if 'Barrier' in line:
 
-            line_lst = line.split()
-            if len(line_lst) == 4 and '!' not in line:
+            line_lst = line.strip().split()
+            if line_lst[0].strip() == 'Barrier' and '!' not in line:
                 # Get label
                 [tslabel, rlabel, plabel] = line_lst[1:4]
 

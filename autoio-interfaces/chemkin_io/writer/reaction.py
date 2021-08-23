@@ -237,8 +237,6 @@ def arrhenius(reaction, high_params, colliders=None,
         :type reaction: str
         :param high_params: Arrhenius high-P (i.e., high-P) parameters
         :type high_params: list of floats
-        :param colliders: names and collision enhancement factors for bathgases
-        :type colliders: list((str, float))
         :param max_length: length of the longest reaction name in the mechanism
         :type max_length: int
         :param name_buffer: buffer between the name and the Arrhenius params
@@ -246,29 +244,25 @@ def arrhenius(reaction, high_params, colliders=None,
         :return arr_str: Chemkin reaction string with Arrhenius parameters
         :rtype: str
     """
-    assert len(high_params) in (3, 6), (
+    assert len(high_params) in (1, 2), (
         f'Arrh params should be 3 or 6 but is {len(high_params)}' +
         f' for {reaction}'
     )
 
     # write the arrhenius parameter string
-    if len(high_params) == 3:
+    if len(high_params) == 1:
         arr_str = _highp_str(
-            reaction, high_params,
+            reaction, high_params[0],
             max_length=max_length, name_buffer=name_buffer)
 
-    elif len(high_params) == 6:
+    elif len(high_params) == 2:
         arr_str = _highp_str(
-            reaction, high_params[:3],
+            reaction, high_params[0],
             max_length=max_length, name_buffer=name_buffer)
         arr_str += 'DUP\n'
-        arr_str += _highp_str(reaction, high_params[3:],
+        arr_str += _highp_str(reaction, high_params[1],
                               max_length=max_length, name_buffer=name_buffer)
         arr_str += 'DUP\n'
-
-    # Write the collider efficiencies string
-    if colliders:
-        arr_str += _format_collider_string(colliders)
 
     return arr_str
 

@@ -176,6 +176,10 @@ def _qc_input_str(job, prog, geo, charge, mult,
     """
 
     if prog == 'molpro2015':
+        if 'f12' in method:
+            ene_line = 'molpro_energy=energy(2)\nshow[1,e25.15],molpro_energy'
+        else: 
+            ene_line = 'molpro_energy=energy\nshow[1,e25.15],molpro_energy'
         _req_gen_lines = {
             2: (
                 'nn(1)=1',
