@@ -28,19 +28,19 @@ def troe(reaction, high_params, low_params, troe_params, colliders=None,
         :return troe_str: Chemkin reaction string with Troe parameters
         :rtype: str
     """
-    assert len(high_params) == 3, (
+    assert len(high_params[0]) == 3, (
         f'{len(high_params)} highP params for {reaction}, should be 3'
     )
-    assert len(low_params) == 3, (
+    assert len(low_params[0]) == 3, (
         f'{len(low_params)} lowP params for {reaction}, should be 3'
     )
     assert len(troe_params) in (3, 4), (
         f'{len(troe_params)} Troe params for {reaction}, should be 3 or 4'
     )
 
-    troe_str = _highp_str(reaction, high_params,
+    troe_str = _highp_str(reaction, high_params[0],
                           max_length=max_length, name_buffer=BUFFER)
-    troe_str += _lowp_str(low_params,
+    troe_str += _lowp_str(low_params[0],
                           max_length=max_length, name_buffer=BUFFER)
     troe_str += _troe_and_cheb_params('TROE',
                                       troe_params, newline=True, val='exp')
@@ -68,9 +68,9 @@ def lindemann(reaction, high_params, low_params, colliders=None,
         :return lind_str: Chemkin reaction string with Lindemann parameters
         :rtype: str
     """
-    lind_str = _highp_str(reaction, high_params,
+    lind_str = _highp_str(reaction, high_params[0],
                           max_length=max_length, name_buffer=BUFFER)
-    lind_str += _lowp_str(low_params,
+    lind_str += _lowp_str(low_params[0],
                           max_length=max_length, name_buffer=BUFFER)
 
     # Write the collider efficiencies string
@@ -128,17 +128,17 @@ def plog(reaction, plog_param_dct, max_length=45, name_buffer=BUFFER):
 
     # Write the header for the reaction, which includes the 1-atm fit if avail
     if 1 in pressures:
-        if len(plog_param_dct[1]) > 3:
+        if len(plog_param_dct[1]) > 1:
             comment = (
                 'Duplicates exist at 1 atm (see below);' +
                 ' only single 1-atm fit is written')
             plog_str = _highp_str(
-                reaction, plog_param_dct[1][:3], max_length=max_length,
+                reaction, plog_param_dct[1][0], max_length=max_length,
                 name_buffer=name_buffer, inline_comment=comment)
         else:
             comment = 'Arrhenius parameters at 1 atm'
             plog_str = _highp_str(
-                reaction, plog_param_dct[1], max_length=max_length,
+                reaction, plog_param_dct[1][0], max_length=max_length,
                 name_buffer=name_buffer, inline_comment=comment
                 )
     else:
@@ -150,32 +150,33 @@ def plog(reaction, plog_param_dct, max_length=45, name_buffer=BUFFER):
     # Loop over each pressure
     for pressure in pressures:
         plog_params = plog_param_dct[pressure]
-        assert len(plog_params) % 3 == 0, (
-            f'Arr params should be a multiple of 3 but is {len(plog_params)}' +
-            f' for {reaction}'
-        )
+        for param_set in plog_params:
+            assert len(param_set) % 3 == 0, (
+                f'Arr params should be a multiple of 3, is {len(param_set)}' +
+                f' for {reaction}'
+            )
 
-        # Loop over however many Arrhenius sets there are,
-        # writing a PLOG line for each
-        num_arr_sets = int(len(plog_params)/3)
-        for idx in range(num_arr_sets):
-            current_plog_params = plog_params[3*idx:3*(idx+1)]
-            plog_str += _pressure_str(
-                pressure, current_plog_params,
-                max_length=max_length, name_buffer=name_buffer)
+            # Loop over however many Arrhenius sets there are,
+            # writing a PLOG line for each
+            num_arr_sets = int(len(param_set)/3)
+            for idx in range(num_arr_sets):
+                current_param_set = param_set[3*idx:3*(idx+1)]
+                plog_str += _pressure_str(
+                    pressure, current_param_set,
+                    max_length=max_length, name_buffer=name_buffer)
 
     return plog_str
 
 
-def chebyshev(reaction, one_atm_params, alpha, tmin, tmax, pmin, pmax,
+def chebyshev(reaction, arr_params, alpha, tmin, tmax, pmin, pmax,
               max_length=45, name_buffer=BUFFER):
     """ Write the string containing the Chebyshev fitting parameters
         formatted for Chemkin input files.
 
         :param reaction: Chemkin formatted string with chemical equation
         :type reaction: str
-        :param one_atm_params: Arrhenius parameters at 1 atm
-        :type one_atm_params: list of floats
+        :param arr_params: Arrhenius parameters at 1 atm
+        :type arr_params: list of floats
         :param alpha: Chebyshev coefficient matrix
         :type alpha: numpy.ndarray
         :param tmin: minimum temperature Chebyshev model is defined
@@ -193,6 +194,13 @@ def chebyshev(reaction, one_atm_params, alpha, tmin, tmax, pmin, pmax,
         :return cheb_str: Chemkin reaction string with Chebyshev parameters
         :rtype: str
     """
+    assert len(arr_params) == 1, (
+        f'For {reaction}, the length of one_atm_params' +
+        f' {arr_params} is not a list of lists'
+    )
+
+    # Set and check the 1 atm params
+    one_atm_params = arr_params[0]
     assert len(one_atm_params) == 3, (
         f'For {reaction}, the length of one_atm_params' +
         f' is {len(one_atm_params)} instead of 3'
@@ -250,19 +258,19 @@ def arrhenius(reaction, high_params, colliders=None,
     )
 
     # write the arrhenius parameter string
-    if len(high_params) == 1:
-        arr_str = _highp_str(
-            reaction, high_params[0],
+    arr_str = ''
+    for idx, param_set in enumerate(high_params):
+        if idx > 0:
+            arr_str += 'DUP\n'
+        arr_str += _highp_str(
+            reaction, param_set,
             max_length=max_length, name_buffer=name_buffer)
+        if idx > 0:
+            arr_str += 'DUP\n'
 
-    elif len(high_params) == 2:
-        arr_str = _highp_str(
-            reaction, high_params[0],
-            max_length=max_length, name_buffer=name_buffer)
-        arr_str += 'DUP\n'
-        arr_str += _highp_str(reaction, high_params[1],
-                              max_length=max_length, name_buffer=name_buffer)
-        arr_str += 'DUP\n'
+    # Write the collider efficiencies string
+    if colliders is not None:
+        arr_str += _format_collider_string(colliders)
 
     return arr_str
 
