@@ -90,7 +90,6 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     # Build various options
     scf_guess_options, scf_options = fill.intercept_scf_guess_option(
         scf_options, OPTION_EVAL_DCT)
-    casscf_options = fill.evaluate_options(casscf_options, OPTION_EVAL_DCT)
     job_options = fill.evaluate_options(job_options, OPTION_EVAL_DCT)
     if saddle:
         job_options += ('CALCFC', 'TS', 'NOEIGEN', 'MAXCYCLES=60')

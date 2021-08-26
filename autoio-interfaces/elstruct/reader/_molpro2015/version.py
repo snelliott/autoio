@@ -15,8 +15,7 @@ def program_name(output_str):
     """
 
     prog_string = _get_prog_string(output_str)
-    prog_name = prog_string.split(':')[1].strip()
-    prog_name = prog_name.split('.')[0]
+    prog_name = prog_string[0].strip()
     prog_name = 'molpro' + prog_name
 
     return prog_name
@@ -31,9 +30,7 @@ def program_version(output_str):
     """
 
     prog_string = _get_prog_string(output_str)
-    prog_version = prog_string.split(':')[1].strip()
-    prog_version = prog_version.split('.')[1:]
-    prog_version = '.'.join(prog_version)
+    prog_version = prog_string[1].strip()
 
     return prog_version
 
@@ -46,9 +43,13 @@ def _get_prog_string(output_str):
         :rtype: str
     """
 
-    pattern = app.capturing(
-                ('NAME' + app.SPACES + ':' + app.SPACES +
-                 app.one_or_more(app.NONNEWLINE)))
+    pattern = ('Version' +
+               app.SPACES +
+               app.capturing(app.INTEGER) +
+               app.escape('.') +
+               app.capturing(app.INTEGER) +
+               app.SPACES +
+               'linked')
 
     prog_string = apf.first_capture(pattern, output_str)
 

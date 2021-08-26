@@ -154,6 +154,48 @@ def build_gen_lines(gen_lines, line1=None, line2=None, line3=None):
     return gen_lines_1, gen_lines_2, gen_lines_3
 
 
+def update_gen_lines(gen_lines,
+                     lines1=None, lines2=None, lines3=None):
+    """ Update gen lines dictionary with new input lines
+    """
+
+    if gen_lines is not None:
+        gen_lines_1 = gen_lines.get(1)
+        gen_lines_2 = gen_lines.get(2)
+        gen_lines_3 = gen_lines.get(3)
+        
+        if lines1 is not None:
+            if gen_lines_1 is not None:
+                gen_lines_1 += tuple(lines1)
+            else:
+                gen_lines_1 = tuple(lines1)
+        if lines2 is not None:
+            if gen_lines_2 is not None:
+                gen_lines_2 += tuple(lines2)
+            else:
+                gen_lines_2 = tuple(lines2)
+        if lines3 is not None:
+            if gen_lines_3 is not None:
+                gen_lines_3 += tuple(lines3)
+            else:
+                gen_lines_3 = tuple(lines3)
+
+        gen_lines = {1: gen_lines_1,
+                     2: gen_lines_2,
+                     3: gen_lines_3}
+
+    else:
+        gen_lines = {}
+        if lines1:
+            gen_lines.update({1: tuple(lines1)})
+        if lines2:
+            gen_lines.update({2: tuple(lines2)})
+        if lines3:
+            gen_lines.update({3: tuple(lines3)})
+
+    return gen_lines
+
+
 # Handle setting options for various programs
 def evaluate_options(options, option_eval_dct):
     """ Build a list of program specific options.
@@ -167,11 +209,15 @@ def evaluate_options(options, option_eval_dct):
 
     options = list(options)
     option_names = tuple(sorted(option_eval_dct.keys()))
+
     for idx, option in enumerate(options):
-        if _option_is_valid(option):  # failing for some reason
+        # Will evaluate option if possible, or just put in (very bad)
+        try:
             name = _option_name(option)
             assert name in option_names
             options[idx] = option_eval_dct[name](option)
+        except AssertionError:
+            options[idx] = option
 
     return tuple(options)
 
