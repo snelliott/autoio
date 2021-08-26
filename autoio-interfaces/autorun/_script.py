@@ -96,7 +96,7 @@ MOLPRO = (
 MOLPRO_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molpro --mppx -n 4 run.inp -o run.out "
+    "molprop --mppx -n 8 run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
@@ -110,7 +110,7 @@ MOLPRO_MREF = (
 MOLPRO_MREF_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molpro --mppx -n 12 run.inp -o run.out "
+    "molprop --mppx -n 12 run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
