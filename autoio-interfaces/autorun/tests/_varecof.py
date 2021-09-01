@@ -1,22 +1,21 @@
 """ tests varecof runners
 """
 
-# import os
-# import autorun
-# from ioformat import pathtools
-#
-# PATH = os.path.dirname(os.path.realpath(__file__))
-#
-# def test__frame_geoms():
-#     """ test autorun.frame__()
-#     """
-#
-#     frag_geoms = autorun.varecof.frame_oriented_structure(
-#         script_str, run_dir, )
-#
-#     for frag_geom, ref_geom in zip(frag_geoms, ref_geoms):
-#         assert automol.geom.almost_equal_dist_matrix(frag_geom, ref_geom)
-#
+import os
+import autorun
+from ioformat import pathtools
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+
+def test__frame_geoms():
+    """ test autorun.frame__()
+    """
+
+    frag_geoms = autorun.varecof.frame_oriented_structure(
+        script_str, run_dir, )
+
+    for frag_geom, ref_geom in zip(frag_geoms, ref_geoms):
+        assert automol.geom.almost_equal_dist_matrix(frag_geom, ref_geom)
 #
 #
 # def test__compile_potentials():
@@ -37,7 +36,7 @@
 #
 #
 #
-# if __name__ == '__main__':
+if __name__ == '__main__':
 #     test__run()
 #     test__frame_geoms()
 #     test__compile_potentials()

@@ -305,15 +305,17 @@ def convert():
     return 'MultiInputFile    tst.inp'
 
 
-def machinefile(host_node, num_cores=10):
-    """ Take machine list and write the string for the machine file
+def machinefile(machine_dct):
+    """ Writes a string that details what machines to run VaReCoF on
+        as well as the number of cores to use for each host.
 
-        node_dct maybe? {node_name: num_cores}
+        :param machine_dct: {host name: num cores}
+        :type machine_dct: dict[str: int]
+        :rtype: str
     """
 
-    machines = ['{}:{}'.format(host_node, num_cores)]
     machine_file_str = ''
-    for machine in machines:
-        machine_file_str += machine + '\n'
+    for name, nproc in machine_dct.items():
+        machine_file_str += '{0}:{1}\n'.format(name, nproc)
 
-    return machine_file_str
+    return machine_file_str.rstrip()

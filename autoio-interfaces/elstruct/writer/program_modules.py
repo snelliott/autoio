@@ -16,10 +16,18 @@ def call_module_function(prog, function, *args, **kwargs):
         :type function_template: function
     """
 
+    def _rename_prog(prog):
+        """ Rename a program if number does not match module name """
+        if prog == 'molpro2021':
+            prog = 'molpro2015'
+        elif prog == 'gaussian16':
+            prog = 'gaussian09'
+        return prog
+
     assert prog in pclass.values(par.Program)
     assert prog in program_modules_with_function(function)
 
-    name = '_{}'.format(prog)
+    name = '_{}'.format(_rename_prog(prog))
     module = importlib.import_module('elstruct.writer.{:s}'.format(name))
     writer = getattr(module, 'write_input')
 
@@ -64,6 +72,9 @@ WRITER_MODULE_DCT = {
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
         Job.MOLPROP, Job.IRC, Job.VPT2),
     par.Program.MOLPRO2015: (
+        Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
+        Job.MOLPROP, Job.IRC, Job.VPT2),
+    par.Program.MOLPRO2021: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
         Job.MOLPROP, Job.IRC, Job.VPT2),
     par.Program.MRCC2018: (

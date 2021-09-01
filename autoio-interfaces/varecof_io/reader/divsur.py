@@ -2,8 +2,10 @@
   Functions to parse information out of the divsur input and output files
 """
 
+import automol.geom
 
-def frag_geoms_divsur_frame(divsur_str):
+
+def frame_geometries(divsur_str):
     """ Read the geometries of the fragments out of divsur.out file string
         which are in the coord system defined in the divsur.inp frames.
 
@@ -26,7 +28,13 @@ def frag_geoms_divsur_frame(divsur_str):
             end_idx = i
             break
 
-    fgeo1 = ''.join(lines[f1_idx: f2_idx-2])
-    fgeo2 = ''.join(lines[f2_idx: end_idx])
+    if f1_idx is not None and f2_idx is not None:
+        fgeo1_str = '\n'.join(lines[f1_idx: f2_idx-2])
+        fgeo2_str = '\n'.join(lines[f2_idx: end_idx])
+        fgeo1 = automol.geom.from_string(fgeo1_str)
+        fgeo2 = automol.geom.from_string(fgeo2_str)
+    else:
+        fgeo1 = None
+        fgeo2 = None
 
     return fgeo1, fgeo2

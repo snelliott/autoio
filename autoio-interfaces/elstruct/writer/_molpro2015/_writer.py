@@ -5,6 +5,7 @@ from ioformat import build_mako_str
 import elstruct.par
 import elstruct.option
 from elstruct.writer import fill
+from elstruct.writer._molpro2015._par import set_method_and_options
 from elstruct.writer._molpro2015._par import OPTION_EVAL_DCT
 
 PROG = elstruct.par.Program.MOLPRO2015
@@ -72,8 +73,12 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     spin = mult - 1
 
     # set correlated method; check if multiref
-    prog_method, prog_reference, prog_basis = fill.program_method_names(
-        PROG, method, basis, mult, orb_restricted)
+    core_method, method1, corr_options, gen_lines = set_method_and_options(
+        method, corr_options, gen_lines)
+    method2, prog_reference, prog_basis = fill.program_method_names(
+        PROG, core_method, basis, mult, orb_restricted)
+    # Set the program method to one of the following
+    prog_method = method1 if method1 else method2
 
     # Set the geometry
     geo_str, zmat_val_str, _ = fill.geometry_strings(geo, frozen_coordinates)

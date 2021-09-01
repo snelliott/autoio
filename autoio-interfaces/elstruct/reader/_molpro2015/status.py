@@ -16,9 +16,10 @@ def has_normal_exit_message(output_str):
         :rtype: bool
     """
 
-    pattern = app.padded(app.NEWLINE).join([
-        app.escape('Molpro calculation terminated'),
-        app.escape('Variable memory released')])
+    pattern = 'Molpro calculation terminated'
+    # pattern = app.padded(app.NEWLINE).join([
+    #     app.escape('Molpro calculation terminated'),
+    #    app.escape('Variable memory released')])
 
     return apf.has_match(pattern, output_str, case=False)
 
