@@ -49,7 +49,11 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
     obj_per_proc = math.floor(num_obj / nprocs)
 
     # Randomize objects the objects (for distributing workload?)
-    rand_objs = random.sample(objs, num_obj)
+    # This function may it very hard to debug - removed for now
+    if nprocs > 1:
+        rand_objs = random.sample(objs, num_obj)
+    else:
+        rand_objs = objs
 
     # Loop over each processor and launch the process
     output_queue = multiprocessing.Queue()

@@ -175,10 +175,11 @@ def _qc_input_str(job, prog, geo, charge, mult,
         on the desired thy info.
     """
 
+    prog = prog.replace('_mppx', '')
     if prog == 'molpro2015':
         if 'f12' in method:
             ene_line = 'molpro_energy=energy(2)\nshow[1,e25.15],molpro_energy'
-        else: 
+        else:
             ene_line = 'molpro_energy=energy\nshow[1,e25.15],molpro_energy'
         _req_gen_lines = {
             2: (
@@ -187,7 +188,7 @@ def _qc_input_str(job, prog, geo, charge, mult,
                 'nn(3)=3'
             ),
             3: (
-                'molpro_energy=energy\nshow[1,e25.15],molpro_energy'
+                ene_line,
                 '',
                 '{force,varsav}'
                 '',
