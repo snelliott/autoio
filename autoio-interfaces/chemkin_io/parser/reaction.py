@@ -54,31 +54,36 @@ def param_dct(block_str, ea_units, a_units):
         :return rxn_param_dct: dict{(reacs,prods): param_list}
         :rtype: dict
     """
+
     rxn_dstr_lst = data_strings(block_str)
 
-    # Create an iterator that repeats the units inputs
-    many_ea_units = list(itertools.repeat(ea_units, times=len(rxn_dstr_lst)))
-    many_a_units = list(itertools.repeat(a_units, times=len(rxn_dstr_lst)))
+    if rxn_dstr_lst is not None:
 
-    reac_and_prods = list(zip(
-        map(reactant_names, rxn_dstr_lst),
-        map(product_names, rxn_dstr_lst),
-        map(third_body, rxn_dstr_lst)))
+        # Create an iterator that repeats the units inputs
+        many_ea_units = list(
+            itertools.repeat(ea_units, times=len(rxn_dstr_lst)))
+        many_a_units = list(
+            itertools.repeat(a_units, times=len(rxn_dstr_lst)))
 
-    params = list(
-        zip(
+        reac_and_prods = list(zip(
+            map(reactant_names, rxn_dstr_lst),
+            map(product_names, rxn_dstr_lst),
+            map(third_body, rxn_dstr_lst)))
+
+        params = list(zip(
             map(high_p_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
             map(low_p_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
             map(troe_parameters, rxn_dstr_lst),
             map(chebyshev_parameters, rxn_dstr_lst, many_a_units),
             map(plog_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
-            map(collider_enhance_factors, rxn_dstr_lst),
-        )
-    )
+            map(collider_enhance_factors, rxn_dstr_lst)))
 
-    # Fix any duplicates in Arrhenius or PLOG reactions
-    reac_and_prods, params = fix_duplicates(reac_and_prods, params)
-    rxn_param_dct = dict(zip(reac_and_prods, params))
+        # Fix any duplicates in Arrhenius or PLOG reactions
+        reac_and_prods, params = fix_duplicates(reac_and_prods, params)
+        rxn_param_dct = dict(zip(reac_and_prods, params))
+
+    else:
+        rxn_param_dct = None
 
     return rxn_param_dct
 
@@ -96,14 +101,17 @@ def data_strings(block_str, remove_bad_fits=False):
         :rtype: list(str)
     """
 
-    rxn_dstrs = headlined_sections(
-        string=block_str.strip(),
-        headline_pattern=CHEMKIN_ARROW
-    )
+    if block_str.strip():
+        rxn_dstrs = headlined_sections(
+            string=block_str.strip(),
+            headline_pattern=CHEMKIN_ARROW
+        )
+        if remove_bad_fits:
+            rxn_dstrs = [dstr for dstr in rxn_dstrs
+                         if not any(string in dstr for string in BAD_STRS)]
+    else:
+        rxn_dstrs = None
 
-    if remove_bad_fits:
-        rxn_dstrs = [dstr for dstr in rxn_dstrs
-                     if not any(string in dstr for string in BAD_STRS)]
     return rxn_dstrs
 
 
