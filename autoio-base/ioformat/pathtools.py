@@ -81,7 +81,9 @@ def write_file(string, path, file_name):
         file_obj.write(string)
 
 
-def read_file(path, file_name, remove_comments=None, remove_whitespace=False):
+def read_file(path, file_name,
+              remove_comments=None, remove_whitespace=False,
+              print_debug=False):
     """ Read a file with specified prefix path
         and name into a string.
 
@@ -102,7 +104,10 @@ def read_file(path, file_name, remove_comments=None, remove_whitespace=False):
                 file_str = remove_whitespace_(file_str)
     else:
         file_str = None
-        print('ERROR: file ',file_name, 'at path ',path,' does not exist')
+        if print_debug:
+            print('WARNING: FILE NOT FOUND\n'
+                  'NAME:', file_name, '\n'
+                  'PREFIX PATH:', path)
 
     return file_str
 
