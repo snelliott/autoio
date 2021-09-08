@@ -252,8 +252,9 @@ def arrhenius(reaction, high_params, colliders=None,
         :return arr_str: Chemkin reaction string with Arrhenius parameters
         :rtype: str
     """
+    print(high_params)
     assert len(high_params) in (1, 2), (
-        f'Arrh params should be 3 or 6 but is {len(high_params)}' +
+        f'Arrh params should be 1 or 2 but is {len(high_params)}' +
         f' for {reaction}'
     )
 

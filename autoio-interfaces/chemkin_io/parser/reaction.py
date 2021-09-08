@@ -234,7 +234,7 @@ def high_p_parameters(rxn_dstr, ea_units, a_units):
     else:
         params = None
 
-    return params
+    return [params]
 
 
 def low_p_parameters(rxn_dstr, ea_units, a_units):
