@@ -63,22 +63,26 @@ VRC_DCT = {
 
 
 # Specialized runners
-def flux_file(script_str, run_dir):
+def flux_file(varecof_script_str, mcflux_script_str,
+              run_dir, input_strs):
     """  Calculate the flux file
     """
-#              aux_dct=None,
-#              input_name=INPUT_NAME, output_names=OUTPUT_NAMES):
-#
-#     # output_strs = direct()
-#
-    print(
-        'Generating flux file with TS N(E) from VaReCoF output...')
+
+    # Write all of the input strings
+    for name, string in input_strs:
+        ioformat.pathtools.read_file(string, run_dir, name)
+    
+    # Run VaReCoF
     run_script(script_str, run_dir)
-#
-#     with open():
-#         flux_str = fobj.read()
-#
-#     return flux_str
+
+    # Generate and read the flux file for the return
+    print('Generating flux file with TS N(E) '
+          'from VaReCoF output...')
+    run_script(script_str, run_dir)
+
+    flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
+
+    return flux_str
 
 
 # Helpful runners for the more directly called ones
@@ -171,10 +175,10 @@ def frame_oriented_structure(script_str, run_dir,
     return geos, faces, faces_symm
 
 
-def _write_varecof_input(run_dir,
-                         ref_zma, rct_zmas,
-                         npot, min_idx, max_idx,
-                         machine_dct, vrc_dct):
+def write_varecof_input(run_dir,
+                        ref_zma, rct_zmas,
+                        npot, min_idx, max_idx,
+                        machine_dct, vrc_dct):
     """ prepare all the input files for a vrc-tst calculation
     """
 
