@@ -482,7 +482,7 @@ def irc(prog, geo, charge, mult, method, basis,
         gen_lines=gen_lines,
         # job options
         job_options=job_options, frozen_coordinates=frozen_coordinates,
-        saddle=True)
+        saddle=False)
 
 
 # optimization input writers

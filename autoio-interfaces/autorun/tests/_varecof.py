@@ -2,41 +2,72 @@
 """
 
 import os
-import autorun
+import tempfile
 from ioformat import pathtools
+import autorun
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+TMP_DIR = tempfile.mkdtemp()
+print('dir', TMP_DIR)
 
-def test__frame_geoms():
-    """ test autorun.frame__()
+# Structure/Coord information
+TS_ZMA = ()
+RCT_ZMAS = ()
+BND_FRM_KEYS = ()
+MEP_DISTANCES = ()
+
+# Potential information
+POTENTIALS = ()
+NPOT = len(POTENTIALS)
+
+# Other VRCTST info
+VRC_DCT = {}
+
+# Machine information
+FORTRAN_COMPILER = 'gfortran'
+MACHINE_DCT = {}
+
+# Set the script strings
+VARECOF_SCRIPT_STR = autorun.SCRIPT_DCT['varecof']
+CONV_STRUCT_SCRIPT_STR = autorun.SCRIPT_DCT['varecof_conv_struct']
+MCFLUX_SCRIPT_STR = autorun.SCRIPT_DCT['mcflux']
+
+# Read the reference strings
+# REF_FLUX_STR = ioformat.pathtools.read_file(DAT_PATH, 'flux.dat')
+
+
+def test__():
+    """ test autorun.varecof.write_varecof_input
     """
 
-    frag_geoms = autorun.varecof.frame_oriented_structure(
-        script_str, run_dir, )
+    # Generate the correction potentials
+    autorun.varecof.compile_potentials(
+        TMP_DIR, MEP_DISTANCES, POTENTIALS,
+        BND_FRM_KEYS, FORTRAN_COMPILER,
+        dist_restrict_idxs=(),
+        pot_labels=(),
+        pot_file_names=(),
+        spc_name='mol')
 
-    for frag_geom, ref_geom in zip(frag_geoms, ref_geoms):
-        assert automol.geom.almost_equal_dist_matrix(frag_geom, ref_geom)
-#
-#
-# def test__compile_potentials():
-#     """ test autorun.compile_potentials()
-#     """
-#
-#     compile_potentials(run_dir, mep_distances, potentials,
-#                        bnd_frm_idxs, fortran_compiler,
-#                        dist_restrict_idxs=(),
-#                        pot_labels=(),
-#                        pot_file_names=(),
-#                        spc_name='mol')
-#
-#     pot_str = pathtools.read_file(DAT_PATH, 'libcorrpot64.so')
-#     ref_pot_str = pathtools.read_file(
-#         DAT_PATH, 'libcorrpot64.so')
-#     assert pot_str == ref_pot_str
-#
-#
-#
+    # Write the input strings
+    inp_strs = autorun.varecof.write_input(
+        TMP_DIR,
+        TS_ZMA, RCT_ZMAS,
+        NPOT, BND_FRM_KEYS,
+        MACHINE_DCT, VRC_DCT)
+
+    # Write the electronic structure input
+    inp_strs += ()
+
+    # Run VareCoF
+    flux_str = autorun.varecof.flux_file(
+        VARECOF_SCRIPT_STR, MCFLUX_SCRIPT_STR,
+        TMP_DIR, inp_strs)
+
+    # Trim off the 0 energy (maybe do this in some function)
+
+    # Check the fluxes to see if they are within some percentage threshold
+
 if __name__ == '__main__':
-#     test__run()
-#     test__frame_geoms()
-#     test__compile_potentials()
+    test__()
