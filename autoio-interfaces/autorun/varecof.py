@@ -1,7 +1,6 @@
 """ Generate the information necessary to product the vrctst input files
 """
 
-import os
 import ioformat
 import automol
 import varecof_io
@@ -71,14 +70,14 @@ def flux_file(varecof_script_str, mcflux_script_str,
     # Write all of the input strings
     for name, string in input_strs:
         ioformat.pathtools.read_file(string, run_dir, name)
-    
+
     # Run VaReCoF
-    run_script(script_str, run_dir)
+    run_script(varecof_script_str, run_dir)
 
     # Generate and read the flux file for the return
     print('Generating flux file with TS N(E) '
           'from VaReCoF output...')
-    run_script(script_str, run_dir)
+    run_script(mcflux_script_str, run_dir)
 
     flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
 
@@ -149,8 +148,7 @@ def frame_oriented_structure(script_str, run_dir,
     script_str.format(divsur_name, tst_name)
 
     # Write some boilerplate tst.inp string to run script
-    tst_str = varecof_io.writer.input_file.tst(
-        1, 1, .1, 1)
+    tst_str = varecof_io.writer.input_file.tst(1, 1, .1, 1)
 
     # Put the tst string in the aux dct
     aux_dct = {tst_name: tst_str}
@@ -175,12 +173,15 @@ def frame_oriented_structure(script_str, run_dir,
     return geos, faces, faces_symm
 
 
-def write_varecof_input(run_dir,
-                        ref_zma, rct_zmas,
-                        npot, min_idx, max_idx,
-                        machine_dct, vrc_dct):
+def write_input(run_dir,
+                ref_zma, rct_zmas,
+                npot, bnd_frm_keys,
+                machine_dct, vrc_dct):
     """ prepare all the input files for a vrc-tst calculation
     """
+
+    # Get the indices
+    min_idx, max_idx = min(bnd_frm_keys), max(bnd_frm_keys)
 
     # Build geometries needed for the varecof run
     tot_geo, isol_fgeos, a1_idxs = varecof_io.writer.fragment_geometries(
@@ -271,4 +272,4 @@ def write_varecof_input(run_dir,
         'mc_flux.inp', 'convert.inp',
         'machines', 'molpro.sh')
 
-    return tuple(zip(input_strs, input_names))
+    return dict(zip(input_names, input_strs))
