@@ -16,12 +16,7 @@ def zero_energy_format(zero_ene):
         :return zero_ene_str: MESS-format string containing energy
         :rtype string
     """
-
-    zero_ene_str = (
-        'ZeroEnergy[kcal/mol]      {0:<8.2f}'.format(zero_ene)
-    )
-
-    return zero_ene_str
+    return f'ZeroEnergy[kcal/mol]      {zero_ene:<8.2f}'
 
 
 def elec_levels_format(elec_levels):
@@ -65,15 +60,15 @@ def geometry_format(geo):
     natoms = len(geo)
 
     # Build geom string; converting the coordinates to angstrom
-    geo_str = ''
-    for (asymb, xyz) in geo:
-        geo_str += '{:<4s}{:>14.5f}{:>14.5f}{:>14.5f}\n'.format(
-            asymb, *tuple((val*0.529177 for val in xyz)))
+    gstr = ''
+    for (symb, xyz) in geo:
+        xyzc = tuple(val*0.529177 for val in xyz)
+        gstr += f'{symb:<4s}{xyzc[0]:>14.5f}{xyzc[1]:>14.5f}{xyzc[2]:>14.5f}\n'
 
     # Remove final newline character and indent the lines
-    geo_str = indent(geo_str.rstrip(), 4)
+    gstr = indent(gstr.rstrip(), 4)
 
-    return natoms, geo_str
+    return natoms, gstr
 
 
 def freqs_format(freqs):
@@ -95,9 +90,9 @@ def freqs_format(freqs):
     freq_str = ''
     for i, freq in enumerate(freqs):
         if ((i+1) % 6) == 0 and (i+1) != len(freqs):
-            freq_str += '{0:<8.0f}\n'.format(int(freq))
+            freq_str += f'{int(freq):<8.0f}\n'
         else:
-            freq_str += '{0:<8.0f}'.format(freq)
+            freq_str += f'{int(freq):<8.0f}'
 
     # Indent the lines
     freq_str = indent(freq_str, 4)
@@ -124,9 +119,9 @@ def intensities_format(intens):
     inten_str = ''
     for i, inten in enumerate(intens):
         if ((i+1) % 6) == 0 and (i+1) != len(intens):
-            inten_str += '{0:<8.1f}\n'.format(int(inten))
+            inten_str += f'{int(inten):<8.1f}\n'
         else:
-            inten_str += '{0:<8.1f}'.format(inten)
+            inten_str += f'{int(inten):<8.1f}'
 
     # Indent the lines
     inten_str = indent(inten_str, 4)
@@ -148,7 +143,7 @@ def format_rotor_key_defs(rotor_keyword_vals):
     # Build string containing the values of each keyword
     rotor_keyword_str = ''
     for vals in rotor_keyword_vals:
-        rotor_keyword_str += '{0:<4d}'.format(vals+1)
+        rotor_keyword_str += f'{vals+1:<4d}'
 
     return rotor_keyword_str
 
@@ -172,11 +167,11 @@ def format_rotor_potential(potential):
     coord_str, ene_str = '', ''
     for i, (coord, energy) in enumerate(potential.items()):
         if ((i+1) % 6) == 0 and (i+1) != npot:
-            coord_str += '{0:<8.2f}\n'.format(coord[0])
-            ene_str += '{0:<8.2f}\n'.format(energy)
+            coord_str += f'{coord[0]:<8.2f}\n'
+            ene_str += f'{energy:<8.2f}\n'
         else:
-            coord_str += '{0:<8.2f}'.format(coord[0])
-            ene_str += '{0:<8.2f}'.format(energy)
+            coord_str += f'{coord[0]:<8.2f}'
+            ene_str += f'{energy:<8.2f}'
 
     # Indent the lines
     coord_str = indent(coord_str, 4)
@@ -243,7 +238,7 @@ def format_xmat(xmat):
     xmat_str = ''
     for i in range(xmat.shape[0]):
         xmat_str += ' '.join(
-            ['{0:>12.5f}'.format(val) for val in list(xmat[i, :i+1])
+            [f'{val:>12.5f}' for val in list(xmat[i, :i+1])
              if val != 0.0]
         )
         if (i+1) != xmat.shape[0]:
@@ -268,8 +263,8 @@ def molec_spec_format(geo):
 
     # Build geom string; converting the coordinates to angstrom
     atom_lst_str = ''
-    for (asymb, _) in geo:
-        atom_lst_str += '{:s} '.format(asymb)
+    for (symb, _) in geo:
+        atom_lst_str += f'{symb:s} '
 
     # Remove final newline character
     atom_lst_str = atom_lst_str.rstrip()
@@ -294,7 +289,7 @@ def format_flux_mode_indices(atom_idxs):
     # Build string containing the values of each keyword
     flux_mode_idx_str = ''
     for vals in atom_idxs:
-        flux_mode_idx_str += '{0:<4d}'.format(vals)
+        flux_mode_idx_str += f'{vals:<4d}'
 
     return flux_mode_idx_str
 

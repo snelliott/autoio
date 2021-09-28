@@ -270,7 +270,7 @@ def format_keyword_values(keyword, value):
         for sub_lst in value:
             assert all(isinstance(val, int) for val in sub_lst)
             frmtd_value += (
-                tuple('D{}'.format(val) for val in sub_lst),
+                tuple(f'D{val}' for val in sub_lst),
             )
     elif all(sym in value for sym in ('[', ']')):
         value = value.replace('[', '').replace(']', '')

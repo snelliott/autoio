@@ -32,7 +32,7 @@ def species(spc_label, spc_data, zero_ene=None):
 
     # Format the precision of the zero energy
     if zero_ene is not None:
-        zero_ene = '{0:<8.2f}'.format(zero_ene)
+        zero_ene = f'{zero_ene:<8.2f}'
 
     # Create dictionary to fill template
     spc_keys = {
@@ -74,9 +74,9 @@ def well(well_label, well_data,
 
     # Format the precision of the zero energy and well extension cap
     if zero_ene is not None:
-        zero_ene = '{0:<8.2f}'.format(zero_ene)
+        zero_ene = f'{zero_ene:<8.2f}'
     if well_cap is not None:
-        well_cap = '{0:<8.2f}'.format(well_cap)
+        well_cap = f'{well_cap:<8.2f}'
 
     # Indent the energy transfer parameter strings if needed
     if edown_str is not None:
@@ -116,7 +116,7 @@ def bimolecular(bimol_label,
     isatom2 = messformat.is_atom_in_str(species2_data)
 
     # Format the precision of the ground energy
-    ground_energy = '{0:<8.2f}'.format(ground_energy)
+    ground_energy = f'{ground_energy:<8.2f}'
 
     # Create dictionary to fill template
     bimol_keys = {
@@ -165,7 +165,7 @@ def ts_sadpt(ts_label, reac_label, prod_label, ts_data,
 
     # Format the precision of the zero energy
     if zero_ene is not None:
-        zero_ene = '{0:<8.2f}'.format(zero_ene)
+        zero_ene = f'{zero_ene:<8.2f}'
 
     # Create dictionary to fill template
     ts_sadpt_keys = {
@@ -204,8 +204,8 @@ def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
     """
 
     assert len(rpath_strs) == len(zero_enes), (
-        'Number of rpath strings ({})'.format(len(rpath_strs)),
-        'and zero energies ({}) do not match'.format(len(zero_enes))
+        f'Number of rpath strings ({len(rpath_strs)})',
+        f'and zero energies ({len(zero_enes)}) do not match'
     )
 
     # Build the zero energy strings and add them to the rpath strings
@@ -251,7 +251,7 @@ def dummy(dummy_label, zero_ene=None):
 
     # Format energy string if needed
     if zero_ene is not None:
-        zero_ene = '{0:6.2f}'.format(zero_ene)
+        zero_ene = f'{zero_ene:6.2f}'
 
     # Create dictionary to fill template
     dummy_keys = {
@@ -284,10 +284,10 @@ def configs_union(mol_data_strs, zero_enes, tunnel_strs=None):
         union_data += union_str
         union_data += zero_ene_str
         if tunnel_strs is not None:
-            _tunnel_str = '\n{}\nEnd  ! Tunnel\n'.format(tunnel_strs[idx])
+            _tunnel_str = f'\n{tunnel_strs[idx]}\nEnd  ! Tunnel\n'
             union_data += messformat.indent(_tunnel_str, 2)
         union_data += '\n\n'
-        union_data += 'End  ! Union{}\n'.format(idx+1)
+        union_data += f'End  ! Union{idx+1}\n'
 
     # Concatenate all of the molecule strings
     union_data = messformat.indent(union_data, 2)

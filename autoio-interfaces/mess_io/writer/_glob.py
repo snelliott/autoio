@@ -93,7 +93,7 @@ def global_rates_input(temperatures, pressures,
         assert isinstance(excess_ene_temp, float), (
             'ExcessEnergyOverTemperature value must be a float'
         )
-        excess_ene_temp_str = '{0:.2f}'.format(excess_ene_temp)
+        excess_ene_temp_str = f'{excess_ene_temp:.2f}'
     else:
         excess_ene_temp_str = None
     if well_extend is not None:
@@ -101,7 +101,7 @@ def global_rates_input(temperatures, pressures,
             assert isinstance(well_extend, float), (
                 'WellExtension value must be a float'
             )
-            well_extend_str = '{0:.2f}'.format(well_extend)
+            well_extend_str = f'{well_extend:.2f}'
         else:
             well_extend_str = ''
     else:
@@ -149,7 +149,7 @@ def global_pf_input(temperatures=(),
         temperature_list = ''
 
     # Convert the atom distance minimum
-    atom_dist_min = '{0:.2f}'.format(atom_dist_min * phycon.BOHR2ANG)
+    atom_dist_min = f'{atom_dist_min * phycon.BOHR2ANG:.2f}'
 
     # Create dictionary to fill template
     globpf_keys = {
@@ -200,16 +200,16 @@ def pf_output(fml_str, temps, logq, dq_dt, d2q_dt2, svals=None, cpvals=None):
 
     mess_out_str = 'Natural log of the partition function '
     mess_out_str += 'and its derivatives:\n'
-    mess_out_str += ' T, K            {}\n'.format(fml_str)
+    mess_out_str += f' T, K            {fml_str}\n'
     for idx, _ in enumerate(temps):
         mess_out_str += '\n'
-        mess_out_str += '{0:>8.3f}    '.format(temps[idx])
-        mess_out_str += '{0:>8.6f}    '.format(logq[idx])
-        mess_out_str += '{0:>8.8f}    '.format(dq_dt[idx])
-        mess_out_str += '{0:>8.6e}    '.format(d2q_dt2[idx])
+        mess_out_str += f'{temps[idx]:>8.3f}    '
+        mess_out_str += f'{logq[idx]:>8.6f}    '
+        mess_out_str += f'{dq_dt[idx]:>8.8f}    '
+        mess_out_str += f'{d2q_dt2[idx]:>8.6e}    '
         if svals is not None:
-            mess_out_str += '{0:>8.6f}    '.format(svals[idx])
+            mess_out_str += f'{svals[idx]:>8.6f}    '
         if cpvals is not None:
-            mess_out_str += '{0:>8.6f}    '.format(cpvals[idx])
+            mess_out_str += f'{cpvals[idx]:>8.6f}    '
 
     return mess_out_str

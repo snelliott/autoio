@@ -20,11 +20,11 @@ def matrix_block(symbs, key_mat, name_mat, delim=' '):
     """
 
     def _line_string(row_idx):
-        line_str = '{:<2s} '.format(symbs[row_idx])
+        line_str = f'{symbs[row_idx]:<2s} '
         keys = key_mat[row_idx]
         names = name_mat[row_idx]
         line_str += delim.join([
-            '{:>d}{}{:>5s} '.format(keys[col_idx], delim, names[col_idx])
+            f'{keys[col_idx]:>d}{delim}{names[col_idx]:>5s} '
             for col_idx in range(min(row_idx, 3))])
         return line_str
 
@@ -59,7 +59,7 @@ def setval_block(val_dct, setval_sign='='):
     items = sorted(val_dct.items(), key=_sort_priority)
 
     setval_str = '\n'.join([
-        '{:<5s}{}{:>11.6f}'.format(name, setval_sign, val)
+        f'{name:<5s}{setval_sign}{val:>11.6f}'
         for name, val in items])
 
     return setval_str
