@@ -618,15 +618,6 @@ class Basis():
                             Program.NWCHEM6: None,
                             Program.ORCA4: None,
                             Program.PSI4: None})
-        P6311SS = ('6-311g**', {Program.CFOUR2: None,
-                                Program.GAUSSIAN09: None,
-                                Program.GAUSSIAN16: None,
-                                Program.MOLPRO2015: None,
-                                Program.MOLPRO2021: None,
-                                Program.MRCC2018: None,
-                                Program.NWCHEM6: None,
-                                Program.ORCA4: None,
-                                Program.PSI4: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
                               Program.GAUSSIAN09: None,
                               Program.GAUSSIAN16: None,
@@ -636,6 +627,24 @@ class Basis():
                               Program.NWCHEM6: None,
                               Program.ORCA4: None,
                               Program.PSI4: None})
+        P6311SS = ('6-311g**', {Program.CFOUR2: None,
+                                Program.GAUSSIAN09: None,
+                                Program.GAUSSIAN16: None,
+                                Program.MOLPRO2015: None,
+                                Program.MOLPRO2021: None,
+                                Program.MRCC2018: None,
+                                Program.NWCHEM6: None,
+                                Program.ORCA4: None,
+                                Program.PSI4: None})
+        P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
 
     class Dunning():
         """ Dunning basis sets """
