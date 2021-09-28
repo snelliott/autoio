@@ -106,6 +106,24 @@ def thermo_block(spc_nasa7_dct):
 
 
 def reactions_block(rxn_param_dct, comments=None):
+
+    # Get the length of the longest reaction name
+    max_len = 0
+    for rxn in rxn_param_dct.keys():
+        rxn_name = util.format_rxn_name(rxn)
+        if len(rxn_name) > max_len:
+            max_len = len(rxn_name)
+
+    rxn_str = 'REACTIONS     CAL/MOLE     MOLES\n\n'
+    for rxn, params in rxn_param_dct.items():
+        sing_rxn_str = writer_reac.get_ckin_str(rxn, params, max_len=max_len)
+        rxn_str += sing_rxn_str
+    rxn_str += '\n\nEND\n\n'
+
+    return rxn_str
+
+
+def reactions_block_old(rxn_param_dct, comments=None):
     """ Writes the reaction block of the mechanism file
 
         :param rxn_param_dct: dct containing the reaction parameters
