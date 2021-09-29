@@ -103,11 +103,11 @@ def rpht_path_coord_en(coords, energies, bnd1=(), bnd2=()):
     assert all(len(lst) == nsteps for lst in (coords, energies, bnd_strs))
 
     path_str = (
-        '{Point:>7s}'
-        '{Coordinate:>12s}'
-        '{Energy:>10s}'
-        '{Bond1:>10s}'
-        '{Bond2:>10s}\n'
+        f'{"Point":>7s}'
+        f'{"Coordinate":>12s}'
+        f'{"Energy":>10s}'
+        f'{"Bond1":>10s}'
+        f'{"Bond2":>10s}\n'
     )
     for i, (crd, ene, bnd_str) in enumerate(zip(coords, energies, bnd_strs)):
         path_str += f'{i+1:>7d}{crd:>12.5f}{ene:>10.5f}{bnd_str:>20s}'

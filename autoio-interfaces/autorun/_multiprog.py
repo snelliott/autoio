@@ -92,7 +92,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
     if abs(diff_tors_zpe) > 0.2 and abs(diff_tors_zpe_2) > 0.2:
         print(
             'There is a difference of ',
-            '{0:.2f} and {1:.2f}'.format(diff_tors_zpe, diff_tors_zpe_2),
+            f'{diff_tors_zpe:.2f} and {diff_tors_zpe_2:.2f}',
             'kcal/mol between harmonic and hindered torsional ZPVEs')
 
     return proj_freqs, proj_imag, proj_zpe, rt_freqs1, tors_freqs

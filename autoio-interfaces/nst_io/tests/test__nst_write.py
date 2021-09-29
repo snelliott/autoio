@@ -21,9 +21,6 @@ def test__input():
     """
 
     inp_str = nst_io.writer.input_file(JOBTYPE, GEO, ZERO_ENE)
-
-    with open('data/input.dat', 'w') as fobj:
-        fobj.write(inp_str)
     assert inp_str == pathtools.read_file(DAT_PATH, 'input.dat')
 
 

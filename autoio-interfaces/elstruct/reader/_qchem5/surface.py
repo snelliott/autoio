@@ -108,19 +108,3 @@ def _general_xyz_tensor(output_str):
         line_start_ptt=app.UNSIGNED_INTEGER)
 
     return _tensor
-
-
-if __name__ == '__main__':
-    with open('grad.out_scf') as fobj:
-        OUTSTR = fobj.read()
-    print(gradient(OUTSTR))
-    with open('grad.out') as fobj:
-        OUTSTR = fobj.read()
-    print(gradient(OUTSTR))
-    with open('grad.out_cc') as fobj:
-        OUTSTR = fobj.read()
-    print(gradient(OUTSTR))
-    # with open('hess.out') as fobj:
-    #     OUTSTR = fobj.read()
-    # print(hessian(OUTSTR))
-    # print(harmonic_frequencies(OUTSTR))

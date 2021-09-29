@@ -40,20 +40,14 @@ def prepare_path(path_lst, make=False):
         :rtype: str
     """
 
-    # Need to remove slashes from all parts of list except first
+    # Need to remove left-most /-slashes from all paths in list except first
     # for the os.path.join function to work properly
-    fmtd_path_lst = []
-    for i, path in enumerate(path_lst):
-        fmtd_path_lst.append(path.lstrip('/') if i != 0 else path)
-    full_path = os.path.join(*fmtd_path_lst)
-
-    print('PATH test')
-    print(fmtd_path_lst)
-    print(full_path)
+    path_lst2 = [path.lstrip('/') for path in path_lst[1:]]
+    full_path = os.path.join(path_lst[0], *path_lst2)
 
     if make:
         try:
-            os.mkdir(full_path)
+            os.makedirs(full_path)
         except OSError as exc:
             # Only catch errors for directory existing
             # Still dies on permission or spaces issues, etc

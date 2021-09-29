@@ -16,7 +16,7 @@ def ted_zmatrix_coordinates(script_str, run_dir,
                             input_name=INPUT_NAME,
                             output_names=OUTPUT_NAMES):
     """ Calculate internal coordinate rep of mode from TED
-    
+
         Note that geo and zma atom ordering must match.
         Currently, calculation does not support dummy atoms/linear segments
     """

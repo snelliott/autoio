@@ -1,5 +1,6 @@
-Natural log of the partition function and its derivatives:
- T, K            CH4O
+Natural log of the partition function, its derivatives, entropy, and thermal capacity:
+T, K          CH4O
+               Z_0          Z_1          Z_2 S, cal/mol/K C, cal/mol/K
  100.000    60.198300    0.03027610    -2.904270e-04    
  200.000    62.358100    0.01632070    -6.517310e-05    
  300.000    63.755700    0.01231540    -2.284470e-05    

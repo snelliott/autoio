@@ -3,10 +3,10 @@
 
 import autoread as ar
 import autoparse.pattern as app
-import elstruct.par
+from elstruct.par import Program, Method, program_methods
 
 
-PROG = elstruct.par.Program.QCHEM5
+PROG = Program.QCHEM5
 
 
 def _scf_energy(output_str):
@@ -100,17 +100,21 @@ def _ccsd_t_energy(output_str):
 
 # A dictionary of functions for reading the energy from the output, by method
 ENERGY_READER_DCT = {
-    elstruct.par.Method.HF[0]: _scf_energy,
-    elstruct.par.Method.Corr.MP2[0]: _mp2_energy,
-    elstruct.par.Method.Corr.CCSD[0]: _ccsd_energy,
-    elstruct.par.Method.Corr.CCSD_T[0]: _ccsd_t_energy
+    (Method.HF[0], frozenset({})): _scf_energy,
+    (Method.Corr.MP2[0], frozenset({})): _mp2_energy,
+    (Method.Corr.CCSD[0], frozenset({})): _ccsd_energy,
+    (Method.Corr.CCSD_T[0], frozenset({})): _ccsd_t_energy
 }
-METHODS = elstruct.par.program_methods(PROG)
-for METHOD in METHODS:
-    if elstruct.par.Method.is_standard_dft(METHOD):
-        ENERGY_READER_DCT[METHOD] = _scf_energy
+METHODS = program_methods(PROG)
 
-assert all(method in ENERGY_READER_DCT for method in METHODS)
+# Add DFT methods to the reader dictionary
+for METHOD in METHODS:
+    if Method.is_standard_dft(METHOD):
+        ENERGY_READER_DCT[(METHOD, frozenset({}))] = _scf_energy
+
+# Add DFT methods to the reader dictionary
+READ_METHODS = set(method[0] for method in ENERGY_READER_DCT)
+assert READ_METHODS <= set(METHODS)
 
 
 def method_list():
@@ -130,7 +134,10 @@ def energy(method, output_str):
         :rtype: float
     """
 
-    assert method in method_list()
+    # Parse the method and lists
+    core_method, pfxs = Method.evaluate_method_type(method)
+    _method = (core_method, frozenset(pfxs))
+    assert _method in method_list()
 
     # Get the appropriate reader and call it
     energy_reader = ENERGY_READER_DCT[method]

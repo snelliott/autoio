@@ -187,8 +187,8 @@ def divsur(rdists,
     nconditions = len(conditions)
     if 'delta_r' in conditions:
         alpha = str(conditions['delta_r'])
-        conditions_string += '(r2-r1) < 0.01 + {0}\n'.format(alpha)
-        conditions_string += '(r2-r1) > 0.01 + {0}'.format(alpha)
+        conditions_string += f'(r2-r1) < 0.01 + {alpha}\n'
+        conditions_string += f'(r2-r1) > 0.01 + {alpha}'
 
     # Create dictionary to fill template
     divsur_keys = {
@@ -231,9 +231,9 @@ def elec_struct(lib_path, base_name, npot,
     pot_path = os.path.join(lib_path, lib_name)
     pot_params_str = ''
     for i in range(npot):
-        pot_params_str += '{0:<42s}{1:<8d}\n'.format(base_name+'_corr_', 1)
-        pot_params_str += '{0:<42s}{1:<8d}\n'.format('ParameterInteger', i+1)
-    pot_params_str += '{0:<42s}{1:<8d}\n'.format(dummy_name, 1)
+        pot_params_str += f'{base_name+"_corr_":<42s}{"1":<8s}\n'
+        pot_params_str += f'{"ParameterInteger":<42s}{i+1:<8d}\n'
+    pot_params_str += f'{dummy_name:<42s}{"1":<8s}\n'
 
     # Set the exe path
     exe_path = os.path.join(lib_path, exe_name)
@@ -316,6 +316,6 @@ def machinefile(machine_dct):
 
     machine_file_str = ''
     for name, nproc in machine_dct.items():
-        machine_file_str += '{0}:{1}\n'.format(name, nproc)
+        machine_file_str += f'{name}:{nproc}\n'
 
     return machine_file_str.rstrip()

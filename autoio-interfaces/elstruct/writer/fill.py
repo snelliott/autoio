@@ -99,7 +99,7 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='='):
         zmat_cval_str = ''
         zmat_vval_str = ''
     else:
-        raise ValueError("Invalid geometry value:\n{0}".format(geo))
+        raise ValueError(f"Invalid geometry value:\n{geo}")
 
     return geo_str, zmat_vval_str, zmat_cval_str
 
@@ -163,7 +163,7 @@ def update_gen_lines(gen_lines,
         gen_lines_1 = gen_lines.get(1)
         gen_lines_2 = gen_lines.get(2)
         gen_lines_3 = gen_lines.get(3)
-        
+
         if lines1 is not None:
             if gen_lines_1 is not None:
                 gen_lines_1 += tuple(lines1)

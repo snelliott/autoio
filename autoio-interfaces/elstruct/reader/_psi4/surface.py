@@ -192,9 +192,3 @@ def irc_path(output_str):
         energies = None
 
     return (coords, energies)
-
-
-if __name__ == '__main__':
-    with open('out2', 'r') as fobj:
-        OUT_STR = fobj.read()
-    print(gradient(OUT_STR))

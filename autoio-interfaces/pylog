@@ -1,0 +1,53 @@
+************* Module elstruct.par
+elstruct/par.py:399:47: W0108: Lambda may not be necessary (unnecessary-lambda)
+************* Module elstruct.option
+elstruct/option.py:25:24: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer.program_modules
+elstruct/writer/program_modules.py:30:11: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/program_modules.py:31:37: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer.fill
+elstruct/writer/fill.py:166:0: C0303: Trailing whitespace (trailing-whitespace)
+elstruct/writer/fill.py:102:25: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer._gaussian09._writer
+elstruct/writer/_gaussian09/_writer.py:23:32: W0613: Unused argument 'casscf_options' (unused-argument)
+************* Module elstruct.writer._gaussian09._par
+elstruct/writer/_gaussian09/_par.py:18:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_gaussian09/_par.py:28:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer._mrcc2018._par
+elstruct/writer/_mrcc2018/_par.py:16:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_mrcc2018/_par.py:18:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer._cfour2._par
+elstruct/writer/_cfour2/_par.py:17:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_cfour2/_par.py:19:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer._psi4._par
+elstruct/writer/_psi4/_par.py:20:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_psi4/_par.py:22:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_psi4/_par.py:28:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.writer._molpro2015._par
+elstruct/writer/_molpro2015/_par.py:58:0: C0303: Trailing whitespace (trailing-whitespace)
+elstruct/writer/_molpro2015/_par.py:29:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_molpro2015/_par.py:33:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_molpro2015/_par.py:35:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_molpro2015/_par.py:37:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_molpro2015/_par.py:39:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/writer/_molpro2015/_par.py:41:16: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.reader.program_modules
+elstruct/reader/program_modules.py:30:11: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+elstruct/reader/program_modules.py:31:37: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+************* Module elstruct.reader._qchem5.surface
+elstruct/reader/_qchem5/surface.py:114:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+elstruct/reader/_qchem5/surface.py:117:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+elstruct/reader/_qchem5/surface.py:120:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+************* Module elstruct.reader._qchem5.molecule
+elstruct/reader/_qchem5/molecule.py:89:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+elstruct/reader/_qchem5/molecule.py:92:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+************* Module elstruct.reader._qchem5.prop
+elstruct/reader/_qchem5/prop.py:31:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+************* Module elstruct.reader._psi4.surface
+elstruct/reader/_psi4/surface.py:198:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+************* Module elstruct.reader._psi4.prop
+elstruct/reader/_psi4/prop.py:56:9: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+
+-----------------------------------
+Your code has been rated at 9.87/10
+

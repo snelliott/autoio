@@ -351,18 +351,21 @@ def mdhr_data(pots, freqs=None, nrot=0):
         nfreqs = 0
 
     # Write top line string with number of points in potential
+    pot_head = 'V(kcal/mol)'
+    lbls = ['i', 'j', 'k', 'l']
     if ndims == 1:
         num_str = f'{dims[0]:>6d}\n'
-        head_str = '{i:>6s}{V(kcal/mol):>15s}'
+        head_str = f'{lbls[0]:>6s}{pot_head:>15s}'
     elif ndims == 2:
         num_str = f'{dims[0]:>6d}{dims[1]:>6d}\n'
-        head_str = '{i:>6s}{j:>6s}{V(kcal/mol):>15s}'
+        head_str = f'{lbls[0]:>6s}{lbls[1]:>6s}{pot_head:>15s}'
     elif ndims == 3:
         num_str = f'{dims[0]:>6d}{dims[1]:>6d}{dims[2]:>6d}\n'.format(*dims)
-        head_str = '{i:>6s}{j:>6s}{k:>6s}{V(kcal/mol):>15s}'
+        head_str = f'{lbls[0]:>6s}{lbls[1]:>6s}{lbls[2]:>6s}{pot_head:>15s}'
     elif ndims == 4:
         num_str = f'{dims[0]:>6d}{dims[1]:>6d}{dims[2]:>6d}{dims[3]:>6d}\n'
-        head_str = '{i:>6s}{j:>6s}{k:>6s}{l:>6s}{V(kcal/mol):>15s}'
+        head_str = (f'{lbls[0]:>6s}{lbls[1]:>6s}'
+                    f'{lbls[2]:>6s}{lbls[3]:>6s}{pot_head:>15s}')
 
     # Add the nofreq line
     if nfreqs > 0:

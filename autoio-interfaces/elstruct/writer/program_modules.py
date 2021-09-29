@@ -27,8 +27,8 @@ def call_module_function(prog, function, *args, **kwargs):
     assert prog in pclass.values(par.Program)
     assert prog in program_modules_with_function(function)
 
-    name = '_{}'.format(_rename_prog(prog))
-    module = importlib.import_module('elstruct.writer.{:s}'.format(name))
+    name = f'_{_rename_prog(prog)}'
+    module = importlib.import_module(f'elstruct.writer.{name:s}')
     writer = getattr(module, 'write_input')
 
     return writer(function, *args, **kwargs)
