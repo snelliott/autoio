@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
     name="autoio-base",
-    version="0.7.0",
+    version="0.8.0",
     packages=['autoparse',
               'ioformat',
               'autoread',
