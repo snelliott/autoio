@@ -93,20 +93,24 @@ def rpht_path_coord_en(coords, energies, bnd1=(), bnd2=()):
     bnd_strs = []
     if bnd1 and bnd2:
         for bd1, bd2 in zip(bnd1, bnd2):
-            bnd_strs.append('{0:>10.5f}{1:>10.5f}'.format(bd1, bd2))
+            bnd_strs.append(f'{bd1:>10.5f}{bd2:>10.5f}')
     else:
         for _ in range(len(coords)):
-            bnd_strs.append('{0:>10.5f}{1:>10.5f}'.format(1.0, 1.0))
+            bnd_strs.append(f'{1.0:>10.5f}{1.0:>10.5f}')
 
     # Check that all the lists are not empty and have the same length
     assert all(lst for lst in (coords, energies, bnd_strs))
     assert all(len(lst) == nsteps for lst in (coords, energies, bnd_strs))
 
-    path_str = '{0:>7s}{1:>12s}{2:>10s}{3:>10s}{4:>10s}\n'.format(
-        'Point', 'Coordinate', 'Energy', 'Bond1', 'Bond2')
+    path_str = (
+        f'{"Point":>7s}'
+        f'{"Coordinate":>12s}'
+        f'{"Energy":>10s}'
+        f'{"Bond1":>10s}'
+        f'{"Bond2":>10s}\n'
+    )
     for i, (crd, ene, bnd_str) in enumerate(zip(coords, energies, bnd_strs)):
-        path_str += '{0:>7d}{1:>12.5f}{2:>10.5f}{3:>20s}'.format(
-            i+1, crd, ene, bnd_str)
+        path_str += f'{i+1:>7d}{crd:>12.5f}{ene:>10.5f}{bnd_str:>20s}'
         if i+1 != nsteps:
             path_str += '\n'
 
@@ -132,10 +136,10 @@ def rotors(axis, group):
     topaatoms = '  '.join([str(val+1) for val in group])
 
     # Build the rotors_str
-    rotors_str = '\n{0:<32s}{1:<4d}\n'.format('pivotA', pivota)
-    rotors_str += '{0:<32s}{1:<4d}\n'.format('pivotB', pivotb)
-    rotors_str += '{0:<32s}{1:<4d}\n'.format('atomsintopA', atomsintopa)
-    rotors_str += '{0:<32s}{1}\n'.format('topAatoms', topaatoms)
+    rotors_str = f'\n{"pivotA":<32s}{pivota:<4d}\n'
+    rotors_str += f'{"pivotB":<32s}{pivotb:<4d}\n'
+    rotors_str += f'{"atomsintopA":<32s}{atomsintopa:<4d}\n'
+    rotors_str += f'{"topAatoms":<32s}{topaatoms}\n'
 
     return util.remove_trail_whitespace(rotors_str)
 
@@ -179,7 +183,7 @@ def projection_distance_aux(dist_cutoff_dct=None):
 
     # Write the distance strings
     for (atm1, atm2), dist in dist_dct.items():
-        dist_str += '{0:s} {1:s} {2:.3f}\n'.format(atm1, atm2, dist)
+        dist_str += f'{atm1:s} {atm2:s} {dist:.3f}\n'
 
     return dist_str
 
@@ -189,7 +193,7 @@ def bmatrix(bmat):  # pragma: no cover
     """
 
     nd1, nd2, nd3 = bmat.shape
-    bmat_str = '{0:>12d}{1:>12d}\n'.format(nd1, nd2*nd3)
+    bmat_str = f'{nd1:>12d}{nd2*nd3:>12d}\n'
     bmat_str += highd_mat.string_submat_3d(bmat)
 
     return bmat_str
@@ -200,7 +204,7 @@ def cmatrix(cmat):  # pragma: no cover
     """
 
     _, nd2, nd3, nd4 = cmat.shape
-    cmat_str = '{0:>12d}{1:>12d}\n'.format(nd2, nd3*nd4)
+    cmat_str = f'{nd2:>12d}{nd3*nd4:>12d}\n'
     cmat_str += highd_mat.string_submat_4d(cmat)
 
     return cmat_str

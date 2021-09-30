@@ -17,8 +17,9 @@ def write(symbs, xyzs):
     natms = len(symbs)
     assert len(xyzs) == natms
 
-    geo_str = '\n'.join('{:2s} {:10.6f} {:10.6f} {:10.6f}'.format(sym, *xyz)
-                        for sym, xyz in zip(symbs, xyzs))
+    geo_str = '\n'.join(
+        f'{symb:2s} {xyz[0]:10.6f} {xyz[1]:10.6f} {xyz[2]:10.6f}'
+        for symb, xyz in zip(symbs, xyzs))
 
     return geo_str
 
@@ -45,7 +46,7 @@ def write_xyz(symbs, xyzs, comment=None):
     assert len(xyzs) == natms
 
     geo_str = write(symbs=symbs, xyzs=xyzs)
-    xyz_str = ' {:d}\n{:s}\n{:s}'.format(natms, comment, geo_str)
+    xyz_str = f' {natms:d}\n{comment:s}\n{geo_str:s}'
 
     return xyz_str
 

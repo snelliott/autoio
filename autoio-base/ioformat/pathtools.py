@@ -40,20 +40,14 @@ def prepare_path(path_lst, make=False):
         :rtype: str
     """
 
-    # Need to remove slashes from all parts of list except first
+    # Need to remove left-most /-slashes from all paths in list except first
     # for the os.path.join function to work properly
-    fmtd_path_lst = []
-    for i, path in enumerate(path_lst):
-        fmtd_path_lst.append(path.lstrip('/') if i != 0 else path)
-    full_path = os.path.join(*fmtd_path_lst)
-
-    print('PATH test')
-    print(fmtd_path_lst)
-    print(full_path)
+    path_lst2 = [path.lstrip('/') for path in path_lst[1:]]
+    full_path = os.path.join(path_lst[0], *path_lst2)
 
     if make:
         try:
-            os.mkdir(full_path)
+            os.makedirs(full_path)
         except OSError as exc:
             # Only catch errors for directory existing
             # Still dies on permission or spaces issues, etc
@@ -77,8 +71,8 @@ def write_file(string, path, file_name):
     """
 
     fname = os.path.join(path, file_name)
-    with open(fname, 'w', errors='ignore') as file_obj:
-        file_obj.write(string)
+    with open(fname, mode='w', errors='ignore', encoding='utf-8') as fobj:
+        fobj.write(string)
 
 
 def read_file(path, file_name,
@@ -96,8 +90,8 @@ def read_file(path, file_name,
 
     fname = os.path.join(path, file_name)
     if os.path.exists(fname):
-        with open(fname, 'r', errors='ignore') as file_obj:
-            file_str = file_obj.read()
+        with open(fname, mode='r', errors='ignore', encoding='utf-8') as fobj:
+            file_str = fobj.read()
             if remove_comments is not None:
                 file_str = remove_comment_lines(file_str, remove_comments)
             if remove_whitespace:
@@ -148,7 +142,7 @@ def read_numpy_file(path, file_name):
         np_arr = numpy.loadtxt(file_str_io)
     else:
         np_arr = None
-        print('ERROR: file ',file_name, 'at path ',path,' does not exist')
+        print('ERROR: file ', file_name, 'at path ', path, ' does not exist')
 
     return np_arr
 
@@ -166,7 +160,7 @@ def write_json_file(dct, path, file_name):
     """
 
     fname = os.path.join(path, file_name)
-    with open(fname, 'w') as fobj:
+    with open(fname, mode='w', encoding='utf-8') as fobj:
         json.dump(dct, fobj, indent=2, sort_keys=True)
 
 
@@ -176,10 +170,10 @@ def read_json_file(path, file_name):
 
     json_path = os.path.join(path, file_name)
     if os.path.exists(json_path):
-        with open(json_path, 'r') as fobj:
+        with open(json_path, mode='r', encoding='utf-8') as fobj:
             json_dct = json.load(fobj)
     else:
         json_dct = None
-        print('ERROR: file ',file_name, 'at path ',path,' does not exist')
+        print('ERROR: file ', file_name, 'at path ', path, ' does not exist')
 
     return json_dct

@@ -13,7 +13,7 @@ def _new_groups_str():
     """
     src_path = os.path.dirname(os.path.realpath(__file__))
     new_groups_path = os.path.join(src_path, 'aux', NEW_GROUPS_NAME)
-    with open(new_groups_path) as fobj:
+    with open(new_groups_path, mode='r', encoding='utf-8') as fobj:
         new_groups_str = fobj.read()
     return new_groups_str
 

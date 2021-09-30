@@ -16,6 +16,9 @@ ${machine_options}
 % if scf_guess_options != '':
 # Guess=(${scf_guess_options})
 % endif
+% if casscf_options != '':
+# ${casscf_options}
+% endif
 ## 2. job options block (when we get to it)
 % if job_key == 'optimization':
 # POpt=(${job_options})

@@ -127,15 +127,15 @@ class Method():
                 {Program.CFOUR2: (
                     'ccsd', 'ccsd',
                     ('R',), ('U', 'R',)),
-                 # Program.PSI4: (
-                 #    'ccsd', 'ccsd',
-                 #    ('R',), ('U', 'R',)),
                  Program.MOLPRO2015: (
                      'ccsd', 'uccsd',
                      ('R',), ('R', 'R')),
                  Program.MOLPRO2021: (
                      'ccsd', 'uccsd',
-                     ('R',), ('R', 'R'))})
+                     ('R',), ('R', 'R')),
+                 Program.PSI4: (
+                    'ccsd', 'ccsd',
+                    ('R',), ('U', 'R',))})
         CCSD_T = ('ccsd(t)',
                   {Program.CFOUR2: (
                       'ccsd(t)', 'ccsd(t)',
@@ -148,10 +148,10 @@ class Method():
                        ('R',), ('R',)),
                    Program.MRCC2018: (
                        'ccsd(t)', 'ccsd(t)',
-                       ('R',), ('R', 'R'))})
-        # Program.PSI4: (
-        #  'ccsd(t)', 'ccsd(t)',
-        #  ('R',), ('U', 'R'))})
+                       ('R',), ('R', 'R')),
+                   Program.PSI4: (
+                        'ccsd(t)', 'ccsd(t)',
+                        ('R',), ('U', 'R'))})
         CCSDT = ('ccsdt',
                  {Program.MOLPRO2015: (
                      'mrcc,method=ccsdt', 'mrcc,method=ccsdt',

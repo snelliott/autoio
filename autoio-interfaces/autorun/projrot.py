@@ -43,11 +43,11 @@ def displacements(script_str, run_dir, geoms, grads, hessians,
     """ Calculate the vibrational frequencies for a single molecule
         for the RT-projections and RTHr-projections.
     """
-    
+
     output_strs = direct(
         script_str, run_dir, geoms, grads, hessians,
         rotors_str=rotors_str, aux_dct=aux_dct)
-    
+
     return output_strs[2]
 
 

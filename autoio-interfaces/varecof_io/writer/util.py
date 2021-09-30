@@ -40,22 +40,19 @@ def format_coords(geo):
     natoms = len(geo)
 
     # Get the geometry information
-    symbols = geom.symbols(geo)
-    coordinates = geom.coordinates(geo)
+    symbs = geom.symbols(geo)
+    coords = geom.coordinates(geo)
     masses = geom.masses(geo)
-    print(masses)
 
     # Build a string with the formatted coordinates string
     if geom.is_atom(geo):
-        geo_str = '{0:<4s}{1:<6d}'.format(symbols[0], masses[0])
+        geo_str = f'{symbs[0]:<4s}{masses[0]:<6d}'
     else:
-        geo_str = '{0} \n'.format(str(natoms))
-        for symbol, mass, coords in zip(symbols, masses, coordinates):
-            coords = [coord * phycon.BOHR2ANG for coord in coords]
-            coords_str = '{0:>14.8f}{1:>14.8f}{2:>14.8f}'.format(
-                coords[0], coords[1], coords[2])
-            geo_str += '{0:<4s}{1:<6.0f}{2}\n'.format(
-                symbol, mass, coords_str)
+        geo_str = f'{str(natoms)} \n'
+        for symb, mass, xyzs in zip(symbs, masses, coords):
+            _xyzs = [x * phycon.BOHR2ANG for x in xyzs]
+            xyzs_str = f'{_xyzs[0]:>14.8f}{_xyzs[1]:>14.8f}{_xyzs[2]:>14.8f}'
+            geo_str += f'{symb:<4s}{mass:<6.0f}{xyzs_str}\n'
         # Remove final newline character from the string
         geo_str = geo_str.rstrip()
 
@@ -67,9 +64,11 @@ def format_grids_string(grid, name, units):
     """ format the string using the grids for
         energy and angular momentum for tst.inp file
     """
-    grid_str = '{0}_grid{1:>8d}{2:>9d}{3:>11.2f}{4:>7d}'.format(
-        name, grid[0], grid[1], grid[2], grid[3])
-    grid_str += '     {0:<8s}# {1} grid'.format(units, name)
+    grid_str = (
+        f'{name}_grid{grid[0]:>8d}{grid[1]:>9d}'
+        f'{grid[2]:>11.2f}{grid[3]:>7d}'
+    )
+    grid_str += f'     {units:<8s}# {name} grid'
 
     return grid_str
 
@@ -77,7 +76,6 @@ def format_grids_string(grid, name, units):
 def format_faces_string(faces):
     """ format faces keywords
     """
-    print(faces)
     faces_str = ' '.join((str(val) for val in faces))
 
     return faces_str
@@ -88,9 +86,9 @@ def format_values_string(coord, values, conv_factor=1.0):
     """ format the values string for the divsur.inp file
     """
     if values:
-        values = ', '.join('{0:.3f}'.format(val * conv_factor)
+        values = ', '.join(f'{val*conv_factor:.3f}'
                            for val in values)
-        values_string = '{0} = ({1})'.format(coord, values)
+        values_string = f'{coord} = ({values})'
     else:
         values_string = ''
 
@@ -112,23 +110,17 @@ def format_pivot_xyz_string(idx, npivot, xyzp, phi_dependence=False):
         t_idx = 2
 
     if npivot == 1:
-        x_val = 'x{0} = {1:.3f}'.format(atom_idx, xyzp[0])
-        y_val = '  y{0} = {1:.3f}'.format(atom_idx, xyzp[1])
-        z_val = '  z{0} = {1:.3f}'.format(atom_idx, xyzp[2])
+        x_val = f'x{atom_idx} = {xyzp[0]:.3f}'
+        y_val = f'  y{atom_idx} = {xyzp[1]:.3f}'
+        z_val = f'  z{atom_idx} = {xyzp[2]:.3f}'
         pivot_xyz_string = (x_val + y_val + z_val)
     elif npivot > 1 and not phi_dependence:
-        x_val1 = 'x{0} = {1:.3f} + d{2}*cos(t{3})'.format(
-            atom_idx, xyzp[0], d_idx, t_idx)
-        y_val1 = '  y{0} = {1:.3f} + d{2}*sin(t{3})'.format(
-            atom_idx, xyzp[1], d_idx, t_idx)
-        z_val1 = '  z{0} = 0.000'.format(
-            atom_idx)
-        x_val2 = 'x{0} = {1:.3f} - d{2}*cos(t{3})'.format(
-            atom_idx+1, xyzp[0], d_idx, t_idx)
-        y_val2 = '  y{0} = {1:.3f} - d{2}*sin(t{3})'.format(
-            atom_idx+1, xyzp[1], d_idx, t_idx)
-        z_val2 = '  z{0} = 0.000'.format(
-            atom_idx+1)
+        x_val1 = f'x{atom_idx} = {xyzp[0]:.3f} + d{d_idx}*cos(t{t_idx})'
+        y_val1 = f'  y{atom_idx} = {xyzp[1]:.3f} + d{d_idx}*sin(t{t_idx})'
+        z_val1 = f'  z{atom_idx} = 0.000'
+        x_val2 = f'x{atom_idx+1} = {xyzp[0]:.3f} - d{d_idx}*cos(t{t_idx})'
+        y_val2 = f'  y{atom_idx+1} = {xyzp[1]:.3f} - d{d_idx}*sin(t{t_idx})'
+        z_val2 = f'  z{atom_idx+1} = 0.000'
         pivot_xyz_string = (x_val1 + y_val1 + z_val1 + '\n' +
                             x_val2 + y_val2 + z_val2)
     else:
@@ -156,53 +148,51 @@ def format_pivot_xyz_string(idx, npivot, xyzp, phi_dependence=False):
 def format_corrpot_dist_string(aidx, bidx, asym, bsym):
     """ set distance string for two atoms for the file
     """
+
     lasym, lbsym = asym.lower(), bsym.lower()
 
-    dist_string = (
-        "      n{0} = {4}\n" +
-        "      n{1} = {5}\n" +
-        "      r{2}{3} = dsqrt( (x(1,n{1})-x(1,n{0}))**2 +\n" +
-        "     x             (x(2,n{1})-x(2,n{0}))**2 +\n" +
-        "     x             (x(3,n{1})-x(3,n{0}))**2)\n" +
-        "      r{2}{3} = r{2}{3}*0.52917"
-    ).format(lasym, lbsym, asym, bsym, aidx, bidx)
-
-    return dist_string
+    return (
+        f"      n{lasym} = {aidx}\n" +
+        f"      n{lbsym} = {bidx}\n" +
+        f"      r{asym}{bsym} = dsqrt( (x(1,n{lbsym})-x(1,n{lasym}))**2 +\n" +
+        f"     x             (x(2,n{lbsym})-x(2,n{lasym}))**2 +\n" +
+        f"     x             (x(3,n{lbsym})-x(3,n{lasym}))**2)\n" +
+        f"      r{asym}{bsym} = r{asym}{bsym}*0.52917"
+    )
 
 
 def format_delmlt_string(asym, bsym):
     """ set distance string for two atoms for the file
     """
 
-    delmlt_string = (
+    return (
         "      delmlt = 1.0d0\n" +
-        "      if(r{0}{1}.le.r{0}{1}min) r{0}{1} = r{0}{1}min\n" +
-        "      if(r{0}{1}.ge.r{0}{1}max) then\n" +
-        "        delmlt = exp(-2.d0*(r{0}{1}-r{0}{1}max))\n" +
-        "        r{0}{1}=r{0}{1}max\n" +
+        f"      if(r{asym}{bsym}.le.r{asym}{bsym}min) r{asym}{bsym} = " +
+        f"r{asym}{bsym}min\n" +
+        f"      if(r{asym}{bsym}.ge.r{asym}{bsym}max) then\n" +
+        f"        delmlt = exp(-2.d0*(r{asym}{bsym}-r{asym}{bsym}max))\n" +
+        f"        r{asym}{bsym}=r{asym}{bsym}max\n" +
         "      endif"
-    ).format(asym, bsym)
-
-    return delmlt_string
+    )
 
 
 def format_restrict_dist_string(sym1, sym2, name):
     """ build string that has the distance comparison
     """
 
-    restrict_string = (
-        "      if (r{0}{1}.lt.rAB) then\n" +
-        "        {2}_corr = 100.0\n" +
+    return (
+        f"      if (r{sym1}{sym2}.lt.rAB) then\n" +
+        f"        {name}_corr = 100.0\n" +
         "        return\n" +
         "      endif"
-    ).format(sym1, sym2, name)
-
-    return restrict_string
+    )
 
 
 def format_spline_strings(npot, sym1, sym2, species_name):
     """ spline fitting strings
     """
+
+    corr_name = species_name+'_corr'
 
     spline_str = ''
     for i in range(npot):
@@ -210,11 +200,12 @@ def format_spline_strings(npot, sym1, sym2, species_name):
             ifstr = 'if'
         else:
             ifstr = 'else if'
-        spline_str += '      {0} (ipot.eq.{1}) then\n'.format(ifstr, str(i+1))
+        spline_str += f'      {ifstr} (ipot.eq.{str(i+1)}) then\n'
         spline_str += (
-            '        call spline(rinp,dv{0},nrin,dvp1,dvpn,dv20)\n' +
-            '        call splint(rinp,dv{0},dv20,nrin,r{1}{2},{3})\n'
-        ).format(str(i+1), sym1, sym2, species_name+'_corr')
+            f'        call spline(rinp,dv{str(i+1)},nrin,dvp1,dvpn,dv20)\n' +
+            f'        call splint(rinp,dv{str(i+1)},dv20,nrin,r{sym1}{sym2}' +
+            f',{corr_name})\n'
+        )
     spline_str += '      endif'
 
     return spline_str
@@ -230,6 +221,6 @@ def divsur_frame_geom_script():
         '/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct',
         'divsur.inp'
     ]
-    with open(os.devnull, 'w') as nullfile:
+    with open(os.devnull, mode='w', encoding='utf-8') as nullfile:
         subprocess.check_call(
             conv_cmd, stdout=nullfile, stderr=nullfile)

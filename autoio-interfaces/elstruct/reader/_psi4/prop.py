@@ -50,10 +50,3 @@ def polarizability(output_str):
         line_start_ptt=app.INTEGER)
 
     return polar
-
-
-if __name__ == '__main__':
-    with open('output.dat', 'r') as fobj:
-        OUT_STR = fobj.read()
-    print(dipole_moment(OUT_STR))
-    print(polarizability(OUT_STR))

@@ -38,7 +38,7 @@ def cartesian_hessian_file(hess):
     """
 
     natom = len(hess) // 3
-    hess_str = '{0:>5d}{1:>5d}\n'.format(natom, natom*3)
+    hess_str = f'{natom:>5d}{natom*3:>5d}\n'
     hess_str += intder_format.hessian_format(hess)
 
     return hess_str

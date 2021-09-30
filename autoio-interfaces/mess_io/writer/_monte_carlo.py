@@ -117,7 +117,7 @@ def mc_data(geos, enes, grads=(), hessians=()):
         # Build string with data for all points
         dat_str += 'Sampling point'+idx_str+'\n'
         dat_str += 'Energy'+'\n'
-        dat_str += '{0:.8f}\n'.format(enes[idx])
+        dat_str += f'{enes[idx]:.8f}\n'
         geo_str = 'Geometry'+'\n'
         geo_str += automol.geom.string(geos[idx])+'\n'
         geo_str = remove_trail_whitespace(geo_str)

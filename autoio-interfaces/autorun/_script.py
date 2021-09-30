@@ -33,7 +33,7 @@ VARECOF = (
 INTDER = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "{}/INTDER < intder.inp >& intder.out".format(EXTERN_PATH)
+    f"{EXTERN_PATH}/INTDER < intder.inp >& intder.out"
 )
 MCFLUX = (
     "#!/usr/bin/env bash\n"

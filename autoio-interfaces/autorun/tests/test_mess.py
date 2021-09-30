@@ -28,8 +28,8 @@ def test__torsion():
         test autorun.mess.direct
     """
 
-    ref_tors_freqs = (263.39, 320.923)
-    ref_tors_zpves = (0.0005850015264154265, 0.0006727675639040085)
+    ref_tors_freqs = (264.0, 322.0)
+    ref_tors_zpves = (0.000585001526415426, 0.0006727675639040085)
 
     with tempfile.TemporaryDirectory(dir=PATH) as run_dir:
 

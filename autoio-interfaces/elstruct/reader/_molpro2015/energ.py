@@ -377,7 +377,6 @@ def energy(method, output_str):
     # Parse the method and lists
     core, pfxs = Method.evaluate_method_type(method)
     _method = (core, frozenset(pfxs))
-    
     assert _method in method_list()
 
     # First try and grab the energy printed at the end of the file

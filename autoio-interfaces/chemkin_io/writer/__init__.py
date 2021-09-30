@@ -13,6 +13,6 @@ __all__ = [
     'mechanism',
     'reaction',
     'thermo',
-    'transport'
+    'transport',
     'format_rxn_name'
 ]

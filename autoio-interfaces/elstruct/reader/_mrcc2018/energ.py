@@ -2,9 +2,10 @@
 """
 import autoread as ar
 import autoparse.pattern as app
-import elstruct.par
+from elstruct.par import Program, Method, program_methods
 
-PROG = elstruct.par.Program.MRCC2018
+
+PROG = Program.MRCC2018
 
 
 def _hf_energy(output_string):
@@ -63,15 +64,18 @@ def _ccsdt_q_energy(output_string):
 
 # a dictionary of functions for reading the energy from the output, by method
 ENERGY_READER_DCT = {
-    elstruct.par.Method.HF[0]: _hf_energy,
-    elstruct.par.Method.Corr.MP2[0]: _mp2_energy,
-    elstruct.par.Method.Corr.CCSD[0]: _ccsd_energy,
-    elstruct.par.Method.Corr.CCSD_T[0]: _ccsd_t_energy,
-    elstruct.par.Method.Corr.CCSDT[0]: _ccsdt_energy,
-    elstruct.par.Method.Corr.CCSDT_Q[0]: _ccsdt_q_energy,
+    (Method.HF[0], frozenset({})): _hf_energy,
+    (Method.Corr.MP2[0], frozenset({})): _mp2_energy,
+    (Method.Corr.CCSD[0], frozenset({})): _ccsd_energy,
+    (Method.Corr.CCSD_T[0], frozenset({})): _ccsd_t_energy,
+    (Method.Corr.CCSDT[0], frozenset({})): _ccsdt_energy,
+    (Method.Corr.CCSDT_Q[0], frozenset({})): _ccsdt_q_energy,
 }
-METHODS = elstruct.par.program_methods(PROG)
-assert all(method in ENERGY_READER_DCT for method in METHODS)
+METHODS = program_methods(PROG)
+
+# Check if we have added any unsupported methods to the energy reader
+READ_METHODS = set(method[0] for method in ENERGY_READER_DCT)
+assert READ_METHODS <= set(METHODS)
 
 
 def method_list():
@@ -83,7 +87,13 @@ def method_list():
 def energy(method, output_string):
     """ get total energy from output
     """
-    assert method in method_list()
+
+    # Parse the method and lists
+    core_method, pfxs = Method.evaluate_method_type(method)
+    full_method = (core_method, frozenset(pfxs))
+    assert full_method in method_list()
+
     # get the appropriate reader and call it
-    energy_reader = ENERGY_READER_DCT[method]
+    energy_reader = ENERGY_READER_DCT[full_method]
+
     return energy_reader(output_string)

@@ -25,9 +25,3 @@ def dipole_moment(output_str):
     vals = tuple(float(val) for val in vals) if vals else None
 
     return vals
-
-
-if __name__ == '__main__':
-    with open('prop.out') as fobj:
-        OUTSTR = fobj.read()
-    print(dipole_moment(OUTSTR))

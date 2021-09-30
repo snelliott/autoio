@@ -31,7 +31,7 @@ def test__thermo():
     """ test
     """
 
-    ref_hform298 = -0.028389069688367432
+    ref_hform298 = -0.030487519599319335
 
     formula_str = automol.formula.string(FORMULA)
 
@@ -63,7 +63,7 @@ def test__projected_frequencies():
         1169.23, 1307.13, 1408.92, 1434.56, 1459.29, 1527.27,
         1531.68, 1555.98, 3020.12, 3062.32, 3121.51, 3142.58,
         3160.32, 3841.83)
-    ref_tors_freqs = (263.39, 320.923)
+    ref_tors_freqs = (264.0, 322.0)
 
     mess_script_str = autorun.SCRIPT_DCT['messpf']
     projrot_script_str = autorun.SCRIPT_DCT['projrot']

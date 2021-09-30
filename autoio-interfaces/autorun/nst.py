@@ -134,7 +134,7 @@ def hessians_for_nst(run_dir,
 
     hessians = ()
     for idx, mult in enumerate(mults):
-        _run_dir = os.path.join(run_dir, 'HESS-{}'.format(idx+1))
+        _run_dir = os.path.join(run_dir, f'HESS-{idx+1}')
 
         inp_str = _qc_input_str('hess', prog, geo, charge, mult,
                                 method, basis, orb_label, ini_kwargs[idx])
@@ -254,7 +254,7 @@ def _nst_script_str(prog):
     nst_script_str = (
         "#!/usr/bin/env bash\n"
         "ulimit -c 0\n"
-        "{} < input.dat >& output.dat"
-    ).format(exe)
+        f"{exe} < input.dat >& output.dat"
+    )
 
     return nst_script_str

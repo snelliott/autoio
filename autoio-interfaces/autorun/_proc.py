@@ -22,8 +22,7 @@ def set_nprocs(nobjs, nprocs='auto'):
         raise NotImplementedError
 
     # Set number of processors equal to obj number if more available
-    if _nprocs > nobjs:
-        _nprocs = nobjs
+    _nprocs = min(_nprocs, nobjs)
 
     return _nprocs
 

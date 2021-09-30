@@ -14,12 +14,11 @@ O   -1.378160   0.096991   0.000000
 -184.17192618
 ! Energy grid spacing , maximum grid energy in cm-1
 100.0 50000.0
+! Angular momentum grid spacing, maximum grid angular momentum in hbar
 6 300
-! Spin-orbit coupling in cm-1, and scaling factor for the state counts in ne_*.dat and nej_*.dat
-20.0 3.0
+! Spin-orbit coupling in cm-1
+20.0
 ! Scaling factor for the state counts in ne_*.dat and nej_*.dat
 3.0
-! Debug
-T
 ! Cuts along vibrational modes (only for HESSC and HESSR)
 F

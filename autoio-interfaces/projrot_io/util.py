@@ -25,7 +25,7 @@ def write_data_str(geos, grads, hessians):
 
     data_str = ''
     for i, (geo, grad, hess) in enumerate(zip(geos, grads, hessians)):
-        data_str += 'Step    {0}\n'.format(str(i+1))
+        data_str += f'Step    {str(i+1)}\n'
         data_str += 'geometry\n'
         data_str += _format_geo_str(geo)
         data_str += 'gradient\n'
@@ -48,13 +48,11 @@ def _format_geo_str(geo):
 
     # Format the strings for the xyz coordinates
     geo_str = ''
-    for i, (sym, coords) in enumerate(geo):
+    for i, (sym, xyzs) in enumerate(geo):
         anum = int(ptab.to_number(sym))
-        coords = [coord * phycon.BOHR2ANG for coord in coords]
-        coords_str = '{0:>14.8f}{1:>14.8f}{2:>14.8f}'.format(
-            coords[0], coords[1], coords[2])
-        geo_str += '{0:2d}{1:4d}{2:4d}{3}\n'.format(
-            i+1, anum, 0, coords_str)
+        xyzs = [xyz * phycon.BOHR2ANG for xyz in xyzs]
+        xyzs_str = f'{xyzs[0]:>14.8f}{xyzs[1]:>14.8f}{xyzs[2]:>14.8f}'
+        geo_str += f'{i+1:2d}{anum:4d}{0:4d}{xyzs_str}\n'
 
     return remove_trail_whitespace(geo_str)
 
@@ -76,10 +74,8 @@ def _format_grad_str(geo, grad):
     # Format the strings for the xyz gradients
     full_grads_str = ''
     for i, grads in enumerate(grad):
-        grads_str = '{0:>14.8f}{1:>14.8f}{2:>14.8f}'.format(
-            grads[0], grads[1], grads[2])
-        full_grads_str += '{0:2d}{1:4d}{2}\n'.format(
-            i+1, atom_list[i], grads_str)
+        grads_str = f'{grads[0]:>14.8f}{grads[1]:>14.8f}{grads[2]:>14.8f}'
+        full_grads_str += f'{i+1:2d}{atom_list[i]:4d}{grads_str}\n'
 
     return remove_trail_whitespace(full_grads_str)
 
@@ -108,11 +104,11 @@ def _format_hessian_str(hess):
         for i in range(nrows):
             col_tracker = 1
             if i >= 5*cnt:
-                hess_str += '{0}'.format(str(i+1))
+                hess_str += f'{str(i+1)}'
                 for j in range(5*cnt, ncols):
                     if i >= j:
                         if col_tracker <= 5:
-                            hess_str += '  {0:5.8f}'.format(hess[i][j])
+                            hess_str += f'  {hess[i][j]:5.8f}'
                             col_tracker += 1
                             if col_tracker == 6:
                                 hess_str += '\n'

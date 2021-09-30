@@ -276,10 +276,10 @@ def rotor_internal(group, axis, symmetry, grid_size, mass_exp_size,
     """
 
     assert mass_exp_size > 0 and mass_exp_size % 2 == 1, (
-        'Mass exponent size: {} is not an odd number'.format(mass_exp_size)
+        f'Mass exponent size: {mass_exp_size} is not an odd number'
     )
     assert pot_exp_size > 0 and pot_exp_size % 2 == 1, (
-        'Potential exponent size: {} is not an odd number'.format(pot_exp_size)
+        f'Potential exponent size: {pot_exp_size} is not an odd number'
     )
 
     # Format the sections
@@ -351,24 +351,25 @@ def mdhr_data(pots, freqs=None, nrot=0):
         nfreqs = 0
 
     # Write top line string with number of points in potential
+    pot_head = 'V(kcal/mol)'
+    lbls = ['i', 'j', 'k', 'l']
     if ndims == 1:
-        num_str = '{0:>6d}\n'.format(*dims)
-        head_str = '{0:>6s}{1:>15s}'.format('i', 'V(kcal/mol)')
+        num_str = f'{dims[0]:>6d}\n'
+        head_str = f'{lbls[0]:>6s}{pot_head:>15s}'
     elif ndims == 2:
-        num_str = '{0:>6d}{1:>6d}\n'.format(*dims)
-        head_str = '{0:>6s}{1:>6s}{2:>15s}'.format('i', 'j', 'V(kcal/mol)')
+        num_str = f'{dims[0]:>6d}{dims[1]:>6d}\n'
+        head_str = f'{lbls[0]:>6s}{lbls[1]:>6s}{pot_head:>15s}'
     elif ndims == 3:
-        num_str = '{0:>6d}{1:>6d}{2:>6d}\n'.format(*dims)
-        head_str = '{0:>6s}{1:>6s}{2:>6s}{3:>15s}'.format(
-            'i', 'j', 'k', 'V(kcal/mol)')
+        num_str = f'{dims[0]:>6d}{dims[1]:>6d}{dims[2]:>6d}\n'.format(*dims)
+        head_str = f'{lbls[0]:>6s}{lbls[1]:>6s}{lbls[2]:>6s}{pot_head:>15s}'
     elif ndims == 4:
-        num_str = '{0:>6d}{1:>6d}{2:>6d}{3:>6d}\n'.format(*dims)
-        head_str = '{0:>6s}{1:>6s}{2:>6s}{3:>6s}{4:>15s}'.format(
-            'i', 'j', 'k', 'l', 'V(kcal/mol)')
+        num_str = f'{dims[0]:>6d}{dims[1]:>6d}{dims[2]:>6d}{dims[3]:>6d}\n'
+        head_str = (f'{lbls[0]:>6s}{lbls[1]:>6s}'
+                    f'{lbls[2]:>6s}{lbls[3]:>6s}{pot_head:>15s}')
 
     # Add the nofreq line
     if nfreqs > 0:
-        freq_str = ' '.join('{0:d}'.format(i+1) for i in range(nfreqs)) + '\n'
+        freq_str = ' '.join(f'{i+1:d}' for i in range(nfreqs)) + '\n'
         head_str += 'Freqs(cm-1)' + '\n'
     else:
         freq_str = '\n'
@@ -380,16 +381,16 @@ def mdhr_data(pots, freqs=None, nrot=0):
 
         # Add the idxs for the rotors
         for idx in idxs:
-            dat_str += '{0:>6d}'.format(idx+1)
+            dat_str += f'{idx+1:>6d}'
 
         # Add the potential value
-        dat_str += '{0:>15f}'.format(val)
+        dat_str += f'{val:>15f}'
 
         # Add any frequencies if necessary
         if freqs is not None:
             if idxs in freqs:
                 for freq in freqs[idxs]:
-                    dat_str += '{0:>8.1f}'.format(freq)
+                    dat_str += f'{freq:>8.1f}'
 
         dat_str += '\n'
 
@@ -457,9 +458,9 @@ def tunnel_eckart(imag_freq, well_depth1, well_depth2):
     """
 
     # Format the imaginary frequency and well-depth values
-    imag_freq = '{0:<8.0f}'.format(imag_freq)
-    well_depth1 = '{0:<8.2f}'.format(well_depth1)
-    well_depth2 = '{0:<8.2f}'.format(well_depth2)
+    imag_freq = f'{imag_freq:<8.0f}'
+    well_depth1 = f'{well_depth1:<8.2f}'
+    well_depth2 = f'{well_depth2:<8.2f}'
 
     # Create dictionary to fill template
     tunnel_keys = {
@@ -492,7 +493,7 @@ def tunnel_read(imag_freq, tunnel_file, cutoff_energy=2500.0):
     """
 
     # Format the imaginary frequency value
-    imag_freq = '{0:<8.0f}'.format(imag_freq)
+    imag_freq = f'{imag_freq:<8.0f}'
 
     # Create dictionary to fill template
     tunnel_keys = {

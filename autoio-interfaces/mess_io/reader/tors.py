@@ -94,14 +94,9 @@ def first_point_harmonic_frequencies(output_str):
                app.one_or_more(app.SPACE) +
                app.escape('1/cm'))
 
-    # print('--- mess_io reader tors test ---')
-    # print(output_str)
-
     # Obtain each frequency from the output string
     tors_freqs = tuple(float(val)
                        for val in apf.all_captures(pattern, output_str))
-    
-    # print(tors_freqs)
 
     return tors_freqs
 

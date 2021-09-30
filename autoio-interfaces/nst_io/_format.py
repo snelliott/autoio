@@ -20,7 +20,7 @@ def format_geometry(geo):
     # Put all of the masses into the string
     mass_str = ''
     for mass in automol.geom.masses(geo):
-        mass_str += '{}\n'.format(mass)
+        mass_str += f'{mass}\n'
     mass_str = mass_str.rstrip()
 
     return natoms, geo_str, mass_str
@@ -36,6 +36,6 @@ def format_hessian(hess):
     ndim = len(hess)
     for i in range(ndim):
         for j in range(ndim):
-            hess_str += '{}\n'.format(hess[i][j])
+            hess_str += f'{hess[i][j]}\n'
 
     return hess_str

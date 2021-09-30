@@ -26,8 +26,8 @@ def header_format(geo):
         nintl = 3 * natom - 5
 
     header_keys = {
-        'natom': '{:>5d}'.format(natom),
-        'nintl': '{:>5d}'.format(nintl),
+        'natom': f'{natom:>5d}',
+        'nintl': f'{nintl:>5d}',
         'comment': 'TED Calculation'
     }
 
@@ -45,21 +45,18 @@ def internals_format(zma):
     key_mat = automol.zmat.key_matrix(zma)
 
     # Write the stretch, bend, and torsion coordinates
-    intl_str = ''
+    istr = ''
     for i, row in enumerate(key_mat[1:]):
-        intl_str += 'STRE{0:>6d}{1:>5d}\n'.format(
-            i+1+1, row[0]+1)
+        istr += f'STRE{i+1+1:>6d}{row[0]+1:>5d}\n'
     for i, row in enumerate(key_mat[2:]):
-        intl_str += 'BEND{0:>6d}{1:>5d}{2:>5d}\n'.format(
-            i+2+1, row[0]+1, row[1]+1)
+        istr += f'BEND{i+2+1:>6d}{row[0]+1:>5d}{row[1]+1:>5d}\n'
     for i, row in enumerate(key_mat[3:]):
-        intl_str += 'TORS{0:>6d}{1:>5d}{2:>5d}{3:>5d}\n'.format(
-            i+3+1, row[0]+1, row[1]+1, row[2]+1)
+        istr += f'TORS{i+3+1:>6d}{row[0]+1:>5d}{row[1]+1:>5d}{row[2]+1:>5d}\n'
 
     # Remove final newline character
-    intl_str = intl_str.rstrip()
+    istr = istr.rstrip()
 
-    return intl_str
+    return istr
 
 
 def geometry_format(geo):
@@ -69,7 +66,7 @@ def geometry_format(geo):
     # Build geom str
     geo_str = ''
     for (_, xyz) in geo:
-        geo_str += '{:>14.5f}{:>14.5f}{:>14.5f}\n'.format(*xyz)
+        geo_str += f'{xyz[0]:>14.5f}{xyz[1]:>14.5f}{xyz[2]:>14.5f}\n'
 
     # Indent the lines and remove final newline character
     geo_str = indent(geo_str, 4)

@@ -27,9 +27,9 @@ def energy_down(exp_factor, exp_power, exp_cutoff):
     """
 
     # Put the values into a string
-    exp_factor_str = '{0:<10.3f}'.format(exp_factor)
-    exp_power_str = '{0:<10.3f}'.format(exp_power)
-    exp_cutoff_str = '{0:<10.3f}'.format(exp_cutoff)
+    exp_factor_str = f'{exp_factor:<10.3f}'
+    exp_power_str = f'{exp_power:<10.3f}'
+    exp_cutoff_str = f'{exp_cutoff:<10.3f}'
 
     # Create dictionary to fill template
     etrans_keys = {
@@ -64,9 +64,9 @@ def collision_frequency(eps1, eps2, sig1, sig2, mass1, mass2):
     """
 
     # Put the values into a string
-    epsilon_str = '{0:<10.3f} {1:<10.3f}'.format(eps1, eps2)
-    sigma_str = '{0:<10.3f} {1:<10.3f}'.format(sig1, sig2)
-    mass_str = '{0:<10.3f} {1:<10.3f}'.format(mass1, mass2)
+    epsilon_str = f'{eps1:<10.3f} {eps2:<10.3f}'
+    sigma_str = f'{sig1:<10.3f} {sig2:<10.3f}'
+    mass_str = f'{mass1:<10.3f} {mass2:<10.3f}'
 
     # Create dictionary to fill template
     etrans_keys = {

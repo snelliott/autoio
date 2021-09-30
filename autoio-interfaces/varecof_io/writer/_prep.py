@@ -60,7 +60,6 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
         We hope to generate geometriex
 
         Function takes a ZMA along the reaction MEP where bond formation is
-        
 
         For example: For CH3, a dummy atom would be placed perpendicular
         to plane since any bond formed by CH3 will involve an atom located

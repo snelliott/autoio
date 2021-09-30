@@ -22,7 +22,7 @@ def maybe(pattern):
 
     :rtype: str
     """
-    return r'(?:{:s})?'.format(pattern)
+    return rf'(?:{pattern:s})?'
 
 
 def preceded_by(pattern):
@@ -33,7 +33,7 @@ def preceded_by(pattern):
 
     :rtype: str
     """
-    return r'(?<={:s})'.format(pattern)
+    return rf'(?<={pattern:s})'
 
 
 def not_preceded_by(pattern):
@@ -44,7 +44,7 @@ def not_preceded_by(pattern):
 
     :rtype: str
     """
-    return r'(?<!{:s})'.format(pattern)
+    return rf'(?<!{pattern:s})'
 
 
 def followed_by(pattern):
@@ -55,7 +55,7 @@ def followed_by(pattern):
 
     :rtype: str
     """
-    return r'(?={:s})'.format(pattern)
+    return rf'(?={pattern:s})'
 
 
 def not_followed_by(pattern):
@@ -66,7 +66,7 @@ def not_followed_by(pattern):
 
     :rtype: str
     """
-    return r'(?!{:s})'.format(pattern)
+    return rf'(?!{pattern:s})'
 
 
 def zero_or_more(pattern, greedy=True):
@@ -79,8 +79,7 @@ def zero_or_more(pattern, greedy=True):
 
     :rtype: str
     """
-    return (r'(?:{:s})*'.format(pattern) if greedy else
-            r'(?:{:s})*?'.format(pattern))
+    return (rf'(?:{pattern:s})*' if greedy else rf'(?:{pattern:s})*?')
 
 
 def one_or_more(pattern, greedy=True):
@@ -93,8 +92,7 @@ def one_or_more(pattern, greedy=True):
 
     :rtype: str
     """
-    return (r'(?:{:s})+'.format(pattern) if greedy else
-            r'(?:{:s})+?'.format(pattern))
+    return (rf'(?:{pattern:s})+' if greedy else rf'(?:{pattern:s})+?')
 
 
 def one_of_these(patterns):
@@ -105,7 +103,8 @@ def one_of_these(patterns):
 
     :rtype: str
     """
-    return r'(?:{:s})'.format('|'.join(patterns))
+    patterns_str = '|'.join(patterns)
+    return rf'(?:{patterns_str:s})'
 
 
 def capturing(pattern):
@@ -116,7 +115,7 @@ def capturing(pattern):
 
     :rtype: str
     """
-    return r'({:s})'.format(pattern)
+    return rf'({pattern:s})'
 
 
 def named_capturing(pattern, name):
@@ -129,7 +128,7 @@ def named_capturing(pattern, name):
 
     :rtype: str
     """
-    return r'(?P<{:s}>{:s})'.format(name, pattern)
+    return rf'(?P<{name:s}>{pattern:s})'
 
 
 def series(pattern, sep_pattern):

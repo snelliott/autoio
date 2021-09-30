@@ -104,6 +104,8 @@ ENERGY_READER_DCT = {
     (Method.Corr.MP2[0], frozenset({})): _mp2_energy,
 }
 METHODS = program_methods(PROG)
+
+# Add DFT methods to the reader dictionary
 for METHOD in METHODS:
     if Method.is_standard_dft(METHOD):
         if METHOD not in DOUB_HYB_DFT:
@@ -111,6 +113,7 @@ for METHOD in METHODS:
         else:
             ENERGY_READER_DCT[(METHOD, frozenset({}))] = _doub_hyb_dft_energy
 
+# Check if we have added any unsupported methods to the energy reader
 READ_METHODS = set(method[0] for method in ENERGY_READER_DCT)
 assert READ_METHODS <= set(METHODS)
 
@@ -133,8 +136,8 @@ def energy(method, output_str):
     """
     # Parse the method and lists
     core_method, pfxs = Method.evaluate_method_type(method)
-    _method = (core_method, frozenset(pfxs))
-    assert _method in method_list()
+    full_method = (core_method, frozenset(pfxs))
+    assert full_method in method_list()
 
     # Get the appropriate reader and call it
     if Method.is_nonstandard_dft(core_method):
@@ -143,6 +146,6 @@ def energy(method, output_str):
         else:
             energy_reader = _doub_hyb_dft_energy
     else:
-        energy_reader = ENERGY_READER_DCT[_method]
+        energy_reader = ENERGY_READER_DCT[full_method]
 
     return energy_reader(output_str)

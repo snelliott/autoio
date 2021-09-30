@@ -74,7 +74,7 @@ def from_parallel_input_strings(script_str, run_dir, input_strs,
     # Set and build the sub rub run dis list
     sub_run_dirs = ()
     for run_idx, input_str in enumerate(input_strs):
-        sub_run_name = 'run{}'.format(run_idx+1)
+        sub_run_name = f'run{run_idx+1}'
         sub_run_dir = os.path.join(run_dir, sub_run_name)
         if not os.path.exists(sub_run_dir):
             os.makedirs(sub_run_dir)
@@ -109,14 +109,14 @@ def write_input(run_dir, input_str,
     with EnterDirectory(run_dir):
 
         # Write the main input file
-        with open(input_name, 'w') as input_obj:
+        with open(input_name, mode='w', encoding='utf-8') as input_obj:
             input_obj.write(input_str)
 
         # Write all auxiliary input files
         if aux_dct is not None:
             for fname, fstring in aux_dct.items():
                 if fstring:
-                    with open(fname, 'w') as aux_obj:
+                    with open(fname, mode='w', encoding='utf-8') as aux_obj:
                         aux_obj.write(fstring)
 
 
@@ -127,11 +127,11 @@ def read_output(run_dir, output_names=(OUTPUT_NAME,)):
     with EnterDirectory(run_dir):
 
         output_strs = ()
-        for output_name in output_names:
-            if os.path.exists(output_name):
-                if os.path.isfile(output_name):
-                    with open(output_name, 'r') as output_obj:
-                        output_str = output_obj.read()
+        for out_name in output_names:
+            if os.path.exists(out_name):
+                if os.path.isfile(out_name):
+                    with open(out_name, mode='r', encoding='utf-8') as out_obj:
+                        output_str = out_obj.read()
                 else:
                     output_str = None
             else:
@@ -148,7 +148,7 @@ def run_script(script_str, run_dir, script_name=SCRIPT_NAME):
     with EnterDirectory(run_dir):
 
         # Write the submit script to the run directory
-        with open(script_name, 'w') as script_obj:
+        with open(script_name, mode='w', encoding='utf-8') as script_obj:
             script_obj.write(script_str)
 
         # Make the script executable
@@ -159,9 +159,9 @@ def run_script(script_str, run_dir, script_name=SCRIPT_NAME):
 
         # Call the program
         try:
-            subprocess.check_call('./{:s}'.format(script_name))
+            subprocess.check_call(f'./{script_name:s}')
         except subprocess.CalledProcessError:
-            warnings.warn("Program run failed in {}".format(run_dir))
+            warnings.warn(f'Program run failed in {run_dir}')
         # except subprocess.CalledProcessError as err:
             # As long as the program wrote an output, continue with a warning
             # if all(os.path.isfile(name) for name in output_names):
@@ -176,7 +176,7 @@ class EnterDirectory():
 
     def __init__(self, directory):
         assert os.path.isdir(directory), (
-            '{} is not a directory'.format(directory)
+            f'{directory} is not a directory'
         )
         self.directory = directory
         self.working_directory = os.getcwd()
