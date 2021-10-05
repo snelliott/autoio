@@ -46,7 +46,8 @@ def messpf_inp_str(globkey_str, spc_str):
     return '\n'.join([globkey_str, spc_str]) + '\n'
 
 
-def messhr_inp_str(geo, hind_rot_str):
+def messhr_inp_str(geo, hind_rot_str,
+                   float_type='double'):
     """ Special MESS input string to calculate frequencies and ZPVEs
         for hindered rotors
     """
@@ -72,7 +73,11 @@ def messhr_inp_str(geo, hind_rot_str):
 
 # Write individual sections of the input file
 def global_rates_input(temperatures, pressures,
-                       excess_ene_temp=None, well_extend='auto'):
+                       reduction_method='diagonalization',
+                       well_extension='auto',
+                       well_reduction_thresh=10.0,
+                       excess_ene_temp=None,
+                       float_type='double'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -80,9 +85,23 @@ def global_rates_input(temperatures, pressures,
         :type temperatures: float
         :param pressures: List of pressures (in atm)
         :type pressures: float
+        :param reduction_method:
+        :type reduction_method: str
+        :param well_reduction_thresh:
+        :type well_reduction_thresh: float
+        :param excess_ene_temp:
+        :type excess_ene_temp: str/float
+        :param float_type: precision of floats used in MESS calculation
+        :type float_type: str
         :return global_str: String for section
         :rtype: string
     """
+
+    assert reduction_method in ('diagonalization', 'well_reduction'), (
+        f'reduction_method is {reduction_method}, '
+        'not diagonalization or well_reduction')
+    assert float_type in ('double', 'quadruple'), (
+        f'float_type is {float_type}, not double or quadruple')
 
     # Format temperature and pressure lists
     temperature_list = '  '.join(str(val) for val in temperatures)
@@ -96,23 +115,29 @@ def global_rates_input(temperatures, pressures,
         excess_ene_temp_str = f'{excess_ene_temp:.2f}'
     else:
         excess_ene_temp_str = None
-    if well_extend is not None:
-        if well_extend != 'auto':
-            assert isinstance(well_extend, float), (
+
+    if well_extension is not None:
+        if well_extension != 'auto':
+            assert isinstance(well_extension, float), (
                 'WellExtension value must be a float'
             )
-            well_extend_str = f'{well_extend:.2f}'
+            well_extension_str = f'{well_extension:.2f}'
         else:
-            well_extend_str = ''
+            well_extension_str = ''
     else:
-        well_extend_str = None
+        well_extension_str = None
+
+    well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
 
     # Create dictionary to fill template
     globrxn_keys = {
         'temperatures': temperature_list,
         'pressures': pressure_list,
+        'reduction_method': reduction_method,
+        'well_reduction_thresh': well_reduction_thresh_str,
+        'well_extension': well_extension_str,
         'excess_ene_temp': excess_ene_temp_str,
-        'well_extend': well_extend_str,
+        'float_type': float_type
     }
 
     return build_mako_str(
@@ -123,7 +148,8 @@ def global_rates_input(temperatures, pressures,
 
 def global_pf_input(temperatures=(),
                     temp_step=100, ntemps=30,
-                    rel_temp_inc=0.001, atom_dist_min=1.13384):
+                    rel_temp_inc=0.001, atom_dist_min=1.13384,
+                    float_type='double'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -137,9 +163,14 @@ def global_pf_input(temperatures=(),
         :type rel_temp_inc: float
         :param atom_dist_min: cutoff for atom distances (Bohr)
         :type atom_dist_min: float
+        :param float_type: precision of floats used in MESS calculation
+        :type float_type: str
         :return global_pf_str: string for section
         :rtype: string
     """
+
+    assert float_type in ('double', 'quadruple'), (
+        f'float_type is {float_type}, not double or quadruple')
 
     if temperatures:
         temperature_list = '  '.join(str(val) for val in temperatures)
@@ -157,7 +188,8 @@ def global_pf_input(temperatures=(),
         'temp_step': temp_step,
         'ntemps': ntemps,
         'rel_temp_inc': rel_temp_inc,
-        'atom_dist_min': atom_dist_min
+        'atom_dist_min': atom_dist_min,
+        'float_type': float_type
     }
 
     return build_mako_str(

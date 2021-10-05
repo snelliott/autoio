@@ -97,15 +97,25 @@ def test__global_rates_input():
     glob1_str = mess_io.writer.global_rates_input(
         TEMPS, PRESSURES)
     glob2_str = mess_io.writer.global_rates_input(
-        TEMPS, PRESSURES, well_extend=None)
+        TEMPS, PRESSURES, well_extension=None)
     glob3_str = mess_io.writer.global_rates_input(
         TEMPS, PRESSURES,
         excess_ene_temp=EXCESS_ENE_TEMP,
-        well_extend=WELL_EXTEND)
+        well_extension=WELL_EXTEND)
+    glob4_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        reduction_method='well_reduction')
+    glob5_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        float_type='quadruple')
+    pathtools.write_file(glob4_str, INP_PATH, 'glob_rxn4.inp')
+    pathtools.write_file(glob5_str, INP_PATH, 'glob_rxn5.inp')
 
     assert glob1_str == pathtools.read_file(INP_PATH, 'glob_rxn1.inp')
     assert glob2_str == pathtools.read_file(INP_PATH, 'glob_rxn2.inp')
     assert glob3_str == pathtools.read_file(INP_PATH, 'glob_rxn3.inp')
+    assert glob4_str == pathtools.read_file(INP_PATH, 'glob_rxn4.inp')
+    assert glob5_str == pathtools.read_file(INP_PATH, 'glob_rxn5.inp')
 
 
 def test__global_pf_input():
@@ -122,6 +132,11 @@ def test__global_pf_input():
         ntemps=NTEMPS,
         rel_temp_inc=REL_TEMP_INC,
         atom_dist_min=ATOM_DIST_MIN)
+    glob4_str = mess_io.writer.global_pf_input(
+        temperatures=TEMPS,
+        float_type='quadruple')
+
+    pathtools.write_file(glob4_str, INP_PATH, 'glob_pf4.inp')
 
     assert glob1_str == pathtools.read_file(
         INP_PATH, 'glob_pf1.inp').rstrip()
@@ -129,6 +144,8 @@ def test__global_pf_input():
         INP_PATH, 'glob_pf2.inp').rstrip()
     assert glob3_str == pathtools.read_file(
         INP_PATH, 'glob_pf3.inp').rstrip()
+    assert glob4_str == pathtools.read_file(
+        INP_PATH, 'glob_pf4.inp').rstrip()
 
 
 def test__messhr_inp_str():

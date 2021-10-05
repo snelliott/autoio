@@ -13,12 +13,19 @@ ModelEnergyLimit[kcal/mol]             800
 CalculationMethod                      direct
 !
 WellCutoff                             10
-% if well_extend is not None:
-WellExtension                          ${well_extend}
+% if well_extension is not None:
+WellExtension                          ${well_extension}
 % endif
 ChemicalEigenvalueMax                  0.2
 !
-ReductionMethod                        diagonalization 
+ReductionMethod                        ${reduction_method} 
+% if reduction_method == 'well_reduction':
+WellReductionThreshold                 ${well_reduction_thresh} 
+% endif
 !
 AtomDistanceMin[bohr]                  1.3
 RateOutput                             rate.out
+% if float_type == 'quadruple':
+!
+FloatType                              dd
+% endif
