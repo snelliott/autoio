@@ -264,14 +264,19 @@ def format_keyword_values(keyword, value):
     # Additional functionality is used to handle when values are lists
     value = value.strip()
     if all(sym in value for sym in ('[[', ']]')):
-        value = value.replace('D', '').replace('d', '')
-        value = ast.literal_eval(value)
-        frmtd_value = ()
-        for sub_lst in value:
-            assert all(isinstance(val, int) for val in sub_lst)
-            frmtd_value += (
-                tuple(f'D{val}' for val in sub_lst),
-            )
+        # Need to fix to handle dihedrals
+        # ast converson breaks for strings if they are not in quotes
+        if frmtd_keyword == 'tors_names':
+            value = value.replace('D', '').replace('d', '')
+            value = ast.literal_eval(value)
+            frmtd_value = ()
+            for sub_lst in value:
+                assert all(isinstance(val, int) for val in sub_lst)
+                frmtd_value += (
+                    tuple(f'D{val}' for val in sub_lst),
+                )
+        else:
+            frmtd_value = ast.literal_eval(value)
     elif all(sym in value for sym in ('[', ']')):
         value = value.replace('[', '').replace(']', '')
         value = value.split(',')
@@ -281,7 +286,10 @@ def format_keyword_values(keyword, value):
             elm = elm.strip()
             if ':' in elm:
                 elm_lst = elm.split(':')
-                frmtd_value += ((float(elm_lst[0]), elm_lst[1]),)
+                if 'ene' in frmtd_keyword:
+                    frmtd_value += ((float(elm_lst[0]), elm_lst[1]),)
+                else:
+                    frmtd_value += ((float(elm_lst[0]), float(elm_lst[1])),)
             else:
                 frmtd_value += (set_value_type(elm),)
     else:
