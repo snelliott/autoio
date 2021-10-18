@@ -96,6 +96,7 @@ def compile_potentials(vrc_path, mep_distances, potentials,
 
     # Change the coordinates of the MEP distances
     # mep_distances = [dist * phycon.BOHR2ANG for dist in mep_distances]
+    bnd_frm_idxs = tuple(idx+1 for idx in bnd_frm_idxs)
 
     # Build string Fortan src file containing correction potentials
     species_corr_str = varecof_io.writer.corr_potentials.species(

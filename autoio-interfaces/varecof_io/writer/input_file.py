@@ -5,6 +5,7 @@ Writes the global keyword section of a MESS input file
 import os
 from ioformat import build_mako_str
 from phydat import phycon
+import elstruct.writer
 from varecof_io.writer import util
 
 
@@ -283,6 +284,45 @@ def structure(geo1, geo2):
         template_file_name='struct.mako',
         template_src_path=TEMPLATE_PATH,
         template_keys=struct_keys)
+
+
+def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
+    """ Writes a template file for a MOLPRO energy calculation that is
+        utilized in the VRC-TST sampling procedure.
+    """
+
+    method_dct = {
+        'caspt2': 'rs2',
+        'caspt2c': 'rs2c',
+    }
+    method = method_dct[mod_var_scn_thy_info[1]]
+
+    # Set the lines for methods
+    method_lines = (
+        "if (iterations.ge.0) then",
+        f"  {{{method},shift=0.25}}",
+        f"  molpro_energy = energy + {inf_sep_ene}",
+        "else",
+        "  molpro_energy = 10.0"
+    )
+
+    # Update the cas kwargs dct
+    gen_lines_dct = cas_kwargs.get('gen_lines')
+    gen_lines_dct.update({3: method_lines})
+    cas_kwargs.update({'gen_lines': gen_lines_dct})
+
+    inp_str = elstruct.writer.energy(
+        geo='GEOMETRY_HERE',
+        charge=ts_info[1],
+        mult=ts_info[2],
+        method='casscf',
+        basis=mod_var_scn_thy_info[2],
+        prog=mod_var_scn_thy_info[0],
+        orb_type=mod_var_scn_thy_info[3],
+        **cas_kwargs
+        )
+
+    return inp_str
 
 
 def mc_flux():
