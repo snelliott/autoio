@@ -13,8 +13,7 @@ WellCutoff                             10
 WellExtension
 ChemicalEigenvalueMax                  0.2
 !
-ReductionMethod                        well_reduction
-WellReductionThreshold                 10.00
+ReductionMethod                        diagonalization
 !
 AtomDistanceMin[bohr]                  1.3
 RateOutput                             rate.out

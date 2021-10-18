@@ -10,6 +10,7 @@ from phydat import phycon
 from mess_io.writer._mol_inf import core_rigidrotor
 from mess_io.writer._spc import molecule
 from mess_io.writer._rxnchan import species
+from mess_io.writer import _format as messformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -73,10 +74,13 @@ def messhr_inp_str(geo, hind_rot_str,
 
 # Write individual sections of the input file
 def global_rates_input(temperatures, pressures,
-                       reduction_method='diagonalization',
+                       calculation_method='well-reduction',
                        well_extension='auto',
                        well_reduction_thresh=10.0,
+                       ped_spc_lst=None,
+                       hot_enes_dct=None,
                        excess_ene_temp=None,
+                       micro_out_params=None,
                        float_type='double'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
@@ -97,9 +101,9 @@ def global_rates_input(temperatures, pressures,
         :rtype: string
     """
 
-    assert reduction_method in ('diagonalization', 'well_reduction'), (
-        f'reduction_method is {reduction_method}, '
-        'not diagonalization or well_reduction')
+    assert calculation_method in ('direct', 'well-reduction'), (
+        f'calculation_method is {calculation_method}, '
+        'not direct or well_reduction')
     assert float_type in ('double', 'quadruple'), (
         f'float_type is {float_type}, not double or quadruple')
 
@@ -127,15 +131,37 @@ def global_rates_input(temperatures, pressures,
     else:
         well_extension_str = None
 
+    if ped_spc_lst is not None:
+        ped_spc_str = messformat.format_ped_species(ped_spc_lst)
+    else:
+        ped_spc_str = None
+
+    if hot_enes_dct is not None:
+        nhot, hot_ene_str = messformat.format_hot_enes(hot_enes_dct)
+    else:
+        nhot, hot_ene_str = 0, None
+
     well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
+
+    if micro_out_params is not None:
+        assert (len(micro_out_params) == 3 and
+                all(isinstance(x, float) for x in micro_out_params)), (
+            f'{micro_out_params} is not a tuple/list of three floats')
+    #    # micro_min, micro_max, micro_step = micro_out_params
+    # else:
+    #    micro_min, micro_max, micro_step = None, None, None
 
     # Create dictionary to fill template
     globrxn_keys = {
         'temperatures': temperature_list,
         'pressures': pressure_list,
-        'reduction_method': reduction_method,
+        'calculation_method': calculation_method,
         'well_reduction_thresh': well_reduction_thresh_str,
         'well_extension': well_extension_str,
+        'hot_ene_str': hot_ene_str,
+        'nhot': nhot,
+        'ped_spc_str': ped_spc_str,
+        'micro_out_params': micro_out_params,
         'excess_ene_temp': excess_ene_temp_str,
         'float_type': float_type
     }
