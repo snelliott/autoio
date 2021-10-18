@@ -104,18 +104,45 @@ def normal_coordinates(output_str):
         :rtype: tuple(tuple(float))
     """
 
+    # Set the patterns to read the normal coordinates
     comp_ptt = app.UNSIGNED_INTEGER + app.SPACES + app.UNSIGNED_INTEGER
-    nmodes = []
-    start = 'Atom  AN      X      Y      Z        '
-    start += 'X      Y      Z        X      Y      Z'
+
+    # Gaussian prints freqs/norm coords as columns. Up to 3 columns printed
+    # Three patterns used to handle cases of when 1, 2, or 3 columns printed
+    start_ptt = 'Atom  AN      X      Y      Z'
+    start_ptt2 = '        X      Y      Z'
+    start_ptt_lst = (
+        (start_ptt + start_ptt2 + start_ptt2),  # 3 freq column(s)
+        (start_ptt + start_ptt2),               # 2 freq column(s)
+        (start_ptt),                            # 1 freq column(s)
+    )
+
+    # Read the normal coordinate modes
+    nmats = []
     for mode in apf.split('Frequencies', output_str)[1:]:
-        mat = ar.matrix.read(
-            mode,
-            start_ptt=app.padded(app.NEWLINE).join([app.escape(start), '']),
-            line_start_ptt=comp_ptt)
-        nmat = numpy.array(mat)
-        for i in range(int(len(nmat)/3)):
-            nmodes.append(nmat[:, i*3:(i+1)*3])
+        mat = None
+        for start in start_ptt_lst:
+            _ptt = app.padded(app.NEWLINE).join([app.escape(start), ''])
+            mat = ar.matrix.read(
+                mode,
+                start_ptt=_ptt,
+                line_start_ptt=comp_ptt)
+            if mat is not None:
+                break
+        nmats.append(mat)
+
+    # Parse the coordinates out of the matrices if all matrices found
+    if all(mat is not None for mat in nmats):
+        nmodes = ()
+        for mat in nmats:
+            nmat = numpy.array(mat)
+            for i in range(int(len(nmat)/3)):
+                nmodes += (nmat[:, i*3:(i+1)*3],)
+    else:
+        nmodes = None
+
+    print('normal coords test')
+    print(nmodes)
 
     return nmodes
 
@@ -312,3 +339,9 @@ def _read_irc_reaction_path_summary(output_str, read_val):
         values = None
 
     return values
+
+
+if __name__ == '__main__':
+    with open('output.dat', 'r') as fobj:
+        _str = fobj.read()
+    normal_coordinates(_str)
