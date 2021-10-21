@@ -24,13 +24,13 @@ jobs:
                     source activate autoio-interfaces-env
                     pytest . -v --disable-pytest-warnings --cov=chemkin_io --pyargs chemkin_io --cov-report=html
                     coverage report
-            - run:
-               name: Test intder_io
-               command: |
-                   cd autoio-interfaces/intder_io
-                   source activate autoio-interfaces-env
-                   pytest . -v --disable-pytest-warnings --cov=intder_io --pyargs intder_io --cov-report=html
-                   coverage report
+            # - run:
+            #   name: Test intder_io
+            #   command: |
+            #       cd autoio-interfaces/intder_io
+            #       source activate autoio-interfaces-env
+            #       pytest . -v --disable-pytest-warnings --cov=intder_io --pyargs intder_io --cov-report=html
+            #       coverage report
             - run:
                 name: Test pac99_io
                 command: |
