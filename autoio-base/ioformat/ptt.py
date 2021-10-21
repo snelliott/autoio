@@ -277,6 +277,7 @@ def format_keyword_values(keyword, value):
                 )
         else:
             frmtd_value = ast.literal_eval(value)
+            frmtd_value = tuple(tuple(x) for x in frmtd_value)
     elif all(sym in value for sym in ('[', ']')):
         value = value.replace('[', '').replace(']', '')
         value = value.split(',')
