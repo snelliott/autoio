@@ -1,7 +1,7 @@
 # cmd: conda build . -c conda-forge
 package:
     name: autoio-base
-    version: "0.9.0"
+    version: "0.9.1"
 
 source:
     path: .
@@ -22,3 +22,4 @@ requirements:
         - conda-forge::future
         - conda-forge::flake8
         - conda-forge::pylint
+        - conda-forge::qcelemental

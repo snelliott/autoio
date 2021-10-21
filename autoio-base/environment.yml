@@ -17,3 +17,4 @@ dependencies:
     - conda-forge::future
     - conda-forge::flake8
     - conda-forge::pylint
+    - conda-forge::qcelemental
