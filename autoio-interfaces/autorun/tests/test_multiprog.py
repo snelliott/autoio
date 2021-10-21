@@ -31,7 +31,7 @@ def test__thermo():
     """ test
     """
 
-    ref_hform298 = -0.030487519599319335
+    ref_hform298 = -0.028389069688367432
 
     formula_str = automol.formula.string(FORMULA)
 
@@ -44,8 +44,8 @@ def test__thermo():
             PF_STR, NAME, FORMULA, HFORM0,
             enthalpyt=ENTHALPYT, breakt=BREAKT, convert=True)
 
-        assert numpy.isclose(hform298, ref_hform298)
-        assert nasa_poly == pathtools.read_file(DAT_PATH, 'ch4nasa.ckin')
+    assert numpy.isclose(hform298, ref_hform298)
+    assert nasa_poly == pathtools.read_file(DAT_PATH, 'ch4nasa.ckin')
 
 
 def test__projected_frequencies():
