@@ -9,7 +9,7 @@ from distutils.core import setup
 
 setup(
     name="autoio-interfaces",
-    version="0.8.0",
+    version="0.8.1",
     packages=[
         'autorun',
         'elstruct',
