@@ -2,8 +2,9 @@
 """
 
 import numpy as np
-from chemkin_io.writer.mechanism import reactions_block as writer
 from autoreact.params import RxnParams
+from chemkin_io.writer.mechanism import reactions_block as writer
+
 
 # Define stuff for testing Arrhenius
 ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000]]}

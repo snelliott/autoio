@@ -16,7 +16,7 @@ from autorun._proc import timeout
 # Single Program Runners
 from autorun import intder
 from autorun import mess
-from autorun import nst
+# from autorun import nst
 from autorun import onedmin
 from autorun import pac99
 from autorun import polyrate
@@ -43,7 +43,7 @@ __all__ = [
     # Single Program Runners
     'intder',
     'mess',
-    'nst',
+    # 'nst',
     'onedmin',
     'pac99',
     'polyrate',

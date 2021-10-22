@@ -6,7 +6,7 @@ import os
 from ioformat import build_mako_str
 from phydat import phycon
 import elstruct.writer
-from varecof_io.writer import util
+from varecof_io.writer import _format as vrcformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -46,12 +46,12 @@ def tst(nsamp_max, nsamp_min, flux_err, pes_size,
         amom_grid = [0, 4, 1.10, 40]
     else:
         assert len(amom_grid) == 4
-    ener_grid = util.format_grids_string(ener_grid, 'ener', 'Kelvin')
-    amom_grid = util.format_grids_string(amom_grid, 'amom', 'Kelvin')
+    ener_grid = vrcformat.format_grids_string(ener_grid, 'ener', 'Kelvin')
+    amom_grid = vrcformat.format_grids_string(amom_grid, 'amom', 'Kelvin')
 
     # Set the faces
     print(faces)
-    faces = util.format_faces_string(faces)
+    faces = vrcformat.format_faces_string(faces)
 
     # Create dictionary to fill template
     tst_keys = {
@@ -123,21 +123,21 @@ def divsur(rdists,
 
     # Format values strings for the coordinates
     # Function returns the empty string if list is empty
-    r1_string = util.format_values_string(
+    r1_string = vrcformat.format_values_string(
         'r1', rdists, conv_factor=phycon.ANG2BOHR)
-    r2_string = util.format_values_string(
+    r2_string = vrcformat.format_values_string(
         'r2', r2dists, conv_factor=phycon.ANG2BOHR)
-    d1_string = util.format_values_string(
+    d1_string = vrcformat.format_values_string(
         'd1', d1dists, conv_factor=phycon.ANG2BOHR)
-    d2_string = util.format_values_string(
+    d2_string = vrcformat.format_values_string(
         'd2', d2dists, conv_factor=phycon.ANG2BOHR)
-    t1_string = util.format_values_string(
+    t1_string = vrcformat.format_values_string(
         't1', t1angs, conv_factor=phycon.RAD2DEG)
-    t2_string = util.format_values_string(
+    t2_string = vrcformat.format_values_string(
         't2', t2angs, conv_factor=phycon.RAD2DEG)
-    p1_string = util.format_values_string(
+    p1_string = vrcformat.format_values_string(
         'p1', p1angs, conv_factor=phycon.RAD2DEG)
-    p2_string = util.format_values_string(
+    p2_string = vrcformat.format_values_string(
         'p2', p2angs, conv_factor=phycon.RAD2DEG)
 
     # Fromat the frames
@@ -149,9 +149,9 @@ def divsur(rdists,
     idx2 = 1 + npivot1
     if p1angs:
         phi_dependence = True
-    pivot_xyz_string1 = util.format_pivot_xyz_string(
+    pivot_xyz_string1 = vrcformat.format_pivot_xyz_string(
         idx1, npivot1, xyz_pivot1, phi_dependence=phi_dependence)
-    pivot_xyz_string2 = util.format_pivot_xyz_string(
+    pivot_xyz_string2 = vrcformat.format_pivot_xyz_string(
         idx2, npivot2, xyz_pivot2, phi_dependence=phi_dependence)
 
     # Calculate the number of cycles
@@ -263,12 +263,12 @@ def structure(geo1, geo2):
     """
 
     # Determine linearity of molecule
-    struct_type1 = util.determine_struct_type(geo1)
-    struct_type2 = util.determine_struct_type(geo2)
+    struct_type1 = vrcformat.determine_struct_type(geo1)
+    struct_type2 = vrcformat.determine_struct_type(geo2)
 
     # Format the coordinates of the geoetry
-    natoms1, coords1 = util.format_coords(geo1)
-    natoms2, coords2 = util.format_coords(geo2)
+    natoms1, coords1 = vrcformat.format_coords(geo1)
+    natoms2, coords2 = vrcformat.format_coords(geo2)
 
     # Create dictionary to fill template
     struct_keys = {
@@ -288,7 +288,7 @@ def structure(geo1, geo2):
 
 def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
     """ Writes a template file for a MOLPRO energy calculation that is
-        utilized in the VRC-TST sampling procedure.
+        vrcformatized in the VRC-TST sampling procedure.
     """
 
     method_dct = {
