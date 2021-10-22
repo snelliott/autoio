@@ -3,7 +3,7 @@
 
 import os
 import tempfile
-from ioformat import pathtools
+# from ioformat import pathtools
 import autorun
 
 PATH = os.path.dirname(os.path.realpath(__file__))
@@ -64,10 +64,12 @@ def test__():
     flux_str = autorun.varecof.flux_file(
         VARECOF_SCRIPT_STR, MCFLUX_SCRIPT_STR,
         TMP_DIR, inp_strs)
+    print(flux_str)
 
     # Trim off the 0 energy (maybe do this in some function)
 
     # Check the fluxes to see if they are within some percentage threshold
+
 
 if __name__ == '__main__':
     test__()

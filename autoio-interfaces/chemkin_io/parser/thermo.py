@@ -77,8 +77,8 @@ def create_entry_list(block_str):
     # Check that there are at least 4 lines in each entry
     for idx, difference in enumerate(np.diff(header_idxs)):
         assert difference >= 4, (
-            'There are less than 4 lines for this thermo entry: \n{:f}'.format(
-                line_lst[header_idxs[idx]])
+            'There are less than 4 lines for this thermo entry: \n'
+            f'{line_lst[header_idxs[idx]]:f}'
         )
 
     # Put together the thermo entries into a list of tuples
@@ -233,7 +233,6 @@ def get_coeffs(entry):
     formatted_entry = reform_entry(entry)
     line_counter = 1
     for idx, line in enumerate(entry):
-
         # If on the first line or if the line is too short, skip the line
         if idx == 0 or len(line) < 80:
             continue

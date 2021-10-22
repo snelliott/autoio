@@ -25,29 +25,34 @@ def get_ckin_str(rxn, params, max_len=45):
     reaction = _util.format_rxn_name(rxn)
     # Get the functional forms to write (usually will only be one)
     forms = params.get_existing_forms()
-    # Get information on unusual duplicates (i.e., any dup other than Arrhenius)
+    # Get information on unusual duplicates (i.e., dup other than Arrhenius)
     dups, dup_counts = params.check_for_dups()  # dups is a Boolean
 
     # Loop over each functional form and write each one (usually only one)
     ckin_str = ''
     for form in forms:
         if form == 'arr':
-            ckin_str += arr(reaction, params.arr, colliders=params.arr_collid,
-                          max_len=max_len)
+            ckin_str += arr(
+                reaction, params.arr, colliders=params.arr_collid,
+                max_len=max_len)
         elif form == 'plog':
-            ckin_str += plog(reaction, params.plog, max_len=max_len)
+            ckin_str += plog(
+                reaction, params.plog, max_len=max_len)
         elif form == 'cheb':
-            ckin_str += cheb(reaction, params.cheb['alpha'], params.cheb['tlim'],
-                           params.cheb['plim'], params.cheb['one_atm_arr'],
-                           max_len=max_len)
+            ckin_str += cheb(
+                reaction, params.cheb['alpha'], params.cheb['tlim'],
+                params.cheb['plim'], params.cheb['one_atm_arr'],
+                max_len=max_len)
         elif form == 'troe':
-            ckin_str += troe(reaction, params.troe['highp_arr'],
-                           params.troe['lowp_arr'], params.troe['troe_params'],
-                           colliders=params.troe['collid'], max_len=max_len)
+            ckin_str += troe(
+                reaction, params.troe['highp_arr'],
+                params.troe['lowp_arr'], params.troe['troe_params'],
+                colliders=params.troe['collid'], max_len=max_len)
         elif form == 'lind':
-            ckin_str += lind(reaction, params.lind['highp_arr'],
-                           params.lind['lowp_arr'],
-                           colliders=params.lind['collid'], max_len=max_len)
+            ckin_str += lind(
+                reaction, params.lind['highp_arr'],
+                params.lind['lowp_arr'],
+                colliders=params.lind['collid'], max_len=max_len)
         if dups:
             ckin_str += 'DUP\n'
 
@@ -60,9 +65,9 @@ def get_ckin_str(rxn, params, max_len=45):
 
 def handle_duplicates(reaction, params, dup_counts, max_len):
     """ Writes any unusual duplicate cases. These only occur in strange cases when
-        more than one functional form (e.g., PLOG and Arrhenius) are described for
-        the same reaction. These should not really occur, but are nonetheless
-        handled here.
+        more than one functional form (e.g., PLOG and Arrhenius) are described
+        for the same reaction. These should not really occur,
+        but are nonetheless handled here.
 
         :param reaction: Chemkin-formatted reaction name
         :type reaction: str
@@ -114,7 +119,8 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
     return ckin_str
 
 
-def troe(reaction, high_params, low_params, troe_params, colliders=None, max_len=45):
+def troe(reaction, high_params, low_params, troe_params,
+         colliders=None, max_len=45):
     """ Writes a reaction in the Troe form
 
         :param reaction: Chemkin-formatted reaction name
@@ -144,7 +150,7 @@ def troe(reaction, high_params, low_params, troe_params, colliders=None, max_len
     troe_str = _highp_str(reaction, high_params[0], max_len=max_len)
     troe_str += _lowp_str(low_params[0], max_len=max_len)
     troe_str += _misc_troe_cheb('TROE', troe_params, newline=True,
-                                    val='exp')
+                                val='exp')
 
     # Write the collider efficiencies string
     if colliders:
@@ -200,7 +206,7 @@ def plog(reaction, plog_param_dct, max_len=45):
             :type pressure: float
             :param params: Arrhenius parameters at the specified pressure
             :type params: list of floats
-            :param max_len: length of the longest reaction name in the mechanism
+            :param max_len: length of longest reaction name in the mechanism
             :type max_len: int
             :return single_str: Chemkin reaction string with PLOG parameters
                 at a single pressure
@@ -215,7 +221,6 @@ def plog(reaction, plog_param_dct, max_len=45):
                 '    PLOG /', pressure, a_par, n_par, ea_par)
 
         return single_str
-
 
     # Obtain a list of the pressures and sort from low to high pressure
     unsorted_pressures = plog_param_dct.keys()
@@ -283,7 +288,7 @@ def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45):
         comment = 'Arrhenius parameters at 1 atm'
     else:  # if the params look fake
         comment = None
-        one_atm_arr = [[1, 0, 0],]
+        one_atm_arr = [[1, 0, 0]]
     cheb_str = _highp_str(reaction, one_atm_arr[0], max_len=max_len,
                           inline_comment=comment)
 
@@ -365,26 +370,24 @@ def fit_info(pressures, temp_dct, err_dct):
     for pressure in pressures:
         if temp_dct:
             [min_temp, max_temp] = temp_dct[pressure]
-            temps_str = '{0:.0f}-{1:.0f} K'.format(
-                min_temp, max_temp)
-            temp_range_str = 'Temps: {0:>12s}, '.format(
-                temps_str)
+            temps_str = f'{min_temp:.0f}-{max_temp:.0f} K'
+            temp_range_str = f'Temps: {temps_str:>12s}, '
         else:
             temp_range_str = ''
         if err_dct:
             [mean_err, max_err] = err_dct[pressure]
-            err_str = '{0:11s} {1:>5.1f}%,  {2:7s} {3:>5.1f}%'.format(
-                'MeanAbsErr:', mean_err, 'MaxErr:', max_err)
+            err_str = (
+                f'{"MeanAbsErr:":11s} {mean_err:>5.1f}%,  '
+                f'{"MaxErr:":7s} {max_err:>5.1f}%')
         else:
             err_str = ''
 
         # Put together the whole info string
         if pressure != 'high':
-            pstr = '{0:<9.3f}'.format(pressure)
+            pstr = f'{pressure:<9.3f}'
         else:
-            pstr = '{0:<9s}'.format('High')
-        inf_str += '! Pressure: {0} {1} {2}\n'.format(
-            pstr, temp_range_str, err_str)
+            pstr = f'{"High":<9s}'
+        inf_str += f'! Pressure: {pstr} {temp_range_str} {err_str}\n'
 
     return inf_str
 
@@ -471,7 +474,7 @@ def _misc_troe_cheb(header, params, newline=False, val='exp'):
     elif val == 'int':
         val_str = '{0:12.0f}'
 
-    params_str = '    {0:5s}/'.format(header.upper())
+    params_str = f'    {header.upper():5s}/'
     for param in params:
         if param:  # skip any None entries
             params_str += ''.join(val_str.format(param))
@@ -494,8 +497,7 @@ def _format_collider_string(colliders):
 
     collider_str = ' ' * BUFFER
     for collider, efficiency in colliders.items():
-        collider_str += ''.join( ('{0:s}/{1:4.3f}/   '.format(
-            collider, efficiency)))
+        collider_str += f'{collider:s}/{efficiency:4.3f}/   '
     collider_str += '\n'
 
     return collider_str

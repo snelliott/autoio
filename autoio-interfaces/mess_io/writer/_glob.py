@@ -56,7 +56,8 @@ def messhr_inp_str(geo, hind_rot_str,
     global_pf_str = global_pf_input(
         temperatures=(100.0, 200.0, 300.0, 400.0, 500),
         rel_temp_inc=0.001,
-        atom_dist_min=0.6)
+        atom_dist_min=0.6,
+        float_type=float_type)
     dat_str = molecule(
         core=core_rigidrotor(geo, 1.0),
         freqs=(1000.0,),

@@ -6,7 +6,7 @@ from chemkin_io.writer.mechanism import reactions_block as writer
 from autoreact.params import RxnParams
 
 # Define stuff for testing Arrhenius
-ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000],]}
+ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000]]}
 ARR_PARAMS = RxnParams(arr_dct=ARR_DCT)
 ARR_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), (None,)): ARR_PARAMS}
@@ -15,16 +15,16 @@ DUP_ARR_PARAMS = RxnParams(arr_dct=DUP_ARR_DCT)
 DUP_ARR_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), (None,)): DUP_ARR_PARAMS}
 COLLID = {'N2': 1.4, 'AR': 1.0}
-COLLID_ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000],], 'arr_collid': COLLID}
+COLLID_ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000]], 'arr_collid': COLLID}
 COLLID_ARR_PARAMS = RxnParams(arr_dct=COLLID_ARR_DCT)
 COLLID_ARR_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), (None,)): COLLID_ARR_PARAMS}
 
 # Define stuff for testing PLOG
 PLOG_DCT = {
-    0.1: [[1E+15, 0.00, 25000],],
+    0.1: [[1E+15, 0.00, 25000]],
     1.0: [[1E+15, 0.00, 25000], [1E+15, 0.00, 25000]],
-    100.0: [[1E+15, 0.00, 25000],],}
+    100.0: [[1E+15, 0.00, 25000]]}
 PLOG_PARAMS = RxnParams(plog_dct=PLOG_DCT)
 PLOG_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), (None,)): PLOG_PARAMS}
@@ -46,19 +46,19 @@ CHEB_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), ('(+N2)',)): CHEB_PARAMS}
 
 # Define stuff for testing Troe
-TROE_DCT = {'highp_arr': [[1e12, 1.5, 50000],],
-            'lowp_arr': [[1e12, 1.5, 50000],],
+TROE_DCT = {'highp_arr': [[1e12, 1.5, 50000]],
+            'lowp_arr': [[1e12, 1.5, 50000]],
             'troe_params': [1.5, 8000, 100, 1000],
             'collid': {'AR': 1.4, 'N2': 1.7}}
-TROE_PARAMS = RxnParams(troe_dct=TROE_DCT) 
+TROE_PARAMS = RxnParams(troe_dct=TROE_DCT)
 TROE_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), ('(+N2)',)): TROE_PARAMS}
 
 # Define stuff for testing Lindemann
-LIND_DCT = {'highp_arr': [[1e12, 1.5, 50000],],
-            'lowp_arr': [[1e12, 1.5, 50000],],
+LIND_DCT = {'highp_arr': [[1e12, 1.5, 50000]],
+            'lowp_arr': [[1e12, 1.5, 50000]],
             'collid': {'AR': 1.4, 'N2': 1.7}}
-LIND_PARAMS = RxnParams(lind_dct=LIND_DCT) 
+LIND_PARAMS = RxnParams(lind_dct=LIND_DCT)
 LIND_RXN_PARAM_DCT = {
     (('H', 'O2'), ('OH', 'O'), ('(+N2)',)): LIND_PARAMS}
 
@@ -268,7 +268,6 @@ def test_dups():
         '    LOW  /              1.000E+12     1.500    50000  /\n'
         '     AR/1.400/   N2/1.700/   \n'
         'DUP\n\n\nEND\n\n')
-
 
     ckin_str1 = writer(DUP_PLOG_RXN_PARAM_DCT)
     ckin_str2 = writer(DUP_PLOG_CHEB_RXN_PARAM_DCT)

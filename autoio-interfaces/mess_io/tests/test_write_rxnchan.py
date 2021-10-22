@@ -128,7 +128,7 @@ def test__ts_variational_writer():
     var_pt_strings = []
     for i in range(10):
         var_pt_string = '+++++++++++++++++++++++++++++++++++'
-        var_pt_string += '! Path Point {0}\n'.format(str(i+1))
+        var_pt_string += f'! Path Point {str(i+1)}\n'
         var_pt_string += MOL_MESS_STR
         var_pt_strings.append(var_pt_string)
 
