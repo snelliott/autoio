@@ -82,35 +82,35 @@ PSI4 = (
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro -n 4 run.inp -o run.out "
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molpro -n 4 run.inp -o run.out "
+    "molpro -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molprop --mppx -n 8 run.inp -o run.out "
+    "molprop --mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO_MREF = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molpro -n 8 run.inp -o run.out "
+    "molpro -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO_MREF_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molprop --mppx -n 12 run.inp -o run.out "
+    "molprop --mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
