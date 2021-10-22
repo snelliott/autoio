@@ -101,33 +101,37 @@ def well(well_label, well_data,
 
 
 def bimolecular(bimol_label,
-                species1_label, species1_data,
-                species2_label, species2_data,
-                ground_energy):
+                spc1_label, spc1_data,
+                spc2_label, spc2_data,
+                ground_ene,
+                calc_spc1_density=False,
+                calc_spc2_density=False):
     """ Writes a Bimolecular section.
     """
 
     # Indent the string containing all of data for each species
-    species1_data = messformat.indent(species1_data, 4)
-    species2_data = messformat.indent(species2_data, 4)
+    spc1_data = messformat.indent(spc1_data, 4)
+    spc2_data = messformat.indent(spc2_data, 4)
 
     # Determine if species is an atom
-    isatom1 = messformat.is_atom_in_str(species1_data)
-    isatom2 = messformat.is_atom_in_str(species2_data)
+    isatom1 = messformat.is_atom_in_str(spc1_data)
+    isatom2 = messformat.is_atom_in_str(spc2_data)
 
     # Format the precision of the ground energy
-    ground_energy = f'{ground_energy:<8.2f}'
+    ground_ene = f'{ground_ene:<8.2f}'
 
     # Create dictionary to fill template
     bimol_keys = {
         'bimolec_label': bimol_label,
-        'species1_label': species1_label,
-        'species1_data': species1_data,
+        'spc1_label': spc1_label,
+        'spc1_data': spc1_data,
+        'calc_spc1_density': calc_spc1_density,
         'isatom1': isatom1,
-        'species2_label': species2_label,
-        'species2_data': species2_data,
+        'spc2_label': spc2_label,
+        'spc2_data': spc2_data,
+        'calc_spc2_density': calc_spc2_density,
         'isatom2': isatom2,
-        'ground_energy': ground_energy
+        'ground_ene': ground_ene
     }
 
     return build_mako_str(

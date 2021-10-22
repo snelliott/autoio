@@ -10,6 +10,7 @@ from phydat import phycon
 from mess_io.writer._mol_inf import core_rigidrotor
 from mess_io.writer._spc import molecule
 from mess_io.writer._rxnchan import species
+from mess_io.writer import _format as messformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -46,7 +47,8 @@ def messpf_inp_str(globkey_str, spc_str):
     return '\n'.join([globkey_str, spc_str]) + '\n'
 
 
-def messhr_inp_str(geo, hind_rot_str):
+def messhr_inp_str(geo, hind_rot_str,
+                   float_type='double'):
     """ Special MESS input string to calculate frequencies and ZPVEs
         for hindered rotors
     """
@@ -54,7 +56,8 @@ def messhr_inp_str(geo, hind_rot_str):
     global_pf_str = global_pf_input(
         temperatures=(100.0, 200.0, 300.0, 400.0, 500),
         rel_temp_inc=0.001,
-        atom_dist_min=0.6)
+        atom_dist_min=0.6,
+        float_type=float_type)
     dat_str = molecule(
         core=core_rigidrotor(geo, 1.0),
         freqs=(1000.0,),
@@ -72,7 +75,14 @@ def messhr_inp_str(geo, hind_rot_str):
 
 # Write individual sections of the input file
 def global_rates_input(temperatures, pressures,
-                       excess_ene_temp=None, well_extend='auto'):
+                       calculation_method='well-reduction',
+                       well_extension='auto',
+                       well_reduction_thresh=10.0,
+                       ped_spc_lst=None,
+                       hot_enes_dct=None,
+                       excess_ene_temp=None,
+                       micro_out_params=None,
+                       float_type='double'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -80,9 +90,23 @@ def global_rates_input(temperatures, pressures,
         :type temperatures: float
         :param pressures: List of pressures (in atm)
         :type pressures: float
+        :param reduction_method:
+        :type reduction_method: str
+        :param well_reduction_thresh:
+        :type well_reduction_thresh: float
+        :param excess_ene_temp:
+        :type excess_ene_temp: str/float
+        :param float_type: precision of floats used in MESS calculation
+        :type float_type: str
         :return global_str: String for section
         :rtype: string
     """
+
+    assert calculation_method in ('direct', 'well-reduction'), (
+        f'calculation_method is {calculation_method}, '
+        'not direct or well_reduction')
+    assert float_type in ('double', 'quadruple'), (
+        f'float_type is {float_type}, not double or quadruple')
 
     # Format temperature and pressure lists
     temperature_list = '  '.join(str(val) for val in temperatures)
@@ -96,23 +120,51 @@ def global_rates_input(temperatures, pressures,
         excess_ene_temp_str = f'{excess_ene_temp:.2f}'
     else:
         excess_ene_temp_str = None
-    if well_extend is not None:
-        if well_extend != 'auto':
-            assert isinstance(well_extend, float), (
+
+    if well_extension is not None:
+        if well_extension != 'auto':
+            assert isinstance(well_extension, float), (
                 'WellExtension value must be a float'
             )
-            well_extend_str = f'{well_extend:.2f}'
+            well_extension_str = f'{well_extension:.2f}'
         else:
-            well_extend_str = ''
+            well_extension_str = ''
     else:
-        well_extend_str = None
+        well_extension_str = None
+
+    if ped_spc_lst is not None:
+        ped_spc_str = messformat.format_ped_species(ped_spc_lst)
+    else:
+        ped_spc_str = None
+
+    if hot_enes_dct is not None:
+        nhot, hot_ene_str = messformat.format_hot_enes(hot_enes_dct)
+    else:
+        nhot, hot_ene_str = 0, None
+
+    well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
+
+    if micro_out_params is not None:
+        assert (len(micro_out_params) == 3 and
+                all(isinstance(x, float) for x in micro_out_params)), (
+            f'{micro_out_params} is not a tuple/list of three floats')
+    #    # micro_min, micro_max, micro_step = micro_out_params
+    # else:
+    #    micro_min, micro_max, micro_step = None, None, None
 
     # Create dictionary to fill template
     globrxn_keys = {
         'temperatures': temperature_list,
         'pressures': pressure_list,
+        'calculation_method': calculation_method,
+        'well_reduction_thresh': well_reduction_thresh_str,
+        'well_extension': well_extension_str,
+        'hot_ene_str': hot_ene_str,
+        'nhot': nhot,
+        'ped_spc_str': ped_spc_str,
+        'micro_out_params': micro_out_params,
         'excess_ene_temp': excess_ene_temp_str,
-        'well_extend': well_extend_str,
+        'float_type': float_type
     }
 
     return build_mako_str(
@@ -123,7 +175,8 @@ def global_rates_input(temperatures, pressures,
 
 def global_pf_input(temperatures=(),
                     temp_step=100, ntemps=30,
-                    rel_temp_inc=0.001, atom_dist_min=1.13384):
+                    rel_temp_inc=0.001, atom_dist_min=1.13384,
+                    float_type='double'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -137,9 +190,14 @@ def global_pf_input(temperatures=(),
         :type rel_temp_inc: float
         :param atom_dist_min: cutoff for atom distances (Bohr)
         :type atom_dist_min: float
+        :param float_type: precision of floats used in MESS calculation
+        :type float_type: str
         :return global_pf_str: string for section
         :rtype: string
     """
+
+    assert float_type in ('double', 'quadruple'), (
+        f'float_type is {float_type}, not double or quadruple')
 
     if temperatures:
         temperature_list = '  '.join(str(val) for val in temperatures)
@@ -157,7 +215,8 @@ def global_pf_input(temperatures=(),
         'temp_step': temp_step,
         'ntemps': ntemps,
         'rel_temp_inc': rel_temp_inc,
-        'atom_dist_min': atom_dist_min
+        'atom_dist_min': atom_dist_min,
+        'float_type': float_type
     }
 
     return build_mako_str(

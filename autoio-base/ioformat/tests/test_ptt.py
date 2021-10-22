@@ -210,13 +210,17 @@ def test__keyword_line_parsers():
     # keys
     key1 = 'key1'
     key2 = 'KEY1'
+    key3 = 'tors_names'  # given special designation in code...
+    key4 = 'ene'  # given special designation in code...
 
     # vals
     val1 = 'val1'
     val2 = '[[D1, D2, D3], [D4, D5], [D6]]'
     val3 = '[[d1, d2, d3], [d4, d5], [d6]]'
     val4 = '[1, 1.0, 1.0e5, true, false, none, mult]'
-    val5 = '[1:a, 2:b]'
+    val5 = '[[1, 1.0], [1.0e5, "mult"]]'
+    val6 = '[1:a, 2:b]'
+    val7 = '[1:10, 2:20]'
 
     formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val1)
     assert formtd_key == 'key1'
@@ -226,12 +230,12 @@ def test__keyword_line_parsers():
     assert formtd_key == 'key1'
     assert formtd_val == 'val1'
 
-    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val2)
-    assert formtd_key == 'key1'
+    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key3, val2)
+    assert formtd_key == 'tors_names'
     assert formtd_val == (('D1', 'D2', 'D3'), ('D4', 'D5'), ('D6',))
 
-    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val3)
-    assert formtd_key == 'key1'
+    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key3, val3)
+    assert formtd_key == 'tors_names'
     assert formtd_val == (('D1', 'D2', 'D3'), ('D4', 'D5'), ('D6',))
 
     formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val4)
@@ -240,7 +244,15 @@ def test__keyword_line_parsers():
 
     formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val5)
     assert formtd_key == 'key1'
+    assert formtd_val == ((1, 1.0), (1.0e5, 'mult'))
+
+    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key4, val6)
+    assert formtd_key == 'ene'
     assert formtd_val == ((1.0, 'a'), (2.0, 'b'))
+
+    formtd_key, formtd_val = ioformat.ptt.format_keyword_values(key1, val7)
+    assert formtd_key == 'key1'
+    assert formtd_val == ((1.0, 10.0), (2.0, 20.0))
 
 
 def test__misc():

@@ -294,6 +294,37 @@ def format_flux_mode_indices(atom_idxs):
     return flux_mode_idx_str
 
 
+def format_ped_species(ped_spc_lst):
+    """ Format the names of species to provided to the global
+        PEDSpecies keyword of the input file.
+
+        :param: ped_spc_lst: species to obtain PEDs for
+        :type: tuple(str)
+        :rtype: str
+    """
+    return '   '.join(ped_spc_lst)
+
+
+def format_hot_enes(hot_enes_dct):
+    """ Format the list hot energies for one or more species
+        into a string appropriate for the HotEnergies keyword
+        used at the top of the MESS keyword section
+
+        :param hot_enes_dct: hot energies for each species in kcal/mol
+        :type hot_enes_dct: dict[str: tuple(float)]
+        :rtype: (int, str)
+    """
+
+    ene_str = ''
+    n_enes = 0
+    for spc, ene_lst in hot_enes_dct.items():
+        _str = ' '.join((f'{ene:.1f}' for ene in ene_lst))
+        ene_str += f'{spc:5s}{_str}\n'
+        n_enes += 1
+
+    return n_enes, ene_str.rstrip()
+
+
 # Helpful checker to set MESS string writing
 def is_atom_in_str(spc_str):
     """ Checks a MESS-formatted species data string to see

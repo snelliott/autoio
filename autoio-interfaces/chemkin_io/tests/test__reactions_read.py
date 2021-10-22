@@ -1,8 +1,14 @@
 """ Tests the parsing of reaction strings
 """
 
+import os
 import numpy as np
+import ioformat
 from chemkin_io.parser.reaction import get_rxn_param_dct as parser
+
+
+PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
 
 
 def test_arr():
@@ -67,7 +73,8 @@ def test_plog():
         '    PLOG /1.000E-01   1.000E+15     0.000    25000 /\n' \
         '    PLOG /1.000E+00   1.000E+15     0.000    25000 /\n' \
         '    PLOG /1.000E+00   1.000E+15     0.000    25000 /\n' \
-        '    PLOG /1.000E+02   1.000E+15     0.000    25000 /\nDUP\n\n\nEND\n\n'
+        '    PLOG /1.000E+02   1.000E+15     0.000    25000 /\nDUP\n\n\nEND' \
+        '\n\n'
 
     rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
@@ -191,7 +198,6 @@ def test_troe():
         '     AR/1.400/   N2/1.700/   \n'
         'DUP\n\n\nEND\n\n')
 
-
     rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
         troe_dct = params.troe
@@ -264,29 +270,11 @@ def test_lind():
 
 
 def test_rxn_names():
-    ckin_str = (
-        'REACTIONS     CAL/MOLE     MOLES\n\n'
-        'C2H3+O2<=>C2H3OO                                             +4.0700000E+027 -4.6700000E+000 +5.2220000E+003  \n' 
-        'C2H3+O2<=>C2H3OO                                             +4.0700000E+027 -4.6700000E+000 +5.2220000E+003  \n' 
-        'C2H3+O2<=>CHCHO+OH                                           +2.8400000E+014 -8.0000000E-001 +7.2320000E+003  \n' 
-        'C2H3+O2<=>CHCHO+OH                                           +2.8400000E+014 -8.0000000E-001 +7.2320000E+003  \n' 
-        'C2H3+O2<=>CH2CHO+O                                           +1.7600000E+012 +1.5000000E-001 +4.2050000E+003  \n' 
-        'C2H3+O2<=>CH2CHO+O                                           +1.7600000E+012 +1.5000000E-001 +4.2050000E+003  \n' 
-        'C2H3+O2<=>C2H2+HO2                                           +6.4900000E+006 +1.5000000E+000 +5.2180000E+003  \n' 
-        'C2H3+O2<=>C2H2+HO2                                           +6.4900000E+006 +1.5000000E+000 +5.2180000E+003  \n' 
-        'C2H3+O2<=>CHOCHO+H                                           +3.0800000E+012 -2.6000000E-001 +3.2770000E+003  \n' 
-        'C2H3+O2<=>CHOCHO+H                                           +3.0800000E+012 -2.6000000E-001 +3.2770000E+003  \n' 
-        'C2H3+O2<=>CH2CO+OH                                           +1.1700000E+003 +2.4300000E+000 +7.0740000E+003  \n' 
-        'C2H3+O2<=>CH2CO+OH                                           +1.1700000E+003 +2.4300000E+000 +7.0740000E+003  \n' 
-        'C2H3+O2<=>CH2O+HCO                                           +1.1600000E+016 -1.1300000E+000 +3.7910000E+003  \n' 
-        'C2H3+O2<=>CH2O+HCO                                           +1.1600000E+016 -1.1300000E+000 +3.7910000E+003  \n' 
-        'C2H3+O2<=>CO+CH3O                                            +3.0900000E+013 -8.9000000E-001 +3.6820000E+003  \n' 
-        'C2H3+O2<=>CO+CH3O                                            +3.0900000E+013 -8.9000000E-001 +3.6820000E+003  \n' 
-        'C2H3+O2<=>CO2+CH3                                            +6.1600000E+013 -1.0500000E+000 +3.7430000E+003  \n' 
-        'C2H3+O2<=>CO2+CH3                                            +6.1600000E+013 -1.0500000E+000 +3.7430000E+003  \n' 
-        '\n\n\nEND\n\n')
-
+    """ test mechanalyzer.parser.reaction
+    """
+    ckin_str = ioformat.pathtools.read_file(DAT_PATH, 'rxn_block.dat')
     rxn_param_dct = parser(ckin_str, 'cal/mole', 'moles')
+    print(rxn_param_dct)
 
 
 if __name__ == '__main__':

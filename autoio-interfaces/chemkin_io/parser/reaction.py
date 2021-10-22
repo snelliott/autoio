@@ -186,7 +186,7 @@ def get_rxn_strs(block_str, remove_bad_fits=False):
             headline_pattern=CHEMKIN_ARROW)
         if remove_bad_fits:
             rxn_strs = [dstr for dstr in rxn_strs
-                         if not any(string in dstr for string in BAD_STRS)]
+                        if not any(string in dstr for string in BAD_STRS)]
     else:
         rxn_strs = None
 
@@ -203,7 +203,7 @@ def fix_duplicates(rxns, params_lst):
         :type params: list
         :return unique_rxns: unique reaction keys
         :rtype: list
-        :return unique_params: combined reaction parameters to match unique_rxns
+        :return unique_params: combined reaction params to match unique_rxns
         :rtype: list
     """
 
@@ -408,7 +408,7 @@ def troe(rxn_str):
         for a line containing the Troe fitting parameters,
         then reads the parameters from this line.
 
-        Note: only gets the 4 Troe-specific parameters: alpha, T***, T*, and T**
+        Only gets the 4 Troe-specific parameters: alpha, T***, T*, and T**
 
         :param rxn_str: raw Chemkin string for a single reaction
         :type rxn_str: str
@@ -512,8 +512,8 @@ def cheb(rxn_str):
             f' \n \n {original_rxn_str}\n')
         alpha = np.array(list(map(float, coeffs)))
 
-        params['tlim'] = tuple([float(val) for val in cheb_temps])
-        params['plim'] = tuple([float(val) for val in cheb_pressures])
+        params['tlim'] = tuple(float(val) for val in cheb_temps)
+        params['plim'] = tuple(float(val) for val in cheb_pressures)
         params['alpha'] = alpha.reshape([cheb_n, cheb_m])
 
     else:

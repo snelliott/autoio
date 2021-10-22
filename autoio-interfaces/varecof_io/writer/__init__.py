@@ -19,7 +19,7 @@ from varecof_io.writer._prep import assess_face_symmetries
 from varecof_io.writer._prep import build_pivot_frames
 from varecof_io.writer._prep import calc_pivot_angles
 from varecof_io.writer._prep import calc_pivot_xyzs
-from varecof_io.writer.util import divsur_frame_geom_script
+from varecof_io.writer._format import divsur_frame_geom_script
 
 
 __all__ = [

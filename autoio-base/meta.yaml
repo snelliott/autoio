@@ -1,29 +1,25 @@
-# cmd: conda build .  -c auto-mech -c psi4 -c rdkit -c openbabel -c conda-forge
+# cmd: conda build . -c conda-forge
 package:
     name: autoio-base
-    version: "0.8.0"
+    version: "0.9.1"
 
 source:
     path: .
 
 requirements:
     host:
-        - python=3.7
+        - conda-forge::python=3.7
     run:
-        - gfortran_linux-64  # [linux]
-        - python=3.7
-        - numpy
-        - scipy
-        - pyyaml
-        - mako
-        - networkx
-        - matplotlib
-        - pytest
-        - pytest-cov
-        - future
-        - flake8
-        - pylint
-        - psi4::psi4
-        - rdkit::rdkit
-        - openbabel::openbabel
+        - conda-forge::python=3.7
+        - conda-forge::numpy=1.15.4
+        - conda-forge::scipy=1.5.0
+        # - conda-forge::numpy=1.21.2
+        # - conda-forge::scipy=1.7.1
+        - conda-forge::pyyaml
+        - conda-forge::mako
+        - conda-forge::pytest
+        - conda-forge::pytest-cov
+        - conda-forge::future
+        - conda-forge::flake8
+        - conda-forge::pylint
         - conda-forge::qcelemental

@@ -77,11 +77,22 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
         method, corr_options, gen_lines)
     method2, prog_reference, prog_basis = fill.program_method_names(
         PROG, core_method, basis, mult, orb_restricted)
+
     # Set the program method to one of the following
     prog_method = method1 if method1 else method2
 
-    # Set the geometry
-    geo_str, zmat_val_str, _ = fill.geometry_strings(geo, frozen_coordinates)
+    # Reset the prog_method again to account for hf, cassf (this is dumb...)
+    if prog_method not in ('hf', 'rhf', 'uhf', 'casscf'):
+        corr_method = prog_method
+    else:
+        corr_method = ''
+    print('molpro method test since I cant write code...')
+    print(prog_reference, corr_method)
+
+    # Set the geometry (combine opt+constrainted coordinates
+    geo_str, zmat_vval_str, zmat_cval_str = fill.geometry_strings(
+        geo, frozen_coordinates)
+    zmat_val_str = zmat_vval_str + '\n' + zmat_cval_str
 
     # Set the memory; convert from GB to MW
     memory_mw = int(memory * (1024.0 / 8.0))
@@ -97,6 +108,7 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     ismultiref = elstruct.par.Method.is_multiref(method)
     if ismultiref:
         scf_options = []
+        prog_reference = ''
 
     if saddle:
         job_options += ('root=2',)
@@ -129,7 +141,7 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
         fill.TemplateKey.SCF_OPTIONS: ','.join(scf_options),
         fill.TemplateKey.ISMULTIREF: ismultiref,
         fill.TemplateKey.CASSCF_OPTIONS: '\n'.join(casscf_options),
-        fill.TemplateKey.CORR_METHOD: prog_method,
+        fill.TemplateKey.CORR_METHOD: corr_method,
         fill.TemplateKey.CORR_OPTIONS: ','.join(corr_options),
         fill.TemplateKey.JOB_OPTIONS: ';'.join(job_directives),
         fill.TemplateKey.GEN_LINES_1: gen_lines_1,

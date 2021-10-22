@@ -55,7 +55,7 @@ def set_method_and_options(method, corr_options, gen_lines):
         allelec_opt = Option.Corr.ALL_ELEC_
         if allelec_opt not in corr_options:
             corr_options += (allelec_opt,)
-    
+
     if elstruct.par.Method.ModPrefix.REL_DKH[0] in pfxs:
         gen_lines = fill.update_gen_lines(
             gen_lines, lines2=('dkroll=1',))

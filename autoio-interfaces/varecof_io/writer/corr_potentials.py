@@ -5,7 +5,7 @@ Writes the fortran files needed for the correction potential
 import os
 import subprocess
 from ioformat import build_mako_str
-from varecof_io.writer import util
+from varecof_io.writer import _format as vrcformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -72,7 +72,7 @@ def species(rvalues, potentials, bnd_frm_idxs,
     dv_vals = dv_vals.rstrip()
 
     # Build principal distance string
-    bond_distance_string = util.format_corrpot_dist_string(
+    bond_distance_string = vrcformat.format_corrpot_dist_string(
         aidx, bidx, asym, bsym)
 
     # Build distance restriction strings
@@ -80,18 +80,18 @@ def species(rvalues, potentials, bnd_frm_idxs,
     for i, idxs in enumerate(dist_restrict_idxs):
         [idx1, idx2] = idxs
         sym1, sym2 = chr(67+2*i), chr(68+2*i)
-        restrict_distance_strings += util.format_corrpot_dist_string(
+        restrict_distance_strings += vrcformat.format_corrpot_dist_string(
             idx1, idx2, sym1, sym2)
         restrict_distance_strings += '\n'
-        restrict_distance_strings += util.format_restrict_dist_string(
+        restrict_distance_strings += vrcformat.format_restrict_dist_string(
             sym1, sym2, species_name)
         restrict_distance_strings += '\n'
 
     # Build the delmlt string
-    delmlt_string = util.format_delmlt_string(asym, bsym)
+    delmlt_string = vrcformat.format_delmlt_string(asym, bsym)
 
     # Build the spline fitting strings
-    spline_strings = util.format_spline_strings(npot, asym, bsym, species_name)
+    spline_strings = vrcformat.format_spline_strings(npot, asym, bsym, species_name)
 
     # Create dictionary to fill template
     corr_keys = {
