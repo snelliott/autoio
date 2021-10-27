@@ -94,6 +94,8 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     if saddle:
         job_options += ('CALCFC', 'TS', 'NOEIGEN', 'MAXCYCLES=60')
 
+    if 'Tight' in job_options and job_key == 'optimization':
+        job_key = 'tight_optimization'
     # Set the gen lines blocks
     gen_lines_1, _, _ = fill.build_gen_lines(gen_lines)
 

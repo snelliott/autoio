@@ -4,6 +4,7 @@
 import os
 import random
 import math
+import numpy
 import errno
 import signal
 import multiprocessing
@@ -45,25 +46,26 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
     # Allot number of objects for each processor
     num_obj = len(objs)
     nprocs = set_nprocs(num_obj, nprocs=nprocs)
-    obj_per_proc = math.floor(num_obj / nprocs)
-
     # Randomize objects the objects (for distributing workload?)
     # This function may it very hard to debug - removed for now
+    #obj_per_proc = math.ceiling(num_obj / nprocs)
     if nprocs > 1:
         rand_objs = random.sample(objs, num_obj)
     else:
         rand_objs = objs
+    rand_objs_splt = numpy.array_split(rand_objs, nprocs)
 
     # Loop over each processor and launch the process
     output_queue = multiprocessing.Queue()
     procs = []
+
     for proc_n in range(nprocs):
 
         # Generate list of objects to work with for each processor
-        obj_start = proc_n * obj_per_proc
-        obj_end = (proc_n+1) * obj_per_proc if proc_n != nprocs-1 else num_obj
-        obj_lst = rand_objs[obj_start:obj_end]
-
+        # obj_start = proc_n * obj_per_proc
+        # obj_end = (proc_n+1) * obj_per_proc if proc_n != nprocs-1 else num_obj
+        # obj_lst = rand_objs[obj_start:obj_end]
+        obj_lst = rand_objs_splt[proc_n]
         # Create full args to pass to function including
         fxn_args = tuple(args) + (obj_lst, output_queue)
 

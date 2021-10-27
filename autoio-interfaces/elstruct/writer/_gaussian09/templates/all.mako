@@ -22,6 +22,8 @@ ${machine_options}
 ## 2. job options block (when we get to it)
 % if job_key == 'optimization':
 # POpt=(${job_options})
+% elif job_key == 'tight_optimization':
+# Opt=(${job_options})
 % elif job_key == 'gradient':
 # Force=(${job_options})
 ## ^ ensure the the hessian is always printed

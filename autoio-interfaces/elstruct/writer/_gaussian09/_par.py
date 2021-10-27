@@ -33,4 +33,5 @@ OPTION_EVAL_DCT = {
     lambda osp: 'Z-matrix',
     option.name(Option.Opt.Coord.REDUNDANT):
     lambda osp: 'Redundant',
+    'Tight': 'Tight',
 }
