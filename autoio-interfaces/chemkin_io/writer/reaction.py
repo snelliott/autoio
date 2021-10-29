@@ -2,19 +2,50 @@
 Writes Chemkin-formatted strings containing the rate parameters
 """
 
-from chemkin_io.writer import _util
+from chemkin_io.writer import _util as util
 
-# Define the name_buffer between the longest reaction name and the Arr params
-BUFFER = 5
+BUFFER = 5  # buffer between longest reaction name and Arr params
+INLINE_BUFFER = 2  # buffer between Arr params and inline comment
 
 
-def get_ckin_str(rxn, params, max_len=45):
+def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None):
+    """ Write all reactions in a rxn_param_dct to a Chemkin string
+
+        :param rxn_param_dct: fitting parameters for all reactions
+        :type rxn_param_dct: dict {rxn: params}
+        :param rxn_cmts_dct: comments for all reactions
+        :type rxn_cmts_dct: dict {rxn: cmts_dct}
+    """
+
+    rxn_cmts_dct = rxn_cmts_dct or {}  # sets to empty dict if None
+
+    # Get the length of the longest reaction name
+    max_len = 0
+    for rxn in rxn_param_dct.keys():
+        rxn_name = util.format_rxn_name(rxn)
+        if len(rxn_name) > max_len:
+            max_len = len(rxn_name)
+
+    # Write each reaction
+    ckin_str = ''
+    for rxn, params in rxn_param_dct.items():
+        cmts_dct = rxn_cmts_dct.get(rxn)
+        sing_rxn_str = single_rxn(rxn, params, cmts_dct=cmts_dct,
+                                  max_len=max_len)
+        ckin_str += sing_rxn_str
+
+    return ckin_str
+
+
+def single_rxn(rxn, params, cmts_dct=None, max_len=45):
     """ Writes a reaction string from a RxnParams object
 
         :param rxn: tuple describing reactants, products, and third body
         :type rxn: tuple ((rct1, rct2, ...), (prd1, prd2, ...), (thirdbod,))
         :param params: parameters for a reaction
         :type params: autoreact.RxnParams object
+        :param cmts_dct: comments for a single reaction
+        :type cmt_dct: dict {'header': cmt, 'inline': cmt, 'footer': cmt}
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
         :return ckin_str: Chemkin-formatted string describing the reaction
@@ -22,52 +53,64 @@ def get_ckin_str(rxn, params, max_len=45):
     """
 
     # Get the Chemkin string for the chemical reaction
-    reaction = _util.format_rxn_name(rxn)
+    reaction = util.format_rxn_name(rxn)
     # Get the functional forms to write (usually will only be one)
     forms = params.get_existing_forms()
-    # Get information on unusual duplicates (i.e., dup other than Arrhenius)
+    # Get the comment strings
+    if cmts_dct is None:
+        header_cmt = ''
+        inline_cmt = ''
+        footer_cmt = ''
+    else:
+        header_cmt = cmts_dct['header']
+        inline_cmt = cmts_dct['inline']
+        footer_cmt = cmts_dct['footer']
+    # Get information on unusual duplicates (i.e., any dup other than Arrhenius)
     dups, dup_counts = params.check_for_dups()  # dups is a Boolean
 
     # Loop over each functional form and write each one (usually only one)
-    ckin_str = ''
+    ckin_str = header_cmt
     for form in forms:
         if form == 'arr':
-            ckin_str += arr(
-                reaction, params.arr, colliders=params.arr_collid,
-                max_len=max_len)
+            ckin_str += arr(reaction, params.arr, colliders=params.arr_collid,
+                            max_len=max_len, inline_cmt=inline_cmt)
         elif form == 'plog':
-            ckin_str += plog(
-                reaction, params.plog, max_len=max_len)
+            ckin_str += plog(reaction, params.plog, max_len=max_len,
+                             inline_cmt=inline_cmt)
         elif form == 'cheb':
-            ckin_str += cheb(
-                reaction, params.cheb['alpha'], params.cheb['tlim'],
-                params.cheb['plim'], params.cheb['one_atm_arr'],
-                max_len=max_len)
+            ckin_str += cheb(reaction, params.cheb['alpha'],
+                             params.cheb['tlim'], params.cheb['plim'],
+                             params.cheb['one_atm_arr'], max_len=max_len,
+                             inline_cmt=inline_cmt)
         elif form == 'troe':
-            ckin_str += troe(
-                reaction, params.troe['highp_arr'],
-                params.troe['lowp_arr'], params.troe['troe_params'],
-                colliders=params.troe['collid'], max_len=max_len)
+            ckin_str += troe(reaction, params.troe['highp_arr'],
+                             params.troe['lowp_arr'],
+                             params.troe['troe_params'],
+                             colliders=params.troe['collid'], max_len=max_len,
+                             inline_cmt=inline_cmt)
         elif form == 'lind':
-            ckin_str += lind(
-                reaction, params.lind['highp_arr'],
-                params.lind['lowp_arr'],
-                colliders=params.lind['collid'], max_len=max_len)
+            ckin_str += lind(reaction, params.lind['highp_arr'],
+                             params.lind['lowp_arr'],
+                             colliders=params.lind['collid'], max_len=max_len,
+                             inline_cmt=inline_cmt)
         if dups:
             ckin_str += 'DUP\n'
+
+    ckin_str += footer_cmt
 
     # Handle any duplicates that may exist (this is not usual)
     dup_ckin_str = handle_duplicates(reaction, params, dup_counts, max_len)
     ckin_str += dup_ckin_str
+    ckin_str += '\n'
 
     return ckin_str
 
 
 def handle_duplicates(reaction, params, dup_counts, max_len):
     """ Writes any unusual duplicate cases. These only occur in strange cases when
-        more than one functional form (e.g., PLOG and Arrhenius) are described
-        for the same reaction. These should not really occur,
-        but are nonetheless handled here.
+        duplicates of a functional form (e.g., two PLOGs) are described for
+        the same reaction. These should not really occur, but are nonetheless
+        handled here.
 
         :param reaction: Chemkin-formatted reaction name
         :type reaction: str
@@ -119,80 +162,43 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
     return ckin_str
 
 
-def troe(reaction, high_params, low_params, troe_params,
-         colliders=None, max_len=45):
-    """ Writes a reaction in the Troe form
+def arr(reaction, arr_tuples, colliders=None, max_len=45, inline_cmt=None):
+    """ Writes a reaction in the Arrhenius form
 
         :param reaction: Chemkin-formatted reaction name
         :type reaction: str
-        :param high_params: Arrhenius high-P parameters
-        :type high_params: list of floats
-        :param low_params: Arrhenius low-P parameters
-        :type low_params: list of floats
-        :param troe_params: Troe parameters: alpha, T***, T*, and T**
-            (T** is optional)
-        :type troe_params: list of floats
-        :param colliders: collision enhancement factors for bath gases
-        :type colliders: list((str, float))
+        :param arr_tuples: Arrhenius high-P (i.e., high-P) parameters
+        :type arr_tuples: tuple of tuples ((A1, n1, Ea1), (A2, n2, Ea2), ...)
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
-        :return troe_str: Chemkin reaction string with Troe parameters
+        :return arr_str: Chemkin reaction string with Arrhenius parameters
         :rtype: str
     """
 
-    assert len(high_params[0]) == 3, (
-        f'{len(high_params)} highP params for {reaction}, should be 3')
-    assert len(low_params[0]) == 3, (
-        f'{len(low_params)} lowP params for {reaction}, should be 3')
-    assert len(troe_params) in (3, 4), (
-        f'{len(troe_params)} Troe params for {reaction}, should be 3 or 4')
-
-    troe_str = _highp_str(reaction, high_params[0], max_len=max_len)
-    troe_str += _lowp_str(low_params[0], max_len=max_len)
-    troe_str += _misc_troe_cheb('TROE', troe_params, newline=True,
-                                val='exp')
+    # Write the Arrhenius parameter string
+    arr_str = ''
+    for idx, arr_tuple in enumerate(arr_tuples):
+        if idx != 0:
+            inline_cmt = None  # this prevents duplicate inline comments
+        arr_str += _highp_str(reaction, arr_tuple, max_len=max_len,
+                              inline_cmt=inline_cmt)
+        if len(arr_tuples) > 1:
+            arr_str += 'DUP\n'
 
     # Write the collider efficiencies string
-    if colliders:
-        troe_str += _format_collider_string(colliders)
+    if colliders is not None:
+        arr_str += _format_collider_string(colliders)
 
-    return troe_str
-
-
-def lind(reaction, high_params, low_params, colliders=None, max_len=45):
-    """ Writes a reaction in the Lindemann form
-
-        :param reaction: Chemkin-formatted reaction name
-        :type reaction: str
-        :param high_params: Arrhenius high-P parameters
-        :type high_params: list of floats
-        :param low_params: Arrhenius low-P parameters
-        :type low_params: list of floats
-        :param colliders: names and collision enhancement factors for bathgases
-        :type colliders: list((str, float))
-        :param max_len: length of the longest reaction name in the mechanism
-        :type max_len: int
-        :return lind_str: Chemkin reaction string with Lindemann parameters
-        :rtype: str
-    """
-
-    lind_str = _highp_str(reaction, high_params[0], max_len=max_len)
-    lind_str += _lowp_str(low_params[0], max_len=max_len)
-
-    # Write the collider efficiencies string
-    if colliders:
-        lind_str += _format_collider_string(colliders)
-
-    return lind_str
+    return arr_str
 
 
-def plog(reaction, plog_param_dct, max_len=45):
+def plog(reaction, plog_dct, max_len=45, inline_cmt=None):
     """ Writes a reaction in the PLOG form
 
         :param reaction: Chemkin-formatted reaction name
         :type reaction: str
-        :param plog_param_dct: Arrhenius fitting parameters at all pressures
-        :type plog_param_dct: dict{pressure: [Arrhenius params]}
+        :param plog_dct: Arrhenius fitting parameters at all pressures
+        :type plog_dct: dict{pressure: [Arrhenius params]}
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
         :return plog_str: Chemkin reaction string with PLOG parameters
@@ -223,31 +229,20 @@ def plog(reaction, plog_param_dct, max_len=45):
         return single_str
 
     # Obtain a list of the pressures and sort from low to high pressure
-    unsorted_pressures = plog_param_dct.keys()
+    unsorted_pressures = plog_dct.keys()
     pressures = sorted(unsorted_pressures)
 
-    # Write the header for the reaction, which includes the 1-atm fit if avail
+    # Write the header for the reaction
     if 1 in pressures:
-        if len(plog_param_dct[1]) > 1:
-            comment = (
-                'Duplicates exist at 1 atm (see below);' +
-                ' only single 1-atm fit is written')
-            plog_str = _highp_str(
-                reaction, plog_param_dct[1][0], max_len=max_len,
-                inline_comment=comment)
-        else:
-            comment = 'Arrhenius parameters at 1 atm'
-            plog_str = _highp_str(
-                reaction, plog_param_dct[1][0], max_len=max_len,
-                inline_comment=comment)
+        header_params = plog_dct[1][0]  # 1 atm fit if available
     else:
-        comment = 'No fit at 1 atm available'
-        plog_str = _highp_str(reaction, [1.0, 0.0, 0.0], max_len=max_len,
-                              inline_comment=comment)
+        header_params = [1.0, 0.0, 0.0]  # otherwise, fake params
+    plog_str = _highp_str(
+        reaction, header_params, max_len=max_len, inline_cmt=inline_cmt)
 
     # Loop over each pressure
     for pressure in pressures:
-        plog_params = plog_param_dct[pressure]
+        plog_params = plog_dct[pressure]
         for param_set in plog_params:
             assert len(param_set) % 3 == 0, (
                 f'Arr params should be a multiple of 3, is {len(param_set)}' +
@@ -264,7 +259,8 @@ def plog(reaction, plog_param_dct, max_len=45):
     return plog_str
 
 
-def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45):
+def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45,
+         inline_cmt=None):
     """ Writes a reaction in the Chebyshev form
 
         :param reaction: Chemkin-formatted reaction name
@@ -283,26 +279,20 @@ def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45):
         :rtype: str
     """
 
-    # Write reaction header (with third body added) and high-pressure params
-    if one_atm_arr is not None:
-        comment = 'Arrhenius parameters at 1 atm'
-    else:  # if the params look fake
-        comment = None
-        one_atm_arr = [[1, 0, 0]]
+    # Write reaction header
+    if one_atm_arr is None:
+        one_atm_arr = [[1, 0, 0],]
     cheb_str = _highp_str(reaction, one_atm_arr[0], max_len=max_len,
-                          inline_comment=comment)
+                          inline_cmt=inline_cmt)
 
     # Write the temperature and pressure ranges
-    cheb_str += _misc_troe_cheb(
-        'TCHEB', tlim, newline=True, val='float')
-    cheb_str += _misc_troe_cheb(
-        'PCHEB', plim, newline=True, val='float')
+    cheb_str += _misc_troe_cheb('TCHEB', tlim, newline=True, val='float')
+    cheb_str += _misc_troe_cheb('PCHEB', plim, newline=True, val='float')
 
     # Write the dimensions of the alpha matrix
     nrows = len(alpha)
     ncols = len(alpha[0])
-    cheb_str += _misc_troe_cheb(
-        'CHEB', (nrows, ncols), newline=True, val='int')
+    cheb_str += _misc_troe_cheb('CHEB', (nrows, ncols), newline=True, val='int')
 
     # Write the parameters from the alpha matrix
     for row in alpha:
@@ -311,88 +301,76 @@ def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45):
     return cheb_str
 
 
-def arr(reaction, arr_tuples, colliders=None, max_len=45):
-    """ Writes a reaction in the Arrhenius form
+def troe(reaction, high_params, low_params, troe_params, colliders=None,
+         max_len=45, inline_cmt=None):
+    """ Writes a reaction in the Troe form
 
         :param reaction: Chemkin-formatted reaction name
         :type reaction: str
-        :param arr_tuples: Arrhenius high-P (i.e., high-P) parameters
-        :type arr_tuples: tuple of tuples ((A1, n1, Ea1), (A2, n2, Ea2), ...)
+        :param high_params: Arrhenius high-P parameters
+        :type high_params: list of floats
+        :param low_params: Arrhenius low-P parameters
+        :type low_params: list of floats
+        :param troe_params: Troe parameters: alpha, T***, T*, and T**
+            (T** is optional)
+        :type troe_params: list of floats
+        :param colliders: collision enhancement factors for bath gases
+        :type colliders: list((str, float))
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
-        :return arr_str: Chemkin reaction string with Arrhenius parameters
+        :return troe_str: Chemkin reaction string with Troe parameters
         :rtype: str
     """
 
-    # Write the Arrhenius parameter string
-    arr_str = ''
-    for arr_tuple in arr_tuples:
-        arr_str += _highp_str(reaction, arr_tuple, max_len=max_len)
-        if len(arr_tuples) > 1:
-            arr_str += 'DUP\n'
+    assert len(high_params[0]) == 3, (
+        f'{len(high_params)} highP params for {reaction}, should be 3')
+    assert len(low_params[0]) == 3, (
+        f'{len(low_params)} lowP params for {reaction}, should be 3')
+    assert len(troe_params) in (3, 4), (
+        f'{len(troe_params)} Troe params for {reaction}, should be 3 or 4')
+
+    troe_str = _highp_str(reaction, high_params[0], max_len=max_len,
+                          inline_cmt=inline_cmt)
+    troe_str += _lowp_str(low_params[0], max_len=max_len)
+    troe_str += _misc_troe_cheb('TROE', troe_params, newline=True, val='exp')
 
     # Write the collider efficiencies string
-    if colliders is not None:
-        arr_str += _format_collider_string(colliders)
+    if colliders:
+        troe_str += _format_collider_string(colliders)
 
-    return arr_str
+    return troe_str
 
 
-# Various formatting functions
-def fit_info(pressures, temp_dct, err_dct):
-    """ Write the string detailing the temperature ranges and fitting errors
-        associated with the rate-constant fits at each pressure.
+def lind(reaction, high_params, low_params, colliders=None, max_len=45,
+         inline_cmt=None):
+    """ Writes a reaction in the Lindemann form
 
-        :param pressures: pressures the k(T,P)s were calculated at
-        :type pressures: list(float)
-        :param temp_dct: temperature ranges (K) fits were done at each pressure
-        :type temp_dct: dict[pressure, [temp range]]
-        :param err_dct: errors associated with the fits at each pressure
-        :type err_dct: dict[pressure, [mean err, max err]]
-        :return inf_str: string containing all of the fitting info
+        :param reaction: Chemkin-formatted reaction name
+        :type reaction: str
+        :param high_params: Arrhenius high-P parameters
+        :type high_params: list of floats
+        :param low_params: Arrhenius low-P parameters
+        :type low_params: list of floats
+        :param colliders: names and collision enhancement factors for bathgases
+        :type colliders: list((str, float))
+        :param max_len: length of the longest reaction name in the mechanism
+        :type max_len: int
+        :return lind_str: Chemkin reaction string with Lindemann parameters
         :rtype: str
     """
-    # Make temp, err dcts empty if fxn receives None; add 'high' to pressures
-    temp_dct = temp_dct if temp_dct else {}
-    err_dct = err_dct if err_dct else {}
-    if 'high' in temp_dct or 'high' in err_dct:
-        pressures += ['high']
 
-    # Check the temp and err dcts have same presures as rate_dcts
-    if temp_dct:
-        assert set(pressures) == set(temp_dct.keys())
-    err_dct = err_dct if err_dct else {}
-    if err_dct:
-        assert set(pressures) == set(err_dct.keys())
+    lind_str = _highp_str(reaction, high_params[0], max_len=max_len,
+                          inline_cmt=inline_cmt)
+    lind_str += _lowp_str(low_params[0], max_len=max_len)
 
-    # Write string showing the temp fit range and fit errors
-    inf_str = '! Info Regarding Rate Constant Fits\n'
-    for pressure in pressures:
-        if temp_dct:
-            [min_temp, max_temp] = temp_dct[pressure]
-            temps_str = f'{min_temp:.0f}-{max_temp:.0f} K'
-            temp_range_str = f'Temps: {temps_str:>12s}, '
-        else:
-            temp_range_str = ''
-        if err_dct:
-            [mean_err, max_err] = err_dct[pressure]
-            err_str = (
-                f'{"MeanAbsErr:":11s} {mean_err:>5.1f}%,  '
-                f'{"MaxErr:":7s} {max_err:>5.1f}%')
-        else:
-            err_str = ''
+    # Write the collider efficiencies string
+    if colliders:
+        lind_str += _format_collider_string(colliders)
 
-        # Put together the whole info string
-        if pressure != 'high':
-            pstr = f'{pressure:<9.3f}'
-        else:
-            pstr = f'{"High":<9s}'
-        inf_str += f'! Pressure: {pstr} {temp_range_str} {err_str}\n'
-
-    return inf_str
+    return lind_str
 
 
-def _highp_str(reaction, arr_tuple, max_len=45, inline_comment=None):
+def _highp_str(reaction, arr_tuple, max_len=45, inline_cmt=None):
     """ Write a single set of high-pressure Arrhenius parameters
 
         :param reaction: Chemkin-formatted reaction name
@@ -401,8 +379,8 @@ def _highp_str(reaction, arr_tuple, max_len=45, inline_comment=None):
         :type arr_tuple: tuple (or list) of floats (A, n, Ea)
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
-        :param inline_comment: optional inline comment
-        :type inline_comment: str
+        :param inline_cmt: optional inline comment
+        :type inline_cmt: str
         :return highp_str: Chemkin reaction string with high-P Arrhenius params
         :rtype: str
     """
@@ -413,15 +391,15 @@ def _highp_str(reaction, arr_tuple, max_len=45, inline_comment=None):
         '{0:<' + highp_buffer + 's}{1:<10.3E}{2:>9.3f}{3:>9.0f}').format(
             reaction, a_par, n_par, ea_par)
 
-    if inline_comment:
-        highp_str += '   ! ' + inline_comment
+    if inline_cmt:
+        highp_str += ' ' * INLINE_BUFFER + inline_cmt
 
     highp_str += '\n'
 
     return highp_str
 
 
-def _lowp_str(arr_tuple, max_len=45, inline_comment=None):
+def _lowp_str(arr_tuple, max_len=45):
     """ Write a single set of low-pressure Arrhenius parameters (i.e., w/'LOW')
 
         :param reaction: Chemkin-formatted reaction name
@@ -430,8 +408,6 @@ def _lowp_str(arr_tuple, max_len=45, inline_comment=None):
         :type arr_tuple: tuple (or list) of floats (A, n, Ea)
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
-        :param inline_comment: optional inline comment
-        :type inline_comment: str
         :return lowp_str: Chemkin reaction string with low-P Arrhenius params
         :rtype: str
     """
@@ -441,9 +417,6 @@ def _lowp_str(arr_tuple, max_len=45, inline_comment=None):
     lowp_str = (
         '{0:<' + lowp_buffer + 's}{1:<10.3E}{2:>9.3f}{3:>9.0f}  /').format(
             '    LOW  /', a_par, n_par, ea_par)
-
-    if inline_comment:
-        lowp_str += '   ! ' + inline_comment
 
     lowp_str += '\n'
 

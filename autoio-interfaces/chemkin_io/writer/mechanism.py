@@ -2,15 +2,13 @@
 Write various parts of a Chemkin mechanism file
 """
 
-from chemkin_io.writer import reaction as writer_reac
-from chemkin_io.writer import thermo as writer_therm
-from chemkin_io.writer import _util as util
+from chemkin_io.writer import reaction
+from chemkin_io.writer import thermo
 
 
 def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
-                       rxn_param_dct=None):
-    """ Writes a Chemkin-formatted mechanism and/or thermo file. Writes
-        the output to a text file.
+                       rxn_param_dct=None, rxn_cmts_dct=None):
+    """ Writes a Chemkin-formatted mechanism and/or thermo file as a string
 
         :param elem_tuple: tuple containing the element names
         :type elem_tuple: tuple
@@ -20,6 +18,10 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
         :type spc_nasa7_dct: {spc_name:NASA-7 parameters}
         :param rxn_param_dct: containing the reaction parameters
         :type rxn_param_dct: {rxn:params}
+        :param rxn_cmts_dct: comment information for each reaction
+        :type rxn_cmts_dct: dict {rxn: cmts_dct}
+        :return total_str: the raw text for the Chemkin-formatted file
+        :rtype: str
     """
 
     total_str = ''
@@ -33,7 +35,7 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
         thermo_str = thermo_block(spc_nasa7_dct)
         total_str += thermo_str
     if rxn_param_dct:
-        rxn_str = reactions_block(rxn_param_dct)
+        rxn_str = reactions_block(rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct)
         total_str += rxn_str
 
     return total_str
@@ -101,33 +103,38 @@ def thermo_block(spc_nasa7_dct):
     thermo_str = 'THERMO \n'
     thermo_str += '200.00    1000.00   5000.000  \n\n'
     for spc_name, params in spc_nasa7_dct.items():
-        thermo_str += writer_therm.thermo_entry(spc_name, params)
+        thermo_str += thermo.thermo_entry(spc_name, params)
 
     thermo_str += '\nEND\n\n\n'
 
     return thermo_str
 
 
-def reactions_block(rxn_param_dct):
-    """ Writes the reaction block of the mechanism file
+def reactions_block(rxn_param_dct, rxn_cmts_dct=None):
+    """ Writes the reaction block of the mechanism file, with optional comments
 
         :param rxn_param_dct: dct containing the reaction parameters
         :type rxn_param_dct: dct {rxn: params}
+        :param rxn_cmts_dct: comment information for each reaction; may also
+            include a comment for the entire reactions block
+        :type rxn_cmts_dct: dict {rxn: cmts_dct}
         :return total_rxn_str: str containing the reaction block
         :rtype: str
     """
 
-    # Get the length of the longest reaction name
-    max_len = 0
-    for rxn in rxn_param_dct.keys():
-        rxn_name = util.format_rxn_name(rxn)
-        if len(rxn_name) > max_len:
-            max_len = len(rxn_name)
+    # Get the overall reactions block comment, if it exists
+    if rxn_cmts_dct is not None:
+        block_cmt = rxn_cmts_dct.get('block')
+        if block_cmt is None:  # if not in the rxn_cmts_dct, set to empty str
+            block_cmt = ''
+    else:
+        block_cmt = ''
 
+    # Write the reactions block
     rxn_str = 'REACTIONS     CAL/MOLE     MOLES\n\n'
-    for rxn, params in rxn_param_dct.items():
-        sing_rxn_str = writer_reac.get_ckin_str(rxn, params, max_len=max_len)
-        rxn_str += sing_rxn_str
+    rxn_str += block_cmt
+    rxn_str += reaction.write_rxn_param_dct(
+        rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct)
     rxn_str += '\n\nEND\n\n'
 
     return rxn_str
