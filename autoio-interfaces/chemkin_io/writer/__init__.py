@@ -6,7 +6,8 @@ from chemkin_io.writer import mechanism
 from chemkin_io.writer import reaction
 from chemkin_io.writer import thermo
 from chemkin_io.writer import transport
-from chemkin_io.writer._util import format_rxn_name
+from chemkin_io.writer import comments
+from chemkin_io.writer import _util
 
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     'reaction',
     'thermo',
     'transport',
-    'format_rxn_name'
+    'comments',
+    '_util'
 ]
