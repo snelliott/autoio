@@ -339,3 +339,9 @@ def _read_irc_reaction_path_summary(output_str, read_val):
         values = None
 
     return values
+
+
+if __name__ == '__main__':
+    with open('output.dat', encoding='utf-8') as fobj:
+        OUT_STR = fobj.read()
+    normal_coordinates(OUT_STR)

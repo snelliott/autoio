@@ -1,0 +1,17 @@
+%mem=20GB
+%NProcShared=10
+#P wb97xd/6-31g*
+# SCF=(xqc)
+# Opt
+# Freq=()
+# IOp(7/33=1)
+# int=ultrafine
+
+comment: 
+
+0 2
+C    0.00   0.0   0.000000
+O    1.219  -0.0   0.000000
+H   -1.084   0.0   0.000000
+  Variables:
+
