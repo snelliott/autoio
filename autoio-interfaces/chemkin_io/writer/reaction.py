@@ -219,8 +219,14 @@ def plog(reaction, plog_dct, max_len=45, inline_cmt=None):
             :rtype: str
         """
 
-        plog_buffer = str(max_len + BUFFER - 12)
+        plog_buffer = max_len + BUFFER - 12
+        if plog_buffer < 0:
+            plog_buffer = '0'
+        else:
+            plog_buffer = str(plog_buffer)
+
         [a_par, n_par, ea_par] = params
+
         single_str = (
             '{0:<' + plog_buffer +
             's}{1:<12.3E}{2:<10.3E}{3:>9.3f}{4:>9.0f} /\n').format(
