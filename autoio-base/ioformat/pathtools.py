@@ -142,7 +142,7 @@ def read_numpy_file(path, file_name):
         np_arr = numpy.loadtxt(file_str_io)
     else:
         np_arr = None
-        print('ERROR: file ', file_name, 'at path ', path, ' does not exist')
+        print('WARNING: file ', file_name, 'at path ', path, ' does not exist')
 
     return np_arr
 
@@ -174,6 +174,6 @@ def read_json_file(path, file_name):
             json_dct = json.load(fobj)
     else:
         json_dct = None
-        print('ERROR: file ', file_name, 'at path ', path, ' does not exist')
+        print('WARNING: file ', file_name, 'at path ', path, ' does not exist')
 
     return json_dct
