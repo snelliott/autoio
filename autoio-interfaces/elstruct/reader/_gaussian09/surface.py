@@ -2,7 +2,7 @@
 """
 
 import numpy
-from phydat import ptab
+from phydat import phycon, ptab
 import automol
 import autoread as ar
 from autoparse import cast as _cast
@@ -118,31 +118,26 @@ def normal_coordinates(output_str):
     )
 
     # Read the normal coordinate modes
-    nmats = []
+    nmodes = ()
     for mode in apf.split('Frequencies', output_str)[1:]:
         mat = None
+        # Parse out coords by trying all possibilities of nfreq cols printed
         for start in start_ptt_lst:
             _ptt = app.padded(app.NEWLINE).join([app.escape(start), ''])
             mat = ar.matrix.read(
-                mode,
-                start_ptt=_ptt,
-                line_start_ptt=comp_ptt)
+                mode, start_ptt=_ptt, line_start_ptt=comp_ptt)
             if mat is not None:
+                # If pattern found, slice 3xN mat into N 3x3 mats
+                # where N/3 corresponds to number of freq columns parsed
+                nmat = numpy.array(mat) * phycon.ANG2BOHR
+                _, ncols = numpy.shape(nmat)
+                for i in range(int(ncols/3)):
+                    nmodes += (nmat[:, i*3:(i+1)*3],)
                 break
-        nmats.append(mat)
 
-    # Parse the coordinates out of the matrices if all matrices found
-    if all(mat is not None for mat in nmats):
-        nmodes = ()
-        for mat in nmats:
-            nmat = numpy.array(mat)
-            for i in range(int(len(nmat)/3)):
-                nmodes += (nmat[:, i*3:(i+1)*3],)
-    else:
+    # Set nmodes to None if nothing found from apf.split command
+    if not nmodes:
         nmodes = None
-
-    print('normal coords test')
-    print(nmodes)
 
     return nmodes
 
@@ -339,9 +334,3 @@ def _read_irc_reaction_path_summary(output_str, read_val):
         values = None
 
     return values
-
-
-if __name__ == '__main__':
-    with open('output.dat', encoding='utf-8') as fobj:
-        OUT_STR = fobj.read()
-    normal_coordinates(OUT_STR)
