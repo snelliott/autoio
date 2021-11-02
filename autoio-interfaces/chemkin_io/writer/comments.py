@@ -34,11 +34,12 @@ def get_rxn_cmts_dct(rxn_err_dct=None, rxn_ref_dct=None, rxn_sort_dct=None,
 
         # Load the data to write the strings
         err_dct = rxn_err_dct.get(rxn)
-        # add something here later for references and sorting
+        sort_dct = rxn_sort_dct.get(rxn)
+        # add something here later for references
 
         # Get the comment strings
-        header_cmt = get_header_cmt()
-        inline_cmt = get_inline_cmt()
+        header_cmt = get_header_cmt(sort_dct)
+        inline_cmt = get_inline_cmt(sort_dct)
         footer_cmt = get_footer_cmt(err_dct=err_dct)
 
         # Store the comments
@@ -54,26 +55,34 @@ def get_rxn_cmts_dct(rxn_err_dct=None, rxn_ref_dct=None, rxn_sort_dct=None,
     return rxn_cmts_dct
 
 
-def get_header_cmt():
-    """ Gets the header comments for a single reaction (useless for now)
+def get_header_cmt(sort_dct=None):
+    """ Gets the header comments for a single reaction
 
+        :param sort_dct: sorting comments for a single reaction
+        :type sort_dct: dict {'cmts_top': cmt, 'cmts_inline': cmt}
         :return header_cmt: header comment for a single reaction
         :rtype: str
     """
 
     header_cmt = ''
+    if sort_dct is not None:
+        header_cmt += sort_dct['cmts_top']
 
     return header_cmt
 
 
-def get_inline_cmt():
-    """ Gets the inline comments for a single reaction (useless for now)
+def get_inline_cmt(sort_dct=None):
+    """ Gets the inline comments for a single reaction
 
+        :param sort_dct: sorting comments for a single reaction
+        :type sort_dct: dict {'cmts_top': cmt, 'cmts_inline': cmt}
         :return inline_cmt: inline comment for a single reaction
         :rtype: str
     """
 
     inline_cmt = ''
+    if sort_dct is not None:
+        inline_cmt += sort_dct['cmts_inline']
 
     return inline_cmt
 
