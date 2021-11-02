@@ -16,12 +16,12 @@ def get_rxn_ktp_dct(out_str, label_dct=None, read_fake=False, read_self=False,
     # Get the MESS rxn pairs (e.g., ('W1', 'P1'))
     rxns = reactions(out_str, read_fake=read_fake, read_self=read_self,
                      read_rev=read_rev)
-    # For each rxn pair, get rate constants, with filtering as indicated 
+    # For each rxn pair, get rate constants, with filtering as indicated
     mess_rxn_ktp_dct = {}
     for rxn in rxns:
         rct, prd = rxn
-        mess_rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd, 
-                                        filter_kts=filter_kts, tmin=tmin, 
+        mess_rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd,
+                                        filter_kts=filter_kts, tmin=tmin,
                                         tmax=tmax, pmin=pmin, pmax=pmax,
                                         convert=convert)
     # Reformat the dictionary keys to follow the tuple of tuples format
@@ -515,7 +515,7 @@ def _reaction_header(reactant, product):
 def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
     """ Filters out bad or undesired rate constants from a ktp dictionary
 
-    """ 
+    """
 
     def get_valid_tk(temps, kts, bimol, tmin=None, tmax=None,
                      bimolthresh=1.0e-24):
@@ -525,7 +525,7 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
             (2) k(T) is undefined from Master Equation (i.e. k(T) is None)
             (3) k(T) < some threshold for bimolecular reactions, or
             (4) T is outside the cutoff
-    
+
             :param temps: temperatures at which rate constants are defined (K)
             :type temps: list(float)
             :param kts: rate constants (s-1 or cm^3.s-1)
@@ -539,13 +539,13 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
             :return valid_k: List of vaild rate constants
             :rtype: (numpy.ndarray, numpy.ndarray)
             """
-    
+
         # Set max temperature
         if tmax is None:
             tmax = max(temps)
         else:
             assert tmax in temps, ('{} not in temps: {}'.format(tmax, temps))
-    
+
         # Set min temperature to user input, if none use either
         # min of input temperatures or
         # if negative kts are found, set min temp to be just above highest neg.
@@ -565,7 +565,7 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
                 tmin = min(temps)
         else:
             assert tmin in temps, ('{} not in temps: {}'.format(tmin, temps))
-    
+
         # Grab the temperature, rate constant pairs which correspond to
         # temp > 0, temp within tmin and tmax, rate constant defined (not ***)
         valid_t, valid_k = [], []
@@ -577,11 +577,11 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
                 if float(sing_kt) > kthresh and tmin <= temp <= tmax:
                     valid_t.append(temp)
                     valid_k.append(sing_kt)
-    
+
         # Convert the lists to numpy arrays
         valid_t = numpy.array(valid_t, dtype=numpy.float64)
         valid_k = numpy.array(valid_k, dtype=numpy.float64)
-    
+
         return valid_t, valid_k
 
     # Filter the kts based on temps, negatives, None, and bimolthresh
@@ -591,10 +591,10 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
         if filt_kts.size > 0:
             filt_ktp_dct[pressure] = (filt_temps, filt_kts)
 
-    # Remove undesired pressures if pmin and/or pmax were given (leaves 'high' 
+    # Remove undesired pressures if pmin and/or pmax were given (leaves 'high'
     # untouched if it is present)
     pressures = tuple(pressure for pressure in filt_ktp_dct.keys()
-                      if pressure != 'high') 
+                      if pressure != 'high')
     for pressure in pressures:
         if pmin is not None:
             if pressure < pmin:
@@ -607,7 +607,7 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
 
 
 def translate_rxn_names(mess_rxn_ktp_dct, label_dct=None):
-    """ 
+    """
 
         note to self: label_dct: {mech_name: MESS_name}
 
@@ -619,7 +619,7 @@ def translate_rxn_names(mess_rxn_ktp_dct, label_dct=None):
     def mess_pairs_to_rxn(rxn_pair, inv_label_dct=None):
         """ Convert the rxn pair of MESS names to the rxn tuple format
 
-        """ 
+        """
         mess_rct, mess_prd = rxn_pair
 
         # If a label_dct was given, rename MESS labels to the mechanism labels
@@ -627,7 +627,7 @@ def translate_rxn_names(mess_rxn_ktp_dct, label_dct=None):
             mech_rct = inv_label_dct[mess_rct].split('+')  # split bimol
             mech_prd = inv_label_dct[mess_prd].split('+')
             rxn = (tuple(mech_rct), tuple(mech_prd), (None,))
-            
+
         # Otherwise, reformat the MESS labels slightly to the rxn key format
         # (this is the format that all the fitting and Chemkin codes use)
         else:
