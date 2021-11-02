@@ -1,6 +1,7 @@
 """ elstruct parameters
 """
 
+from automol.util import sort_by_list
 from elstruct import pclass
 from elstruct import option
 
@@ -396,7 +397,7 @@ class Method():
                    cls.ModPrefix.DF[0],
                    cls.ModPrefix.L_PNO[0],
                    cls.ModPrefix.REL_DKH[0])
-        return tuple(sorted(list(pfx_lst), key=lambda x: ord_lst.index(x)))
+        return sort_by_list(pfx_lst, ord_lst)
 
     @classmethod
     def evaluate_method_type(cls, name):
