@@ -91,7 +91,8 @@ def species(rvalues, potentials, bnd_frm_idxs,
     delmlt_string = vrcformat.format_delmlt_string(asym, bsym)
 
     # Build the spline fitting strings
-    spline_strings = vrcformat.format_spline_strings(npot, asym, bsym, species_name)
+    spline_strings = vrcformat.format_spline_strings(
+        npot, asym, bsym, species_name)
 
     # Create dictionary to fill template
     corr_keys = {

@@ -65,7 +65,7 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45):
         header_cmt = cmts_dct['header']
         inline_cmt = cmts_dct['inline']
         footer_cmt = cmts_dct['footer']
-    # Get information on unusual duplicates (i.e., any dup other than Arrhenius)
+    # Get information on unusual duplicates (i.e., dup other than Arrhenius)
     dups, dup_counts = params.check_for_dups()  # dups is a Boolean
 
     # Loop over each functional form and write each one (usually only one)
@@ -287,7 +287,7 @@ def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45,
 
     # Write reaction header
     if one_atm_arr is None:
-        one_atm_arr = [[1, 0, 0],]
+        one_atm_arr = [[1, 0, 0]]
     cheb_str = _highp_str(reaction, one_atm_arr[0], max_len=max_len,
                           inline_cmt=inline_cmt)
 
@@ -298,7 +298,8 @@ def cheb(reaction, alpha, tlim, plim, one_atm_arr=None, max_len=45,
     # Write the dimensions of the alpha matrix
     nrows = len(alpha)
     ncols = len(alpha[0])
-    cheb_str += _misc_troe_cheb('CHEB', (nrows, ncols), newline=True, val='int')
+    cheb_str += _misc_troe_cheb(
+        'CHEB', (nrows, ncols), newline=True, val='int')
 
     # Write the parameters from the alpha matrix
     for row in alpha:

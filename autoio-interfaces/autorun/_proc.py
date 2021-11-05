@@ -3,12 +3,12 @@
 
 import os
 import random
-import math
-import numpy
+# import math
 import errno
 import signal
 import multiprocessing
 from functools import wraps
+import numpy
 
 
 def set_nprocs(nobjs, nprocs='auto'):
@@ -48,7 +48,7 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
     nprocs = set_nprocs(num_obj, nprocs=nprocs)
     # Randomize objects the objects (for distributing workload?)
     # This function may it very hard to debug - removed for now
-    #obj_per_proc = math.ceiling(num_obj / nprocs)
+    # obj_per_proc = math.ceiling(num_obj / nprocs)
     if nprocs > 1:
         rand_objs = random.sample(objs, num_obj)
     else:
@@ -63,7 +63,8 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
 
         # Generate list of objects to work with for each processor
         # obj_start = proc_n * obj_per_proc
-        # obj_end = (proc_n+1) * obj_per_proc if proc_n != nprocs-1 else num_obj
+        # obj_end = (proc_n+1) * obj_per_proc
+        # if proc_n != nprocs-1 else num_obj
         # obj_lst = rand_objs[obj_start:obj_end]
         obj_lst = rand_objs_splt[proc_n]
         # Create full args to pass to function including

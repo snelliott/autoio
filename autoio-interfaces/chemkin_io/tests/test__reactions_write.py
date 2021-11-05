@@ -54,14 +54,14 @@ TROE_DCT = {'highp_arr': [[1e12, 1.5, 50000]],
             'lowp_arr': [[1e12, 1.5, 50000]],
             'troe_params': [1.5, 8000, 100, 1000],
             'collid': {'AR': 1.4, 'N2': 1.7}}
-TROE_PARAMS = RxnParams(troe_dct=TROE_DCT) 
+TROE_PARAMS = RxnParams(troe_dct=TROE_DCT)
 TROE_RXN_PARAM_DCT = {RXN2: TROE_PARAMS}
 
 # Define stuff for testing Lindemann
 LIND_DCT = {'highp_arr': [[1e12, 1.5, 50000]],
             'lowp_arr': [[1e12, 1.5, 50000]],
             'collid': {'AR': 1.4, 'N2': 1.7}}
-LIND_PARAMS = RxnParams(lind_dct=LIND_DCT) 
+LIND_PARAMS = RxnParams(lind_dct=LIND_DCT)
 LIND_RXN_PARAM_DCT = {RXN2: LIND_PARAMS}
 
 # Define stuff for testing duplicates of two PLOGs
@@ -127,9 +127,10 @@ def test_arr():
 def test_plog():
     """ Tests the PLOG writer
     """
-    ref_ckin_str = ('REACTIONS     CAL/MOLE     MOLES\n\n'
+    ref_ckin_str = (
+        'REACTIONS     CAL/MOLE     MOLES\n\n'
         'H+O2=OH+O     1.000E+15     0.000    25000\n'
-        '    PLOG /1.000E-01   1.000E+15     0.000    25000 /\n' 
+        '    PLOG /1.000E-01   1.000E+15     0.000    25000 /\n'
         '    PLOG /1.000E+00   1.000E+15     0.000    25000 /\n'
         '    PLOG /1.000E+00   1.000E+15     0.000    25000 /\n'
         '    PLOG /1.000E+02   1.000E+15     0.000    25000 /\n\n\n\nEND\n\n')
