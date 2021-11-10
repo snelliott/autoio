@@ -1,7 +1,7 @@
 """ Format utilities
 """
 
-import numpy as np
+# import numpy as np
 import automol.geom
 
 

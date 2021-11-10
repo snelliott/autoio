@@ -95,7 +95,7 @@ jobs:
                     pytest -v --cov=elstruct . --cov-report=html
                     coverage report
             - run:
-                name: Test autoio-interfaces_pylint
+                name: Test autoio-interfaces format
                 command: |
                     cd autoio-interfaces
                     source activate autoio-interfaces-env
@@ -169,7 +169,7 @@ jobs:
                     pytest . -v --disable-pytest-warnings --cov=ioformat --pyargs ioformat --cov-report=html
                     coverage report
             - run:
-                name: Test autoio-base_pylint
+                name: Test autoio-base format
                 command: |
                     cd autoio-base
                     source activate autoio-base-env

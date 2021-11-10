@@ -23,7 +23,7 @@ REACTANT = 'W1'
 PRODUCT = 'W3'
 
 # Define things for testing the filtering function
-KTP_DCT1 = { 
+KTP_DCT1 = {
     # Weird negative, non-physical k(T)s and undefined k(T)s
     0.01: ((200., 400., 600., 800., 1000., 1200.),
            (-1.0e3, 2.0e3, -3.0e3, None, None, None)),
@@ -40,13 +40,13 @@ KTP_DCT1 = {
     100.0: ((200., 400., 600., 800., 1000., 1200.),
             (1.0e7, 2.0e7, 3.0e7, 4.0e7, 5.0e7, 6.0e7))}
 # Handles very small rate constants that may not wish to be modelled
-KTP_DCT2 = { 
+KTP_DCT2 = {
     0.01: ((200., 400., 600., 800., 1000., 1200.),
            (1.0e-25, 5.0e-25, 9.0e-24, 1.5e-23, 6.5e-22, 1.0e-20)),
     1.0: ((200., 400., 600., 800., 1000., 1200.),
           (8.0e-25, 3.0e-24, 2.0e-22, 6.0e-20, 2.5e-18, 5.0e-16)),}
 # Dict that should come back empty after filter
-KTP_DCT3 = { 
+KTP_DCT3 = {
     0.01: ((200., 400., 600., 800., 1000., 1200.),
            (-1.0e-25, -5.0e-25, -9.0e-24, -1.5e-23, -6.5e-22, -1.0e-20)),
     1.0: ((200., 400., 600., 800., 1000., 1200.),
@@ -273,10 +273,12 @@ def test__filter_ktp():
     ref_dct3 = {
         0.01: (
             numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-            numpy.array([1.0e-25, 5.0e-25, 9.0e-24, 1.5e-23, 6.5e-22, 1.0e-20])),
+            numpy.array([1.0e-25, 5.0e-25, 9.0e-24,
+                         1.5e-23, 6.5e-22, 1.0e-20])),
         1.0: (
             numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-            numpy.array([8.0e-25, 3.0e-24, 2.0e-22, 6.0e-20, 2.5e-18, 5.0e-16]))}
+            numpy.array([8.0e-25, 3.0e-24, 2.0e-22,
+                         6.0e-20, 2.5e-18, 5.0e-16]))}
     ref_dct4 = {
         0.01: (numpy.array([600.,  800., 1000., 1200.]),
                numpy.array([9.0e-24, 1.5e-23, 6.5e-22, 1.0e-20])),
@@ -316,8 +318,10 @@ def test__filter_ktp():
         KTP_DCT1, bimol=False, tmin=None, tmax=None, pmin=0.1, pmax=10)
     for key1, key2 in zip(filt_ktp_dct_pressure.keys(), ref_dct5.keys()):
         assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_pressure[key1][0], ref_dct5[key2][0])
-        assert numpy.allclose(filt_ktp_dct_pressure[key1][1], ref_dct5[key2][1])
+        assert numpy.allclose(filt_ktp_dct_pressure[key1][0],
+                              ref_dct5[key2][0])
+        assert numpy.allclose(filt_ktp_dct_pressure[key1][1],
+                              ref_dct5[key2][1])
 
 
 if __name__ == '__main__':

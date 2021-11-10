@@ -12,6 +12,27 @@ from phydat import phycon
 def get_rxn_ktp_dct(out_str, label_dct=None, read_fake=False, read_self=False,
                     read_rev=True, filter_kts=True, tmin=None, tmax=None,
                     pmin=None, pmax=None, convert=True):
+    """ Read a ktp dictionary for each reaction listed in the MESS output
+        file string that requested by the user.
+
+        Pressures in atm.
+        K(T)s in cm3/mol.s [bimol] or 1/s [unimol]
+
+        :param output_str: string of lines of MESS output file
+        :type output_str: str
+        :param label_dct: dictionary to map name from MESS name to alternative
+        :type label_dct: dict[str: str]
+        :param read_fake: read reactions involving "fake" wells named "Fn"
+        :type read_fake: bool
+        :param read_self: read reactions where reactant and prod are the same
+        :type read_self: bool
+        :param read_rev: read reactions in reverse direction
+        :type read_ref: bool
+        :param filter_kts: filter unphysical, insignificant rate constants
+        :type filter_kts: bool
+
+        :rtype dict[float: (float, float)]
+    """
 
     # Get the MESS rxn pairs (e.g., ('W1', 'P1'))
     rxns = reactions(out_str, read_fake=read_fake, read_self=read_self,
@@ -512,9 +533,9 @@ def _reaction_header(reactant, product):
     return reactant + '->' + product
 
 
-def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
+def filter_ktp_dct(_ktp_dct, bimol,
+                   tmin=None, tmax=None, pmin=None, pmax=None):
     """ Filters out bad or undesired rate constants from a ktp dictionary
-
     """
 
     def get_valid_tk(temps, kts, bimol, tmin=None, tmax=None,
@@ -544,7 +565,7 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
         if tmax is None:
             tmax = max(temps)
         else:
-            assert tmax in temps, ('{} not in temps: {}'.format(tmax, temps))
+            assert tmax in temps, (f'{tmax} not in temps: {temps}')
 
         # Set min temperature to user input, if none use either
         # min of input temperatures or
@@ -564,7 +585,7 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
             else:
                 tmin = min(temps)
         else:
-            assert tmin in temps, ('{} not in temps: {}'.format(tmin, temps))
+            assert tmin in temps, (f'{tmin} not in temps: {temps}')
 
         # Grab the temperature, rate constant pairs which correspond to
         # temp > 0, temp within tmin and tmax, rate constant defined (not ***)
@@ -586,16 +607,16 @@ def filter_ktp_dct(ktp_dct, bimol, tmin=None, tmax=None, pmin=None, pmax=None):
 
     # Filter the kts based on temps, negatives, None, and bimolthresh
     filt_ktp_dct = {}
-    for pressure, (temps, kts) in ktp_dct.items():
+    for pressure, (temps, kts) in _ktp_dct.items():
         filt_temps, filt_kts = get_valid_tk(temps, kts, bimol, tmin, tmax)
         if filt_kts.size > 0:
             filt_ktp_dct[pressure] = (filt_temps, filt_kts)
 
     # Remove undesired pressures if pmin and/or pmax were given (leaves 'high'
     # untouched if it is present)
-    pressures = tuple(pressure for pressure in filt_ktp_dct.keys()
-                      if pressure != 'high')
-    for pressure in pressures:
+    _pressures = tuple(pressure for pressure in filt_ktp_dct
+                       if pressure != 'high')
+    for pressure in _pressures:
         if pmin is not None:
             if pressure < pmin:
                 filt_ktp_dct.pop(pressure)
@@ -643,20 +664,19 @@ def translate_rxn_names(mess_rxn_ktp_dct, label_dct=None):
 
     # Loop over each reaction and rename and/or reformat it
     rxn_ktp_dct = {}
-    for rxn_pair, ktp_dct in mess_rxn_ktp_dct.items():
+    for rxn_pair, _ktp_dct in mess_rxn_ktp_dct.items():
         rxn = mess_pairs_to_rxn(rxn_pair, inv_label_dct=inv_label_dct)
-        rxn_ktp_dct[rxn] = ktp_dct
+        rxn_ktp_dct[rxn] = _ktp_dct
 
     return rxn_ktp_dct
 
 
-def convert_units(ktp_dct, bimol):
+def convert_units(_ktp_dct, bimol):
     """ Convert units from cm^3.s^-1 to cm^3.mol^-1.s^-1 if rxn is bimolecular
-
     """
 
     conv_ktp_dct = {}
-    for pressure, (temps, kts) in ktp_dct.items():
+    for pressure, (temps, kts) in _ktp_dct.items():
         if bimol:
             kts *= phycon.NAVO
         conv_ktp_dct[pressure] = (temps, kts)
