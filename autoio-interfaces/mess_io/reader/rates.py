@@ -4,9 +4,11 @@
   corresponding to a given reaction.
 """
 
-import numpy
+from genericpath import exists
+import numpy as np
+import pandas as pd
 from phydat import phycon
-
+from autoparse import find
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str, label_dct=None, read_fake=False, read_self=False,
@@ -155,7 +157,7 @@ def _pdep_kts(out_lines, reaction, pressure):
                 if reaction in out_lines[j]:
                     mess_press = float(out_lines[j-2].strip().split()[2])
                     mess_punit = out_lines[j-2].strip().split()[3]
-                    if numpy.isclose(mess_press, pressure):
+                    if np.isclose(mess_press, pressure):
                         conv_pressure = _convert_pressure(pressure, mess_punit)
                         pdep_dct[conv_pressure] = _parse_rate_constants(
                             out_lines, j, reaction)
@@ -239,9 +241,160 @@ def ke_dct(output_str, reactant, product):
                 _ke_dct[float(tmp[0])] = float(tmp[col_idx])
 
     return _ke_dct
+# Functions for getting fragment density of states values from main MESS `MicroRateOut` file
 
+def dos_rovib(ke_ped_out):
+    """ Read the microcanonical pedoutput file and extracts rovibrational density
+        of states of each fragment as a function of the energy
+
+        :param ke_ped_out: string of lines of microcanonical rates output file
+        :type ke_ped_out: str
+
+        :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol]) 
+                        with the density of states
+        :rtype dos_df: dataframe(float)
+    """
+    # find where data of interest are
+    ke_lines = ke_ped_out.splitlines()
+    i_in = find.where_in(
+        'Bimolecular fragments density of states:', ke_lines)[0]+2
+    labels = ke_lines[i_in-1].strip().split()[2:]
+    en_dos_all = np.array(
+        [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
+    energy = en_dos_all[:][0]
+    dos_all = en_dos_all[:][1:].T
+
+    dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=labels)
+    # drop potentially duplicate columns
+    dos_rovib_df = dos_rovib_df.T.drop_duplicates().T
+
+    # units: kcal/mol, and for dos mol/kcal
+    return dos_rovib_df
+
+# Functions for getting barrier heights and the corresponding reactants and products
+# not tested because currently unused
+
+def energies(output_str):
+    """ Parses the MESS output and gets the energies of all species
+        :param output_str: string of lines of MESS output file
+        :type output_str: str
+
+        :return species_en, barriers_en: species energy and barriers energy in kcal/mol
+        :rtype series(index=name), series(index=(reac,prod))
+    """
+
+    # Break up the file into lines
+    out_lines = np.array(output_str.split('\n\n'))
+    headers = ['Wells', 'Bimolecular Products',
+               'Well-to-Bimolecular', 'Well-to-Well']
+    # Determine where block is
+    block_indexes = find.where_in_any(headers, out_lines)
+
+    # preallocations
+    species = []
+    species_en = []
+    barriers = []
+    barriers_en = []
+
+    for i in block_indexes:
+        block = out_lines[i]
+        lines = block.splitlines()
+
+        if 'Wells' in block or 'Bimolecular Products' in block:
+            for line in lines[2:]:
+                sp, en = line.strip().split()[0:2]
+                species.append(sp)
+                species_en.append(float(en))
+
+    species_en_S = pd.Series(species_en, index=species)
+
+    for i in block_indexes:
+        block = out_lines[i]
+        lines = block.splitlines()
+        if 'Well-to-Bimolecular' in block:
+            for line in lines[2:]:
+                _, en, reac, _, prod = line.strip().split()
+                barriers.append((reac, prod)), barriers.append((prod, reac))
+                # relative energy
+                barriers_en.append(float(en)-species_en_S[reac])
+                barriers_en.append(float(en)-species_en_S[prod])
+
+        if 'Well-to-Well' in block:
+            for line in lines[2:]:
+                _, en, reac, _, prod, _ = line.strip().split()
+                barriers.append((reac, prod)), barriers.append((prod, reac))
+                barriers_en.append(float(en)-species_en_S[reac])
+                barriers_en.append(float(en)-species_en_S[prod])
+
+    barriers_en_S = pd.Series(barriers_en, index=barriers)
+
+    return species_en_S, barriers_en_S
+
+def barriers(barriers_en_S, species_en_S, reac, prod):
+    """ Extract fw and bw energy barrier for reaction reac->prod
+        if barrier not found, save the DE of the reaction
+    """
+    findreac = [reac == key[0] for key in barriers_en_S.keys()]
+    findprod = [prod == key[1] for key in barriers_en_S.keys()]
+    findreac_rev = [reac == key[1] for key in barriers_en_S.keys()]
+    findprod_rev = [prod == key[0] for key in barriers_en_S.keys()]
+
+    if (reac, prod) in barriers_en_S.keys():
+        DE_FW = barriers_en_S[(reac, prod)]
+        DW_BW = barriers_en_S[(prod, reac)]
+
+    elif (any(findreac) or any(findreac_rev)) and (any(findprod) or any(findprod_rev)):
+        # check if you have reac->wr->wp->prod like in habs
+        connect_reac = np.array(list(barriers_en_S.keys()))[findreac]
+        fromreac = [p[1] for p in connect_reac]
+        connect_prod = np.array(list(barriers_en_S.keys()))[findprod]
+        fromprod = [r[0] for r in connect_prod]
+        possible_index = [(p, r) for p in fromreac for r in fromprod]
+        possible_index += [(reac, p) for p in fromprod]
+        possible_index += [(r, prod) for r in fromreac]
+
+        flag = 0
+
+        for idx in possible_index:
+
+            try:
+                DE = barriers_en_S[idx]
+                # barriers like r=>wr=>wp=>p
+                DE_FW = DE - barriers_en_S[(idx[0], reac)]
+                DE_BW = barriers_en_S[(idx[1], idx[0])] - \
+                    barriers_en_S[(idx[1], prod)]
+                flag = 1
+            except (KeyError, ValueError):
+                try:
+                    # barriers like r=>wr=>p
+                    # reacs=>wr
+                    DE_FW = barriers_en_S[(idx[0], prod)] - \
+                        barriers_en_S[(idx[0], reac)]
+
+                    DE_BW = DE_FW + barriers_en_S[(prod, idx[0])]
+                    flag = 1
+                except (KeyError, ValueError):
+                    continue
+
+        if flag == 0:
+            print(
+                '*Warning: indirect connection between {} and {} not found'.format(reac, prod))
+            print('saving the DE instead \n')
+            try:
+                DE_FW = species_en_S[prod] - species_en_S[reac]
+                DE_BW = species_en_S[reac] - species_en_S[prod]
+            except KeyError:
+                print(
+                    '*Error: species {} and {} not found. now exiting \n'.format(reac, prod))
+    else:
+        print('*Error: species {} and {} not found'.format(reac, prod))
+        exit()
+
+    return DE_FW, DE_BW
 
 # Functions to read temperatures and pressures
+
+
 def temperatures(file_str, mess_file='out'):
     """ Get temps
     """

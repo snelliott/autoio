@@ -5,6 +5,7 @@ import os
 import numpy
 import automol.util.dict_
 from ioformat import pathtools
+from autofile.io_ import read_file
 import mess_io.reader
 
 
@@ -17,6 +18,9 @@ KTP_OUT_STR = pathtools.read_file(OUT_PATH, 'rate.out')
 KTP_OUT_BAR_STR = pathtools.read_file(OUT_PATH, 'rate.out_bar')
 KTP_OUT_TORR_STR = pathtools.read_file(OUT_PATH, 'rate.out_torr')
 KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
+
+INP_PATH_DOUBLE = os.path.join(PATH, 'test_nB', 'C3H8_H')
+KE_PED_OUT_DOUBLE = read_file(os.path.join(INP_PATH_DOUBLE, 'ke_ped.out'))
 
 # Set the REACTANT and PRODUCT
 REACTANT = 'W1'
@@ -44,13 +48,13 @@ KTP_DCT2 = {
     0.01: ((200., 400., 600., 800., 1000., 1200.),
            (1.0e-25, 5.0e-25, 9.0e-24, 1.5e-23, 6.5e-22, 1.0e-20)),
     1.0: ((200., 400., 600., 800., 1000., 1200.),
-          (8.0e-25, 3.0e-24, 2.0e-22, 6.0e-20, 2.5e-18, 5.0e-16)),}
+          (8.0e-25, 3.0e-24, 2.0e-22, 6.0e-20, 2.5e-18, 5.0e-16)), }
 # Dict that should come back empty after filter
 KTP_DCT3 = {
     0.01: ((200., 400., 600., 800., 1000., 1200.),
            (-1.0e-25, -5.0e-25, -9.0e-24, -1.5e-23, -6.5e-22, -1.0e-20)),
     1.0: ((200., 400., 600., 800., 1000., 1200.),
-          (-8.0e-25, -3.0e-24, -2.0e-22, -6.0e-20, -2.5e-18, -5.0e-16)),}
+          (-8.0e-25, -3.0e-24, -2.0e-22, -6.0e-20, -2.5e-18, -5.0e-16)), }
 
 
 def test__ktp_dct():
@@ -324,9 +328,20 @@ def test__filter_ktp():
                               ref_dct5[key2][1])
 
 
+def test__dos_rovib():
+    """ test mess_io.reader.rates.dos_rovib
+    """
+    dos_df = mess_io.reader.rates.dos_rovib(KE_PED_OUT_DOUBLE)
+    # check dos info
+    assert list(dos_df.columns) == ['CH3CH2CH2', 'H2', 'CH3CHCH3']
+    assert numpy.allclose(dos_df.loc[0.4].values, numpy.array(
+        [1.099400e+05, 2.86923, 7.682720e+04]))
+
+
 if __name__ == '__main__':
     test__ktp_dct()
     test__ke_dct()
     test__tp()
     test__rxns_labels()
     test__filter_ktp()
+    test__dos_rovib()
