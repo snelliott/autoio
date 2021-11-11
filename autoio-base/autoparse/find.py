@@ -4,6 +4,7 @@
 Extract information from a file using re patterns.
 """
 import re
+import numpy as np
 from functools import partial
 from autoparse._lib import STRING_START as _STRING_START
 from autoparse._lib import STRING_END as _STRING_END
@@ -266,3 +267,54 @@ def _re_flags(case=True):
     if not case:
         flags |= re.IGNORECASE
     return flags
+
+def where_in(word, lines):
+    """ Finds where word is in lines and returns array
+        For multiple words: all words must be find in lines
+        :param word: word/s to look for
+        :type word: str/list for multiple words
+        :param lines: lines to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+    if isinstance(word, str):
+        word = [word]
+
+    where_array = np.where(
+        np.array([all(word_i in line for word_i in word) for line in lines], dtype=int) == 1)[0]
+
+    return where_array
+
+def where_in_any(word, lines):
+    """ Finds where word is in lines and returns array
+        For multiple words: any of the listed words may be found in line
+        :param word: word/s to look for
+        :type word: str/list for multiple words
+        :param lines: list to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+    if isinstance(word, str):
+        word = [word]
+
+    where_array = np.where(
+        np.array([any(word_i in line for word_i in word) for line in lines], dtype=int) == 1)[0]
+
+    return where_array
+
+def where_is(word, lines):
+    """ Finds where list corresponds to the required word
+        :param word: word to look for
+        :type word: str
+        :param lines: list to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+
+    where_array = np.where(
+        np.array([line == word for line in lines], dtype=int) == 1)[0]
+
+    return where_array
