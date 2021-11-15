@@ -6,6 +6,23 @@ import numpy
 from ioformat import indent
 
 
+# Format MESS labels
+def mess_label_format(spc_label, aux_id_label=None, calc_dens=False):
+    """ Format the full MESS label line that proceeds a reaction channel
+        section keyword such as `Species`, `Well`, `Fragment`, etc.
+        Function will add an additional id label (e.g., SMILES) and a
+        density of state keyword, if requested.
+    """
+
+    lbl = spc_label
+    if calc_dens:
+        lbl = f'{lbl} density'
+    if aux_id_label is not None:
+        lbl = f'{lbl}   ! {aux_id_label}'
+
+    return lbl
+
+
 # Format various pieces of data into strings for MESS input files
 def zero_energy_format(zero_ene):
     """ Formats the zero point energy into a string that
@@ -289,7 +306,7 @@ def format_flux_mode_indices(atom_idxs):
     # Build string containing the values of each keyword
     flux_mode_idx_str = ''
     for vals in atom_idxs:
-        flux_mode_idx_str += f'{vals:<4d}'
+        flux_mode_idx_str += f'{vals+1:<4d}'
 
     return flux_mode_idx_str
 
