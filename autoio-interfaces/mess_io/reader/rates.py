@@ -5,7 +5,7 @@
 """
 
 from genericpath import exists
-import numpy as np
+import numpy
 import pandas as pd
 from phydat import phycon
 from autoparse import find
@@ -157,7 +157,7 @@ def _pdep_kts(out_lines, reaction, pressure):
                 if reaction in out_lines[j]:
                     mess_press = float(out_lines[j-2].strip().split()[2])
                     mess_punit = out_lines[j-2].strip().split()[3]
-                    if np.isclose(mess_press, pressure):
+                    if numpy.isclose(mess_press, pressure):
                         conv_pressure = _convert_pressure(pressure, mess_punit)
                         pdep_dct[conv_pressure] = _parse_rate_constants(
                             out_lines, j, reaction)
@@ -259,7 +259,7 @@ def dos_rovib(ke_ped_out):
     i_in = find.where_in(
         'Bimolecular fragments density of states:', ke_lines)[0]+2
     labels = ke_lines[i_in-1].strip().split()[2:]
-    en_dos_all = np.array(
+    en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
@@ -284,7 +284,7 @@ def energies(output_str):
     """
 
     # Break up the file into lines
-    out_lines = np.array(output_str.split('\n\n'))
+    out_lines = numpy.array(output_str.split('\n\n'))
     headers = ['Wells', 'Bimolecular Products',
                'Well-to-Bimolecular', 'Well-to-Well']
     # Determine where block is
@@ -345,9 +345,9 @@ def barriers(barriers_en_S, species_en_S, reac, prod):
 
     elif (any(findreac) or any(findreac_rev)) and (any(findprod) or any(findprod_rev)):
         # check if you have reac->wr->wp->prod like in habs
-        connect_reac = np.array(list(barriers_en_S.keys()))[findreac]
+        connect_reac = numpy.array(list(barriers_en_S.keys()))[findreac]
         fromreac = [p[1] for p in connect_reac]
-        connect_prod = np.array(list(barriers_en_S.keys()))[findprod]
+        connect_prod = numpy.array(list(barriers_en_S.keys()))[findprod]
         fromprod = [r[0] for r in connect_prod]
         possible_index = [(p, r) for p in fromreac for r in fromprod]
         possible_index += [(reac, p) for p in fromprod]
