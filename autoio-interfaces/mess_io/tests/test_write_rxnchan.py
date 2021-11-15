@@ -10,11 +10,15 @@ PATH = os.path.dirname(os.path.realpath(__file__))
 INP_PATH = os.path.join(PATH, 'data', 'inp')
 
 
+# Various label strings
 SPC1_LABEL = 'Mol1'
-SPC2_LABEL = 'Mol1'
+SPC2_LABEL = 'Mol2'
 WELL_LABEL = 'W1'
 BIMOL_LABEL = 'P1'
 TS_LABEL = 'B1'
+AUX1_ID_LABEL = 'Aux1'
+AUX2_ID_LABEL = 'Aux2'
+AUXBIMOL_ID_LABEL = 'AuxBimol'
 
 # Data Strings
 MOL_MESS_STR = """RRHO
@@ -66,12 +70,19 @@ def test__species_writer():
     """
 
     spc1_str = mess_io.writer.species(
-        SPC1_LABEL, MOL_MESS_STR, zero_ene=None)
-    assert spc1_str == pathtools.read_file(INP_PATH, 'spc1.inp')
+        SPC1_LABEL, MOL_MESS_STR,
+        aux_id_label=None, zero_ene=None)
+    assert spc1_str == pathtools.read_file(INP_PATH, 'spc1.inp').rstrip()
 
     spc2_str = mess_io.writer.species(
-        SPC2_LABEL, MOL_MESS_STR, zero_ene=ENE)
-    assert spc2_str == pathtools.read_file(INP_PATH, 'spc2.inp')
+        SPC1_LABEL, MOL_MESS_STR,
+        aux_id_label=None, zero_ene=ENE)
+    assert spc2_str == pathtools.read_file(INP_PATH, 'spc2.inp').rstrip()
+
+    spc3_str = mess_io.writer.species(
+        SPC1_LABEL, MOL_MESS_STR,
+        aux_id_label=AUX1_ID_LABEL, zero_ene=None)
+    assert spc3_str == pathtools.read_file(INP_PATH, 'spc3.inp').rstrip()
 
 
 def test__well_writer():
@@ -91,18 +102,37 @@ def test__well_writer():
     assert well2_str == pathtools.read_file(
         INP_PATH, 'well2.inp').rstrip()
 
+    well3_str = mess_io.writer.well(
+        WELL_LABEL, MOL_MESS_STR,
+        aux_id_label=AUX1_ID_LABEL)
+    assert well3_str == pathtools.read_file(
+        INP_PATH, 'well3.inp').rstrip()
+
 
 def test__bimolecular_writer():
     """ Writes the MESS input for a bimolecular set
     """
 
-    bimol_str = mess_io.writer.bimolecular(
+    bimol1_str = mess_io.writer.bimolecular(
         BIMOL_LABEL,
         SPC1_LABEL, ATOM_MESS_STR,
         SPC2_LABEL, MOL_MESS_STR,
         ENE)
-    assert bimol_str == pathtools.read_file(
-        INP_PATH, 'bimol.inp').rstrip()
+    assert bimol1_str == pathtools.read_file(
+        INP_PATH, 'bimol1.inp').rstrip()
+
+    bimol2_str = mess_io.writer.bimolecular(
+        BIMOL_LABEL,
+        SPC1_LABEL, ATOM_MESS_STR,
+        SPC2_LABEL, MOL_MESS_STR,
+        ENE,
+        auxbimol_id_label=AUXBIMOL_ID_LABEL,
+        aux1_id_label=AUX1_ID_LABEL,
+        aux2_id_label=AUX2_ID_LABEL,
+        calc_spc1_density=True,
+        calc_spc2_density=True)
+    assert bimol2_str == pathtools.read_file(
+        INP_PATH, 'bimol2.inp').rstrip()
 
 
 def test__ts_sadpt_writer():
@@ -119,6 +149,12 @@ def test__ts_sadpt_writer():
         zero_ene=ENE, tunnel=TUNNEL_STR)
     assert ts_sadpt2_str == pathtools.read_file(
         INP_PATH, 'ts_sadpt2.inp').rstrip()
+
+    ts_sadpt3_str = mess_io.writer.ts_sadpt(
+        TS_LABEL, WELL_LABEL, BIMOL_LABEL, MOL_MESS_STR,
+        aux_id_label=AUX1_ID_LABEL)
+    assert ts_sadpt3_str == pathtools.read_file(
+        INP_PATH, 'ts_sadpt3.inp').rstrip()
 
 
 def test__ts_variational_writer():
@@ -156,6 +192,10 @@ def test__dummy_writer():
     dummy2_str = mess_io.writer.dummy(
         BIMOL_LABEL, zero_ene=ENE)
     assert dummy2_str == pathtools.read_file(INP_PATH, 'dummy2.inp')
+
+    dummy3_str = mess_io.writer.dummy(
+        BIMOL_LABEL, aux_id_label=AUX1_ID_LABEL)
+    assert dummy3_str == pathtools.read_file(INP_PATH, 'dummy3.inp')
 
 
 def test__configs_union_writer():

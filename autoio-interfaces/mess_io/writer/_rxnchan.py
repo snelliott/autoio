@@ -14,7 +14,7 @@ SECTION_PATH = os.path.join(TEMPLATE_PATH, 'sections')
 RXNCHAN_PATH = os.path.join(SECTION_PATH, 'reaction_channel')
 
 
-def species(spc_label, spc_data, zero_ene=None):
+def species(spc_label, spc_data, aux_id_label=None, zero_ene=None):
     """ Writes the string that defines the `Species` section for
         for a given species for a MESS input file by
         formatting input information into strings a filling Mako template.
@@ -23,9 +23,15 @@ def species(spc_label, spc_data, zero_ene=None):
         :type spc_label: str
         :param spc_data: MESS string with required electronic structure data
         :type spc_data: str
+        :param aux_id_label: label for additional species ID information
+        :type aux_id_label: str
         :param zero_ene: elec+zpve energy relative to PES reference
         :rtype: str
     """
+
+    # Format the label
+    full_label = messformat.mess_label_format(
+        spc_label, aux_id_label=aux_id_label, calc_dens=False)
 
     # Indent the string containing all of data for the well
     spc_data = messformat.indent(spc_data, 2)
@@ -36,7 +42,7 @@ def species(spc_label, spc_data, zero_ene=None):
 
     # Create dictionary to fill template
     spc_keys = {
-        'spc_label': spc_label,
+        'spc_label': full_label,
         'spc_data': spc_data,
         'zero_ene': zero_ene
     }
@@ -48,6 +54,7 @@ def species(spc_label, spc_data, zero_ene=None):
 
 
 def well(well_label, well_data,
+         aux_id_label=None,
          zero_ene=None, well_cap=None,
          edown_str=None, collid_freq_str=None):
     """ Writes the string that defines the `Well` section for
@@ -58,6 +65,8 @@ def well(well_label, well_data,
         :type well_label: str
         :param well_data: MESS string with required electronic structure data
         :type well_data: str
+        :param aux_id_label: label for additional species ID information
+        :type aux_id_label: str
         :param zero_ene: elec+zpve energy relative to PES reference
         :type zero_ene: float
         :param well_cap: value for the well extension cap keyword
@@ -69,6 +78,10 @@ def well(well_label, well_data,
         :rtype: str
     """
 
+    # Format the label
+    full_label = messformat.mess_label_format(
+        well_label, aux_id_label=aux_id_label, calc_dens=False)
+
     # Indent the string containing all of data for the well
     well_data = messformat.indent(well_data, 4)
 
@@ -78,7 +91,7 @@ def well(well_label, well_data,
     if well_cap is not None:
         well_cap = f'{well_cap:<8.2f}'
 
-    # Indent the energy transfer parameter strings if needed
+    # Indent the energy transfer parameter strings, if needed
     if edown_str is not None:
         edown_str = messformat.indent(edown_str, 4)
     if collid_freq_str is not None:
@@ -86,7 +99,7 @@ def well(well_label, well_data,
 
     # Create dictionary to fill template
     well_keys = {
-        'well_label': well_label,
+        'well_label': full_label,
         'well_data': well_data,
         'zero_ene': zero_ene,
         'well_cap': well_cap,
@@ -104,10 +117,21 @@ def bimolecular(bimol_label,
                 spc1_label, spc1_data,
                 spc2_label, spc2_data,
                 ground_ene,
+                auxbimol_id_label=None,
+                aux1_id_label=None,
+                aux2_id_label=None,
                 calc_spc1_density=False,
                 calc_spc2_density=False):
     """ Writes a Bimolecular section.
     """
+
+    # Format the labels
+    full_bimol_label = messformat.mess_label_format(
+        bimol_label, aux_id_label=auxbimol_id_label, calc_dens=False)
+    full_spc1_label = messformat.mess_label_format(
+        spc1_label, aux_id_label=aux1_id_label, calc_dens=calc_spc1_density)
+    full_spc2_label = messformat.mess_label_format(
+        spc2_label, aux_id_label=aux2_id_label, calc_dens=calc_spc2_density)
 
     # Indent the string containing all of data for each species
     spc1_data = messformat.indent(spc1_data, 4)
@@ -122,14 +146,12 @@ def bimolecular(bimol_label,
 
     # Create dictionary to fill template
     bimol_keys = {
-        'bimolec_label': bimol_label,
-        'spc1_label': spc1_label,
+        'bimolec_label': full_bimol_label,
+        'spc1_label': full_spc1_label,
         'spc1_data': spc1_data,
-        'calc_spc1_density': calc_spc1_density,
         'isatom1': isatom1,
-        'spc2_label': spc2_label,
+        'spc2_label': full_spc2_label,
         'spc2_data': spc2_data,
-        'calc_spc2_density': calc_spc2_density,
         'isatom2': isatom2,
         'ground_ene': ground_ene
     }
@@ -141,6 +163,7 @@ def bimolecular(bimol_label,
 
 
 def ts_sadpt(ts_label, reac_label, prod_label, ts_data,
+             aux_id_label=None,
              zero_ene=None, tunnel=''):
     """ Writes the string that defines the `Barrier` section for
         for a given transition state, modeled as a PES saddle point,
@@ -155,12 +178,19 @@ def ts_sadpt(ts_label, reac_label, prod_label, ts_data,
         :type prod_label: str
         :param ts_data: MESS string with required electronic structure data
         :type ts_data: str
+        :param aux_id_label: label for additional species ID information
+        :type aux_id_label: str
         :param zero_ene: elec+zpve energy relative to PES reference
         :type zero_ene: float
         :param tunnel: `Tunnel` section MESS-string for TS
         :type tunnel: str
         :rtype: str
     """
+
+    # Format the label
+    rxn_label = f'{ts_label} {reac_label} {prod_label}'
+    full_label = messformat.mess_label_format(
+        rxn_label, aux_id_label=aux_id_label, calc_dens=False)
 
     # Indent the string containing all of data for the saddle point
     ts_data = messformat.indent(ts_data, 2)
@@ -173,10 +203,9 @@ def ts_sadpt(ts_label, reac_label, prod_label, ts_data,
 
     # Create dictionary to fill template
     ts_sadpt_keys = {
-        'ts_label': ts_label,
-        'reac_label': reac_label,
-        'prod_label': prod_label,
+        'rxn_label': full_label,
         'ts_data': ts_data,
+        'aux_id_label': aux_id_label,
         'zero_ene': zero_ene,
         'tunnel': tunnel
     }
@@ -188,6 +217,7 @@ def ts_sadpt(ts_label, reac_label, prod_label, ts_data,
 
 
 def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
+                   aux_id_label=None,
                    zero_enes=None, tunnel=''):
     """ Writes the string that defines the `Barrier` section for
         for a given transition state, modeled using points along reaction path,
@@ -202,6 +232,8 @@ def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
         :type prod_label: str
         :param rpath_pt_strs: MESS strings for each point on reaction path
         :type rpath_pt_strs: list(str)
+        :param aux_id_label: label for additional species ID information
+        :type aux_id_label: str
         :param tunnel: `Tunnel` section MESS-string for TS
         :type tunnel: str
         :rtype: str
@@ -211,6 +243,11 @@ def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
         f'Number of rpath strings ({len(rpath_strs)})',
         f'and zero energies ({len(zero_enes)}) do not match'
     )
+
+    # Format the label
+    rxn_label = f'{ts_label} {reac_label} {prod_label}'
+    full_label = messformat.mess_label_format(
+        rxn_label, aux_id_label=aux_id_label, calc_dens=False)
 
     # Build the zero energy strings and add them to the rpath strings
     full_rpath_str = ''
@@ -230,11 +267,9 @@ def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
 
     # Create dictionary to fill template
     var_keys = {
-        'ts_label': ts_label,
-        'reac_label': reac_label,
-        'prod_label': prod_label,
+        'rxn_label': full_label,
         'ts_data': ts_data,
-        'tunnel': tunnel
+        'tunnel': tunnel,
     }
 
     return build_mako_str(
@@ -243,7 +278,7 @@ def ts_variational(ts_label, reac_label, prod_label, rpath_strs,
         template_keys=var_keys)
 
 
-def dummy(dummy_label, zero_ene=None):
+def dummy(dummy_label, aux_id_label=None, zero_ene=None):
     """ Writes the string that defines the `Dummy` section,
         for dummy reaction products, for a MESS input file by
         formatting input information into strings a filling Mako template.
@@ -253,13 +288,18 @@ def dummy(dummy_label, zero_ene=None):
         :rtype: str
     """
 
+    # Format the label
+    full_label = messformat.mess_label_format(
+        dummy_label, aux_id_label=aux_id_label, calc_dens=False)
+
     # Format energy string if needed
     if zero_ene is not None:
         zero_ene = f'{zero_ene:6.2f}'
 
     # Create dictionary to fill template
     dummy_keys = {
-        'dummy_label': dummy_label,
+        'dummy_label': full_label,
+        'aux_id_label': aux_id_label,
         'zero_ene': zero_ene
     }
 

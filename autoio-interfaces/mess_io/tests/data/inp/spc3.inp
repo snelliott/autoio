@@ -1,4 +1,4 @@
-Species Mol1
+Species Mol1   ! Aux1
   RRHO
     Core RigidRotor
       SymmetryFactor          1.0

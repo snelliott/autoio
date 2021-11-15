@@ -1,4 +1,4 @@
-Species Mol1
+Barrier B1 W1 P1   ! Aux1
   RRHO
     Core RigidRotor
       SymmetryFactor          1.0
@@ -13,4 +13,4 @@ Species Mol1
     ElectronicLevels[1/cm]    2
       1  0.0
       3  50.0
-End
+End  ! Barrier
