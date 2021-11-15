@@ -3,6 +3,7 @@ Writes MESS input for a monte carlo partition function calculation
 """
 
 import os
+from phydat import phycon
 import automol.geom
 import automol.util.mat
 from ioformat import build_mako_str
@@ -18,10 +19,11 @@ SECTION_PATH = os.path.join(TEMPLATE_PATH, 'sections')
 MONTE_CARLO_PATH = os.path.join(SECTION_PATH, 'monte_carlo')
 
 
-def mc_species(geo, sym_factor, elec_levels,
-               flux_mode_str, data_file_name, ref_config_file_name='',
-               ground_ene=None, reference_ene=None,
-               freqs=(), use_cm_shift=False):
+def monte_carlo_species(geo, sym_factor, elec_levels,
+                        flux_mode_str, data_file_name,
+                        ref_config_file_name='',
+                        ground_ene=None, reference_ene=None,
+                        freqs=(), use_cm_shift=False):
     """ Writes a monte carlo species section
 
         :param geo: geometry of species
@@ -65,6 +67,10 @@ def mc_species(geo, sym_factor, elec_levels,
     # Indent various strings string if needed
     flux_mode_str = messformat.indent(flux_mode_str, 4)
 
+    # Format the energies
+    ref_ene_str = f'{reference_ene:.2f}' if reference_ene is not None else None
+    gnd_ene_str = f'{ground_ene:.2f}' if ground_ene is not None else None
+
     # Create dictionary to fill template
     monte_carlo_keys = {
         'atom_list': atom_list,
@@ -72,8 +78,8 @@ def mc_species(geo, sym_factor, elec_levels,
         'flux_mode_str': flux_mode_str,
         'data_file_name': data_file_name,
         'ref_config_file_name': ref_config_file_name,
-        'reference_ene': reference_ene,
-        'ground_ene': ground_ene,
+        'reference_ene': ref_ene_str,
+        'ground_ene': gnd_ene_str,
         'nlevels': nlevels,
         'levels': levels,
         'nfreqs': nfreqs,
@@ -87,7 +93,7 @@ def mc_species(geo, sym_factor, elec_levels,
         template_keys=monte_carlo_keys)
 
 
-def mc_data(geos, enes, grads=(), hessians=()):
+def monte_carlo_data(geos, enes, grads=(), hessians=()):
     """ Writes the string for an auxliary data file required for
         Monte Carlo calculations in MESS that contains the
         geoetries, energies, gradients, and Hessians obtained
@@ -143,14 +149,14 @@ def mc_data(geos, enes, grads=(), hessians=()):
     return dat_str
 
 
-def fluxional_mode(atom_indices, span=360.0):
+def fluxional_mode(atom_indices, span=6.28319):
     """ Writes the string that defines the `FluxionalMode` section for a
         single fluxional mode (torsion) of a species for a MESS input file by
         formatting input information into strings a filling Mako template.
 
         :param atom_idxs: idxs of atoms involved in fluxional mode
         :type atom_indices: list(int)
-        :param span: range from 0.0 to value that mode was sampled over (deg.)
+        :param span: range from 0.0 to value that mode was sampled over (rad.)
         :type span: float
         :rtype: str
     """
@@ -158,10 +164,13 @@ def fluxional_mode(atom_indices, span=360.0):
     # Format the aotm indices string
     atom_indices = messformat.format_flux_mode_indices(atom_indices)
 
+    # Format the span
+    span_str = f'{span*phycon.RAD2DEG:.1f}'
+
     # Create dictionary to fill template
     flux_mode_keys = {
         'atom_indices': atom_indices,
-        'span': span,
+        'span': span_str,
     }
 
     return build_mako_str(

@@ -33,8 +33,8 @@ from mess_io.writer._mol_inf import mdhr_data
 from mess_io.writer._mol_inf import umbrella_mode
 from mess_io.writer._mol_inf import tunnel_eckart
 from mess_io.writer._mol_inf import tunnel_read
-from mess_io.writer._monte_carlo import mc_species
-from mess_io.writer._monte_carlo import mc_data
+from mess_io.writer._monte_carlo import monte_carlo_species
+from mess_io.writer._monte_carlo import monte_carlo_data
 from mess_io.writer._monte_carlo import fluxional_mode
 from mess_io.writer._sec import SPC_SEP_STR
 
@@ -75,8 +75,8 @@ __all__ = [
     'tunnel_eckart',
     'tunnel_read',
     # monte carlo
-    'mc_species',
-    'mc_data',
+    'monte_carlo_species',
+    'monte_carlo_data',
     'fluxional_mode',
     # section library
     'SPC_SEP_STR'
