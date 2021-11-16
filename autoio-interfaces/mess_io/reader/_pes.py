@@ -3,11 +3,10 @@
 """
 
 import numpy as np
-from numpy.core.fromnumeric import nonzero
-import pandas as pd
-from autoparse import find
+import autoparse.find as apf
 import autoparse.pattern as app
 from ioformat import remove_comment_lines
+
 
 def pes(input_string, read_fake=False):
     """ Read a MESS input file string and get info about PES
@@ -30,7 +29,8 @@ def pes(input_string, read_fake=False):
     conn_lst_dct = {}
     pes_label_dct = {}
 
-    input_string = remove_comment_lines(input_string, delim_pattern=app.escape('!'))
+    input_string = remove_comment_lines(
+        input_string, delim_pattern=app.escape('!'))
     input_lines = input_string.splitlines()
     for idx, line in enumerate(input_lines):
 
@@ -58,8 +58,8 @@ def pes(input_string, read_fake=False):
                         # strip gets rid of the spaces before and after
                         pes_label_dct[spc.strip()] = label
                     except IndexError:
-                        print(
-                            'Warning: labeling not found for species {}'.format(label))
+                        print('Warning: labeling not found for '
+                              f'species {label}')
 
         if 'Bimolecular' in line:
 
@@ -90,7 +90,8 @@ def pes(input_string, read_fake=False):
                     # strip gets rid of the spaces before and after
                     pes_label_dct[spc.strip()] = label
                 except IndexError:
-                    print('Warning: labeling not found for species {}'.format(label))
+                    print('Warning: labeling not found for '
+                          f'species {label}')
 
         if 'Barrier' in line:
 
@@ -121,10 +122,11 @@ def pes(input_string, read_fake=False):
 
     return energy_dct, conn_lst, conn_lst_dct, pes_label_dct
 
+
 def find_barrier(conn_lst_dct, reac, prod):
     """ finds the barrier that connects reac to prod
         returns None if the barrier is not found
-        future implementation: it should find the lowest energy path from reac to prod
+        future implementation: should find lowest energy path from reac to prod
 
         :param conn_lst_dct: defines the wells connected by each barrier
         :type conn_lst_dct: dict[barrier: (reac, prod)] all str
@@ -133,18 +135,22 @@ def find_barrier(conn_lst_dct, reac, prod):
         :return barriername: name of the barrier
         :rtype: str
     """
-    b1 = (reac, prod)
-    b2 = (prod, reac)
+
+    bar1 = (reac, prod)
+    bar2 = (prod, reac)
     ls_keys = list(conn_lst_dct.keys())
     ls_vals = list(conn_lst_dct.values())
-    b1_find = find.where_is(b1, ls_vals)
-    b2_find = find.where_is(b2, ls_vals)
-    if len(b1_find) > 0:
-        return ls_keys[b1_find[0]]
-    elif len(b2_find) > 0:
-        return ls_keys[b2_find[0]]
+    bar1_find = apf.where_is(bar1, ls_vals)
+    bar2_find = apf.where_is(bar2, ls_vals)
+    if len(bar1_find) > 0:
+        _bar = ls_keys[bar1_find[0]]
+    elif len(bar2_find) > 0:
+        _bar = ls_keys[bar2_find[0]]
     else:
-        return None
+        _bar = None
+
+    return _bar
+
 
 def get_species(input_string):
     """ Read a MESS input file string and get the block of each species
@@ -158,7 +164,9 @@ def get_species(input_string):
             {name:[frag1 block, frag2 block], name:[unimol block],}
         :rtype: dict{label: list}
     """
-    input_string = remove_comment_lines(input_string, delim_pattern=app.escape('!'))
+
+    input_string = remove_comment_lines(
+        input_string, delim_pattern=app.escape('!'))
     lines = input_string.splitlines()
     lines = [line for line in lines if line.strip() != '']
 
@@ -168,19 +176,26 @@ def get_species(input_string):
                     'WellProjectionThreshold']
     bad_fragwrds = ['FragmentGeometry', 'PEDSpecies']
 
-    names_i = np.where(
-        np.array([('Bimolecular' in line or 'Well' in line) and
-                  all(bad not in line for bad in bad_wellwrds) for line in lines],
-                 dtype=int) == 1)[0]
-    init_i = np.where(
-        np.array([('Fragment' in line or 'Species' in line) and
-                  all(bad not in line for bad in bad_fragwrds) for line in lines],
-                 dtype=int) == 1)[0]
+    _name_arr = np.array(
+        [('Bimolecular' in line or 'Well' in line) and
+         all(bad not in line for bad in bad_wellwrds) for line in lines],
+        dtype=int)
+    names_i = np.where(_name_arr == 1)[0]
+
+    _init_arr = np.array(
+        [('Fragment' in line or 'Species' in line) and
+         all(bad not in line for bad in bad_fragwrds) for line in lines],
+        dtype=int)
+    init_i = np.where(_init_arr == 1)[0]
     init_i = init_i[init_i > names_i[0]]
-    end_i = np.where(
-        np.array(['End' in line for line in lines], dtype=int) == 1)[0]+1
-    levels_i = np.where(
-        np.array(['ElectronicLevels' in line for line in lines], dtype=int) == 1)[0]
+
+    _end_arr = np.array(['End' in line for line in lines], dtype=int)
+    end_i = np.where(_end_arr == 1)[0]+1
+
+    _levels_arr = np.array(
+        ['ElectronicLevels' in line for line in lines], dtype=int)
+    levels_i = np.where(_levels_arr == 1)[0]
+
     final_i = np.array([end_i[i < end_i][0] for i in levels_i])[:len(init_i)]
 
     # dictionary labels
@@ -208,8 +223,11 @@ def get_species(input_string):
 
     return species_blocks
 
+
 def dct_species_fragments(species_blocks):
-    """ derive a dictionary of species names and corresponding unimol or bimol names
+    """ Derive a dictionary of species names and corresponding
+        unimol or bimol names.
+
         :param species_blocks: dictionary with the species blocks
             {name:[frag1 block, frag2 block], name:[unimol block],}
         :type: dict{label: list}
@@ -222,13 +240,12 @@ def dct_species_fragments(species_blocks):
 
     for label in dct_sp_fr.keys():
         if len(species_blocks[label]) == 1:
-            dct_sp_fr[label] = [label]
+            dct_sp_fr[label] = (label,)
         else:
-            fragments = []
-            for sp in species_blocks[label]:
-                frag = sp.split('\n')[0].split()[1]
-                fragments.append(frag)
+            fragments = ()
+            for spc in species_blocks[label]:
+                frag = spc.split('\n')[0].split()[1]
+                fragments += (frag,)
             dct_sp_fr[label] = fragments
 
     return dct_sp_fr
-

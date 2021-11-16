@@ -5,22 +5,20 @@ import os
 import numpy
 import automol.util.dict_
 from ioformat import pathtools
-from autofile.io_ import read_file
 import mess_io.reader
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 INP_PATH = os.path.join(PATH, 'data', 'inp')
 OUT_PATH = os.path.join(PATH, 'data', 'out')
+INP_PATH_DBL = os.path.join(PATH, 'data', 'prompt', 'C3H8_H')
 
 KTP_INP_STR = pathtools.read_file(INP_PATH, 'example.inp')
 KTP_OUT_STR = pathtools.read_file(OUT_PATH, 'rate.out')
 KTP_OUT_BAR_STR = pathtools.read_file(OUT_PATH, 'rate.out_bar')
 KTP_OUT_TORR_STR = pathtools.read_file(OUT_PATH, 'rate.out_torr')
 KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
-
-INP_PATH_DOUBLE = os.path.join(PATH, 'test_nB', 'C3H8_H')
-KE_PED_OUT_DOUBLE = read_file(os.path.join(INP_PATH_DOUBLE, 'ke_ped.out'))
+KE_PED_OUT_DBL = pathtools.read_file(INP_PATH_DBL, 'ke_ped.out')
 
 # Set the REACTANT and PRODUCT
 REACTANT = 'W1'
@@ -196,39 +194,100 @@ def test__rxns_labels():
     """
 
     ref_rxns1 = (
-        ('W1', 'W2'), ('W1', 'W3'), ('W1', 'W4'), ('W1', 'P1'), ('W1', 'P2'),
-        ('W1', 'P3'), ('W1', 'P4'), ('W1', 'P5'), ('W1', 'P6'), ('W2', 'W1'),
-        ('W2', 'W3'), ('W2', 'W4'), ('W2', 'P1'), ('W2', 'P2'), ('W2', 'P3'),
-        ('W2', 'P4'), ('W2', 'P5'), ('W2', 'P6'), ('W3', 'W1'), ('W3', 'W2'),
-        ('W3', 'W4'), ('W3', 'P1'), ('W3', 'P2'), ('W3', 'P3'), ('W3', 'P4'),
-        ('W3', 'P5'), ('W3', 'P6'), ('W4', 'W1'), ('W4', 'W2'), ('W4', 'W3'),
-        ('W4', 'P1'), ('W4', 'P2'), ('W4', 'P3'), ('W4', 'P4'), ('W4', 'P5'),
-        ('W4', 'P6'), ('P1', 'W1'), ('P1', 'W2'), ('P1', 'W3'), ('P1', 'W4'),
-        ('P1', 'P2'), ('P1', 'P3'), ('P1', 'P4'), ('P1', 'P5'), ('P1', 'P6'),
-        ('P2', 'W1'), ('P2', 'W2'), ('P2', 'W3'), ('P2', 'W4'), ('P2', 'P1'),
-        ('P2', 'P3'), ('P2', 'P4'), ('P2', 'P5'), ('P2', 'P6'), ('P3', 'W1'),
-        ('P3', 'W2'), ('P3', 'W3'), ('P3', 'W4'), ('P3', 'P1'), ('P3', 'P2'),
-        ('P3', 'P4'), ('P3', 'P5'), ('P3', 'P6'), ('P4', 'W1'), ('P4', 'W2'),
-        ('P4', 'W3'), ('P4', 'W4'), ('P4', 'P1'), ('P4', 'P2'), ('P4', 'P3'),
-        ('P4', 'P5'), ('P4', 'P6'), ('P5', 'W1'), ('P5', 'W2'), ('P5', 'W3'),
-        ('P5', 'W4'), ('P5', 'P1'), ('P5', 'P2'), ('P5', 'P3'), ('P5', 'P4'),
-        ('P5', 'P6'), ('P6', 'W1'), ('P6', 'W2'), ('P6', 'W3'), ('P6', 'W4'),
-        ('P6', 'P1'), ('P6', 'P2'), ('P6', 'P3'), ('P6', 'P4'), ('P6', 'P5'))
-    ref_rxns2 = (
-        ('W1', 'W2'), ('W1', 'W3'), ('W1', 'W4'), ('W1', 'P1'), ('W1', 'P2'),
-        ('W1', 'P3'), ('W1', 'P4'), ('W1', 'P5'), ('W1', 'P6'), ('W2', 'W3'),
-        ('W2', 'W4'), ('W2', 'P1'), ('W2', 'P2'), ('W2', 'P3'), ('W2', 'P4'),
-        ('W2', 'P5'), ('W2', 'P6'), ('W3', 'W4'), ('W3', 'P1'), ('W3', 'P2'),
-        ('W3', 'P3'), ('W3', 'P4'), ('W3', 'P5'), ('W3', 'P6'), ('W4', 'P1'),
-        ('W4', 'P2'), ('W4', 'P3'), ('W4', 'P4'), ('W4', 'P5'), ('W4', 'P6'),
-        ('P1', 'P2'), ('P1', 'P3'), ('P1', 'P4'), ('P1', 'P5'), ('P1', 'P6'),
-        ('P2', 'P3'), ('P2', 'P4'), ('P2', 'P5'), ('P2', 'P6'), ('P3', 'P4'),
-        ('P3', 'P5'), ('P3', 'P6'), ('P4', 'P5'), ('P4', 'P6'), ('P5', 'P6'))
+        (('W1',), ('W2',), (None,)),
+        (('W1',), ('W3',), (None,)),
+        (('W1',), ('W4',), (None,)),
+        (('W1',), ('P1',), (None,)),
+        (('W1',), ('P2',), (None,)),
+        (('W1',), ('P3',), (None,)),
+        (('W1',), ('P4',), (None,)),
+        (('W1',), ('P5',), (None,)),
+        (('W1',), ('P6',), (None,)),
+        (('W2',), ('W1',), (None,)),
+        (('W2',), ('W3',), (None,)),
+        (('W2',), ('W4',), (None,)),
+        (('W2',), ('P1',), (None,)),
+        (('W2',), ('P2',), (None,)),
+        (('W2',), ('P3',), (None,)),
+        (('W2',), ('P4',), (None,)),
+        (('W2',), ('P5',), (None,)),
+        (('W2',), ('P6',), (None,)),
+        (('W3',), ('W1',), (None,)),
+        (('W3',), ('W2',), (None,)),
+        (('W3',), ('W4',), (None,)),
+        (('W3',), ('P1',), (None,)),
+        (('W3',), ('P2',), (None,)),
+        (('W3',), ('P3',), (None,)),
+        (('W3',), ('P4',), (None,)),
+        (('W3',), ('P5',), (None,)),
+        (('W3',), ('P6',), (None,)),
+        (('W4',), ('W1',), (None,)),
+        (('W4',), ('W2',), (None,)),
+        (('W4',), ('W3',), (None,)),
+        (('W4',), ('P1',), (None,)),
+        (('W4',), ('P2',), (None,)),
+        (('W4',), ('P3',), (None,)),
+        (('W4',), ('P4',), (None,)),
+        (('W4',), ('P5',), (None,)),
+        (('W4',), ('P6',), (None,)),
+        (('P1',), ('W1',), (None,)),
+        (('P1',), ('W2',), (None,)),
+        (('P1',), ('W3',), (None,)),
+        (('P1',), ('W4',), (None,)),
+        (('P1',), ('P2',), (None,)),
+        (('P1',), ('P3',), (None,)),
+        (('P1',), ('P4',), (None,)),
+        (('P1',), ('P5',), (None,)),
+        (('P1',), ('P6',), (None,)),
+        (('P2',), ('W1',), (None,)),
+        (('P2',), ('W2',), (None,)),
+        (('P2',), ('W3',), (None,)),
+        (('P2',), ('W4',), (None,)),
+        (('P2',), ('P1',), (None,)),
+        (('P2',), ('P3',), (None,)),
+        (('P2',), ('P4',), (None,)),
+        (('P2',), ('P5',), (None,)),
+        (('P2',), ('P6',), (None,)),
+        (('P3',), ('W1',), (None,)),
+        (('P3',), ('W2',), (None,)),
+        (('P3',), ('W3',), (None,)),
+        (('P3',), ('W4',), (None,)),
+        (('P3',), ('P1',), (None,)),
+        (('P3',), ('P2',), (None,)),
+        (('P3',), ('P4',), (None,)),
+        (('P3',), ('P5',), (None,)),
+        (('P3',), ('P6',), (None,)),
+        (('P4',), ('W1',), (None,)),
+        (('P4',), ('W2',), (None,)),
+        (('P4',), ('W3',), (None,)),
+        (('P4',), ('W4',), (None,)),
+        (('P4',), ('P1',), (None,)),
+        (('P4',), ('P2',), (None,)),
+        (('P4',), ('P3',), (None,)),
+        (('P4',), ('P5',), (None,)),
+        (('P4',), ('P6',), (None,)),
+        (('P5',), ('W1',), (None,)),
+        (('P5',), ('W2',), (None,)),
+        (('P5',), ('W3',), (None,)),
+        (('P5',), ('W4',), (None,)),
+        (('P5',), ('P1',), (None,)),
+        (('P5',), ('P2',), (None,)),
+        (('P5',), ('P3',), (None,)),
+        (('P5',), ('P4',), (None,)),
+        (('P5',), ('P6',), (None,)),
+        (('P6',), ('W1',), (None,)),
+        (('P6',), ('W2',), (None,)),
+        (('P6',), ('W3',), (None,)),
+        (('P6',), ('W4',), (None,)),
+        (('P6',), ('P1',), (None,)),
+        (('P6',), ('P2',), (None,)),
+        (('P6',), ('P3',), (None,)),
+        (('P6',), ('P4',), (None,)),
+        (('P6',), ('P5',), (None,))
+    )
 
     assert ref_rxns1 == mess_io.reader.rates.reactions(
         KTP_OUT_STR, read_rev=True)
-    assert ref_rxns2 == mess_io.reader.rates.reactions(
-        KTP_OUT_STR, read_rev=False)
 
 
 def test__filter_ktp():
@@ -331,7 +390,7 @@ def test__filter_ktp():
 def test__dos_rovib():
     """ test mess_io.reader.rates.dos_rovib
     """
-    dos_df = mess_io.reader.rates.dos_rovib(KE_PED_OUT_DOUBLE)
+    dos_df = mess_io.reader.rates.dos_rovib(KE_PED_OUT_DBL)
     # check dos info
     assert list(dos_df.columns) == ['CH3CH2CH2', 'H2', 'CH3CHCH3']
     assert numpy.allclose(dos_df.loc[0.4].values, numpy.array(
