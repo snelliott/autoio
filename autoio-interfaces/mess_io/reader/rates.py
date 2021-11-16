@@ -4,15 +4,18 @@
   corresponding to a given reaction.
 """
 
-from genericpath import exists
+import sys
 import numpy
 import pandas as pd
 from phydat import phycon
-from autoparse import find
+import autoparse.find as apf
+
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
-def get_rxn_ktp_dct(out_str, label_dct=None, read_fake=False, read_self=False,
-                    read_rev=True, filter_kts=True, tmin=None, tmax=None,
+def get_rxn_ktp_dct(out_str,
+                    read_fake=False, read_self=False, read_rev=True,
+                    filter_kts=True,
+                    tmin=None, tmax=None,
                     pmin=None, pmax=None, convert=True):
     """ Read a ktp dictionary for each reaction listed in the MESS output
         file string that requested by the user.
@@ -36,20 +39,23 @@ def get_rxn_ktp_dct(out_str, label_dct=None, read_fake=False, read_self=False,
         :rtype dict[float: (float, float)]
     """
 
-    # Get the MESS rxn pairs (e.g., ('W1', 'P1'))
-    rxns = reactions(out_str, read_fake=read_fake, read_self=read_self,
+    # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
+    rxns = reactions(out_str,
+                     read_fake=read_fake,
+                     read_self=read_self,
                      read_rev=read_rev)
+
     # For each rxn pair, get rate constants, with filtering as indicated
-    mess_rxn_ktp_dct = {}
+    rxn_ktp_dct = {}
     for rxn in rxns:
-        rct, prd = rxn
-        mess_rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd,
-                                        filter_kts=filter_kts, tmin=tmin,
-                                        tmax=tmax, pmin=pmin, pmax=pmax,
-                                        convert=convert)
+        rct, prd = rxn[0][0], rxn[1][0]
+        rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd,
+                                   filter_kts=filter_kts, tmin=tmin,
+                                   tmax=tmax, pmin=pmin, pmax=pmax,
+                                   convert=convert)
     # Reformat the dictionary keys to follow the tuple of tuples format
     # (if no label_dct was given, the MESS names will be used)
-    rxn_ktp_dct = translate_rxn_names(mess_rxn_ktp_dct, label_dct=label_dct)
+    # rxn_ktp_dct = translate_rxn_names(mess_rxn_ktp_dct, label_dct=label_dct)
 
     return rxn_ktp_dct
 
@@ -207,7 +213,8 @@ def _parse_rate_constants(out_lines, block_start, reaction):
     return (fin_temps, fin_kts)
 
 
-# Functions for getting k(E) values from main MESS `MicroRateOut` file
+# Functions for getting k(E)s and density-of-states from
+# main MESS `MicroRateOut` file
 def ke_dct(output_str, reactant, product):
     """ Parses the MESS output file string for the microcanonical
         rate constants [k(E)]s for a single reaction.
@@ -241,45 +248,47 @@ def ke_dct(output_str, reactant, product):
                 _ke_dct[float(tmp[0])] = float(tmp[col_idx])
 
     return _ke_dct
-# Functions for getting fragment density of states values from main MESS `MicroRateOut` file
+
 
 def dos_rovib(ke_ped_out):
     """ Read the microcanonical pedoutput file and extracts rovibrational density
         of states of each fragment as a function of the energy
 
+        units: kcal/mol, and for dos mol/kcal
+
         :param ke_ped_out: string of lines of microcanonical rates output file
         :type ke_ped_out: str
 
-        :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol]) 
+        :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol])
                         with the density of states
         :rtype dos_df: dataframe(float)
     """
-    # find where data of interest are
+    # apf.where data of interest are
     ke_lines = ke_ped_out.splitlines()
-    i_in = find.where_in(
+
+    i_in = apf.where_in(
         'Bimolecular fragments density of states:', ke_lines)[0]+2
-    labels = ke_lines[i_in-1].strip().split()[2:]
+    _labels = ke_lines[i_in-1].strip().split()[2:]
     en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
 
-    dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=labels)
+    dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
     # drop potentially duplicate columns
     dos_rovib_df = dos_rovib_df.T.drop_duplicates().T
 
-    # units: kcal/mol, and for dos mol/kcal
     return dos_rovib_df
 
-# Functions for getting barrier heights and the corresponding reactants and products
-# not tested because currently unused
 
+# Functions for getting barrier heights and corresponding reactants, products
+# not tested because currently unused
 def energies(output_str):
     """ Parses the MESS output and gets the energies of all species
         :param output_str: string of lines of MESS output file
         :type output_str: str
 
-        :return species_en, barriers_en: species energy and barriers energy in kcal/mol
+        :return species_en, barriers_en: species and barrier energy in kcal/mol
         :rtype series(index=name), series(index=(reac,prod))
     """
 
@@ -288,13 +297,13 @@ def energies(output_str):
     headers = ['Wells', 'Bimolecular Products',
                'Well-to-Bimolecular', 'Well-to-Well']
     # Determine where block is
-    block_indexes = find.where_in_any(headers, out_lines)
+    block_indexes = apf.where_in_any(headers, out_lines)
 
     # preallocations
-    species = []
-    species_en = []
-    barriers = []
-    barriers_en = []
+    _species = []
+    _species_ene = []
+    _barriers = []
+    _barriers_ene = []
 
     for i in block_indexes:
         block = out_lines[i]
@@ -302,52 +311,58 @@ def energies(output_str):
 
         if 'Wells' in block or 'Bimolecular Products' in block:
             for line in lines[2:]:
-                sp, en = line.strip().split()[0:2]
-                species.append(sp)
-                species_en.append(float(en))
+                spc, ene = line.strip().split()[0:2]
+                _species.append(spc)
+                _species_ene.append(float(ene))
 
-    species_en_S = pd.Series(species_en, index=species)
+    species_ene_s = pd.Series(_species_ene, index=_species)
 
     for i in block_indexes:
         block = out_lines[i]
         lines = block.splitlines()
         if 'Well-to-Bimolecular' in block:
             for line in lines[2:]:
-                _, en, reac, _, prod = line.strip().split()
-                barriers.append((reac, prod)), barriers.append((prod, reac))
+                _, ene, reac, _, prod = line.strip().split()
+                _barriers.append((reac, prod))
+                _barriers.append((prod, reac))
                 # relative energy
-                barriers_en.append(float(en)-species_en_S[reac])
-                barriers_en.append(float(en)-species_en_S[prod])
+                _barriers_ene.append(float(ene)-species_ene_s[reac])
+                _barriers_ene.append(float(ene)-species_ene_s[prod])
 
         if 'Well-to-Well' in block:
             for line in lines[2:]:
-                _, en, reac, _, prod, _ = line.strip().split()
-                barriers.append((reac, prod)), barriers.append((prod, reac))
-                barriers_en.append(float(en)-species_en_S[reac])
-                barriers_en.append(float(en)-species_en_S[prod])
+                _, ene, reac, _, prod, _ = line.strip().split()
+                _barriers.append((reac, prod))
+                _barriers.append((prod, reac))
+                _barriers_ene.append(float(ene)-species_ene_s[reac])
+                _barriers_ene.append(float(ene)-species_ene_s[prod])
 
-    barriers_en_S = pd.Series(barriers_en, index=barriers)
+    barriers_ene_s = pd.Series(_barriers_ene, index=_barriers)
 
-    return species_en_S, barriers_en_S
+    return species_ene_s, barriers_ene_s
 
-def barriers(barriers_en_S, species_en_S, reac, prod):
+
+def barriers(barriers_ene_s, species_ene_s, reac, prod):
     """ Extract fw and bw energy barrier for reaction reac->prod
         if barrier not found, save the DE of the reaction
     """
-    findreac = [reac == key[0] for key in barriers_en_S.keys()]
-    findprod = [prod == key[1] for key in barriers_en_S.keys()]
-    findreac_rev = [reac == key[1] for key in barriers_en_S.keys()]
-    findprod_rev = [prod == key[0] for key in barriers_en_S.keys()]
+    findreac = [reac == key[0] for key in barriers_ene_s.keys()]
+    findprod = [prod == key[1] for key in barriers_ene_s.keys()]
+    findreac_rev = [reac == key[1] for key in barriers_ene_s.keys()]
+    findprod_rev = [prod == key[0] for key in barriers_ene_s.keys()]
 
-    if (reac, prod) in barriers_en_S.keys():
-        DE_FW = barriers_en_S[(reac, prod)]
-        DW_BW = barriers_en_S[(prod, reac)]
+    if (reac, prod) in barriers_ene_s.keys():
+        dene_fw = barriers_ene_s[(reac, prod)]
+        # DW_BW = barriers_ene_s[(prod, reac)]
 
-    elif (any(findreac) or any(findreac_rev)) and (any(findprod) or any(findprod_rev)):
+    elif (
+        any(findreac) or any(findreac_rev) and
+        any(findprod) or any(findprod_rev)
+         ):
         # check if you have reac->wr->wp->prod like in habs
-        connect_reac = numpy.array(list(barriers_en_S.keys()))[findreac]
+        connect_reac = numpy.array(list(barriers_ene_s.keys()))[findreac]
         fromreac = [p[1] for p in connect_reac]
-        connect_prod = numpy.array(list(barriers_en_S.keys()))[findprod]
+        connect_prod = numpy.array(list(barriers_ene_s.keys()))[findprod]
         fromprod = [r[0] for r in connect_prod]
         possible_index = [(p, r) for p in fromreac for r in fromprod]
         possible_index += [(reac, p) for p in fromprod]
@@ -358,43 +373,42 @@ def barriers(barriers_en_S, species_en_S, reac, prod):
         for idx in possible_index:
 
             try:
-                DE = barriers_en_S[idx]
+                delta_ene = barriers_ene_s[idx]
                 # barriers like r=>wr=>wp=>p
-                DE_FW = DE - barriers_en_S[(idx[0], reac)]
-                DE_BW = barriers_en_S[(idx[1], idx[0])] - \
-                    barriers_en_S[(idx[1], prod)]
+                dene_fw = delta_ene - barriers_ene_s[(idx[0], reac)]
+                dene_bw = barriers_ene_s[(idx[1], idx[0])] - \
+                    barriers_ene_s[(idx[1], prod)]
                 flag = 1
             except (KeyError, ValueError):
                 try:
                     # barriers like r=>wr=>p
                     # reacs=>wr
-                    DE_FW = barriers_en_S[(idx[0], prod)] - \
-                        barriers_en_S[(idx[0], reac)]
+                    dene_fw = barriers_ene_s[(idx[0], prod)] - \
+                        barriers_ene_s[(idx[0], reac)]
 
-                    DE_BW = DE_FW + barriers_en_S[(prod, idx[0])]
+                    dene_bw = dene_fw + barriers_ene_s[(prod, idx[0])]
                     flag = 1
                 except (KeyError, ValueError):
                     continue
 
         if flag == 0:
-            print(
-                '*Warning: indirect connection between {} and {} not found'.format(reac, prod))
+            print('*Warning: indirect connection between '
+                  f'{reac} and {prod} not found')
             print('saving the DE instead \n')
             try:
-                DE_FW = species_en_S[prod] - species_en_S[reac]
-                DE_BW = species_en_S[reac] - species_en_S[prod]
+                dene_fw = species_ene_s[prod] - species_ene_s[reac]
+                dene_bw = species_ene_s[reac] - species_ene_s[prod]
             except KeyError:
-                print(
-                    '*Error: species {} and {} not found. now exiting \n'.format(reac, prod))
+                print('*Error: species '
+                      f'{reac} and {prod} not found. Now exiting \n')
     else:
-        print('*Error: species {} and {} not found'.format(reac, prod))
-        exit()
+        print(f'*Error: species {reac} and {prod} not found')
+        sys.exit()
 
-    return DE_FW, DE_BW
+    return dene_fw, dene_bw
+
 
 # Functions to read temperatures and pressures
-
-
 def temperatures(file_str, mess_file='out'):
     """ Get temps
     """
@@ -573,28 +587,38 @@ def _convert_pressure(pressure, pressure_unit):
 
 
 # Read the labels for all species and reactions
-def reactions(out_str, read_fake=False, read_self=False, read_rev=True):
+def reactions(out_str,
+              third_body=(None,),
+              read_fake=False, read_self=False, read_rev=True):
     """ Read the reactions from the output file.
+
+        Currently, we assume we don't care about the third body
+        and have the user pass it.
+
+        Returns the reactions in tuple list (reacs, prods, third_body)
+        where reacs and prods are tuples
 
         Ignores 'Capture' reactions
     """
 
     # Read all of the reactions out of the file
-    rxns = ()
+    init_rxns = ()
     for line in out_str.splitlines():
         if 'T(K)' in line and '->' in line:
-            rxns += tuple(line.strip().split()[1:])
+            init_rxns += tuple(line.strip().split()[1:])
 
     # Remove duplcates while preserving order
-    rxns = tuple(n for i, n in enumerate(rxns) if n not in rxns[:i])
+    init_rxns = tuple(n for i, n in enumerate(init_rxns)
+                      if n not in init_rxns[:i])
 
     # Remove capture reactions
-    rxns = tuple(rxn for rxn in rxns if rxn != 'Capture')
+    init_rxns = tuple(rxn for rxn in init_rxns
+                      if rxn != 'Capture')
 
     # Build list of reaction pairs: rct->prd = (rct, prd)
     # Filter out reaction as necessary
     rxn_pairs = ()
-    for rxn in rxns:
+    for rxn in init_rxns:
         [rct, prd] = rxn.split('->')
         if not read_fake:
             if 'F' in rxn or 'B' in rxn:
@@ -616,7 +640,15 @@ def reactions(out_str, read_fake=False, read_self=False, read_rev=True):
                 continue
             sort_rxn_pairs += ((rct, prd),)
 
-    return sort_rxn_pairs
+    # Add the third body to the sorted pairs
+    fin_rxns = ()
+    for rxn in sort_rxn_pairs:
+        rct, prd = rxn
+        fin_rxns += (
+            ((rct,), (prd,), third_body),
+        )
+
+    return fin_rxns
 
 
 def labels(file_str, read_fake=False, mess_file='out'):
@@ -780,48 +812,33 @@ def filter_ktp_dct(_ktp_dct, bimol,
     return filt_ktp_dct
 
 
-def translate_rxn_names(mess_rxn_ktp_dct, label_dct=None):
+def relabel(rxn_ktp_dct, label_dct):
+    """ Relabel the rxn ktp dictionaries using the label dictionary
     """
 
-        note to self: label_dct: {mech_name: MESS_name}
-
-        :param mess_rxn_ktp_dct: rate constants for each reaction, with the rxn
-            keys in the MESS format (e.g., ('W1', 'P1'))
-        :type mess_rxn_ktp_dct:
-    """
-
-    def mess_pairs_to_rxn(rxn_pair, inv_label_dct=None):
-        """ Convert the rxn pair of MESS names to the rxn tuple format
-
+    def _relabel(lbl, label_dct):
+        """ a
         """
-        mess_rct, mess_prd = rxn_pair
-
-        # If a label_dct was given, rename MESS labels to the mechanism labels
-        if inv_label_dct is not None:
-            mech_rct = inv_label_dct[mess_rct].split('+')  # split bimol
-            mech_prd = inv_label_dct[mess_prd].split('+')
-            rxn = (tuple(mech_rct), tuple(mech_prd), (None,))
-
-        # Otherwise, reformat the MESS labels slightly to the rxn key format
-        # (this is the format that all the fitting and Chemkin codes use)
+        if lbl in label_dct:
+            relbl = tuple(label_dct[lbl].split('+'))
         else:
-            rxn = ((mess_rct,), (mess_prd,), (None,))
+            relbl = (lbl,)
+        return relbl
 
-        return rxn
+    relab_rxn_ktp_dct = {}
+    for rxn, _ktp_dct in rxn_ktp_dct.items():
+        rcts, prds, thirdbody = rxn
 
-    # If a label_dct was given, invert it (assume all values are unique)
-    if label_dct is not None:
-        inv_label_dct = {MESS: mech for mech, MESS in label_dct.items()}
-    else:
-        inv_label_dct = None
+        relab_rcts = ()
+        for rct in rcts:
+            relab_rcts += _relabel(rct, label_dct)
+        relab_prds = ()
+        for prd in prds:
+            relab_prds += _relabel(prd, label_dct)
 
-    # Loop over each reaction and rename and/or reformat it
-    rxn_ktp_dct = {}
-    for rxn_pair, _ktp_dct in mess_rxn_ktp_dct.items():
-        rxn = mess_pairs_to_rxn(rxn_pair, inv_label_dct=inv_label_dct)
-        rxn_ktp_dct[rxn] = _ktp_dct
+        relab_rxn_ktp_dct[(relab_rcts, relab_prds, thirdbody)] = _ktp_dct
 
-    return rxn_ktp_dct
+    return relab_rxn_ktp_dct
 
 
 def convert_units(_ktp_dct, bimol):
