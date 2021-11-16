@@ -78,10 +78,10 @@ def test__species():
 
     flux_mode_str = pathtools.read_file(INP_PATH, 'flux_mode1.inp')
 
-    mc_spc1_str = mess_io.writer.mc_species(
+    mc_spc1_str = mess_io.writer.monte_carlo_species(
         GEO, SYM_FACTOR, ELEC_LEVELS,
         flux_mode_str, DATA_FILE_NAME)
-    mc_spc2_str = mess_io.writer.mc_species(
+    mc_spc2_str = mess_io.writer.monte_carlo_species(
         GEO, SYM_FACTOR, ELEC_LEVELS,
         flux_mode_str, DATA_FILE_NAME,
         ref_config_file_name=REF_CONFIG_FILE_NAME,
@@ -98,9 +98,9 @@ def test__dat():
     """ test mess_io.writer.mc_data
     """
 
-    mc_dat1_str = mess_io.writer.mc_data(
+    mc_dat1_str = mess_io.writer.monte_carlo_data(
         GEOS, ENES)
-    mc_dat2_str = mess_io.writer.mc_data(
+    mc_dat2_str = mess_io.writer.monte_carlo_data(
         GEOS, ENES,
         grads=GRADS,
         hessians=HESSES)
