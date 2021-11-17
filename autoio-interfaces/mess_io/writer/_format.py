@@ -88,6 +88,20 @@ def geometry_format(geo):
     return natoms, gstr
 
 
+def mc_geometry_format(geo):
+    """ Formats the geometry of a species into a string that
+        is appropriate for a MESS MonteCarlo auxiliary data file.
+
+        :param geo: geometry of a species
+        :return natoms: number of atoms in the geometry
+        :rtype int
+        :return geo_str: MESS-format string containing geometry
+        :rtype string
+    """
+    natoms, gstr = geometry_format(geo)
+    return f'{natoms}\n{gstr}'
+
+
 def freqs_format(freqs):
     """ Formats the vibrational frequencies of a species into a string that
         is appropriate for a MESS input file.

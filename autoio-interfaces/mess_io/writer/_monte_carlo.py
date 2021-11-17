@@ -59,10 +59,10 @@ def monte_carlo_species(geo, sym_factor, elec_levels,
         nfreqs = 0
 
     # Check if reference config name is present
-    if nfreqs > 0:
-        assert ref_config_file_name, (
-            'Must provide a reference configuration file if no Hessians given'
-        )
+    # if nfreqs > 0:
+    #     assert ref_config_file_name, (
+    #         'Must provide a reference configuration file if no Hessians given'
+    #     )
 
     # Indent various strings string if needed
     flux_mode_str = messformat.indent(flux_mode_str, 4)
@@ -125,7 +125,7 @@ def monte_carlo_data(geos, enes, grads=(), hessians=()):
         dat_str += 'Energy'+'\n'
         dat_str += f'{enes[idx]:.8f}\n'
         geo_str = 'Geometry'+'\n'
-        geo_str += automol.geom.string(geos[idx])+'\n'
+        geo_str += messformat.mc_geometry_format(geos[idx])+'\n'
         geo_str = remove_trail_whitespace(geo_str)
         dat_str += geo_str
         if grads:
