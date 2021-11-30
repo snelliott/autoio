@@ -11,9 +11,9 @@ ${levels}
 % if reference_ene is not None:
     ReferenceEnergy[kcal/mol]    ${reference_ene}
 % endif
-% if nfreqs > 0:
-  NonFluxionalFrequencies[1/cm]  ${nfreqs}
-% endif
+## % if nfreqs > 0:
+##   NonFluxionalFrequencies[1/cm]  ${nfreqs}
+## % endif
 % if ref_config_file_name:
   NoHessian
   ReferenceConfiguration           ${ref_config_file_name} 
