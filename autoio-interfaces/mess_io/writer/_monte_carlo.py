@@ -118,16 +118,11 @@ def monte_carlo_data(geos, enes, grads=(), hessians=()):
 
     dat_str = ''
     for idx, _ in enumerate(geos):
-        # Set the sampling point index
-        idx_str = str(idx+1)
-        # Build string with data for all points
-        dat_str += 'Sampling point'+idx_str+'\n'
-        dat_str += 'Energy'+'\n'
+        dat_str += 'Sampling point'+ str(idx+1) + '\n'
+        dat_str += 'Energy' + '\n'
         dat_str += f'{enes[idx]:.8f}\n'
-        geo_str = 'Geometry'+'\n'
-        geo_str += messformat.mc_geometry_format(geos[idx])+'\n'
-        geo_str = remove_trail_whitespace(geo_str)
-        dat_str += geo_str
+        dat_str += 'Geometry' + '\n'
+        dat_str += messformat.mc_geometry_format(geos[idx]) + '\n'
         if grads:
             grad_str = automol.util.mat.string(
                 grads[idx], val_format='{0:>16.12f}')
@@ -139,11 +134,11 @@ def monte_carlo_data(geos, enes, grads=(), hessians=()):
             dat_str += 'Hessian'+'\n'
             dat_str += hess_str+'\n'
 
+        dat_str += '\n'
+
     # Format string as needed
     if not grads and not hessians:
         dat_str = remove_trail_whitespace(dat_str)
-
-    # if not grads and not hessians:
     dat_str = '\n' + dat_str
 
     return dat_str
