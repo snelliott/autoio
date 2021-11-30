@@ -32,11 +32,11 @@ def torsions(script_str, run_dir, geo, hind_rot_str):
 
     # Read the torsional freqs from output file
     out_str = output_strs[2]
-    tors_freqs = mess_io.reader.tors.first_point_harmonic_frequencies(out_str)
+    # tors_freqs = mess_io.reader.tors.first_point_harmonic_frequencies(out_str)
 
     # Read the torsional freqs and zpves from log file
     log_str = output_strs[1]
-    # tors_freqs = mess_io.reader.tors.analytic_frequencies(log_str)
+    tors_freqs = mess_io.reader.tors.analytic_frequencies(log_str)
     tors_zpes = mess_io.reader.tors.zero_point_vibrational_energies(
         log_str)
 
