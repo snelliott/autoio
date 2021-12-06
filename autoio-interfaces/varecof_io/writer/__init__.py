@@ -5,6 +5,7 @@
 from varecof_io.writer.input_file import tst
 from varecof_io.writer.input_file import divsur
 from varecof_io.writer.input_file import elec_struct
+from varecof_io.writer.input_file import molpro_template
 from varecof_io.writer.input_file import structure
 from varecof_io.writer.input_file import mc_flux
 from varecof_io.writer.input_file import convert
@@ -26,6 +27,7 @@ __all__ = [
     'tst',
     'divsur',
     'elec_struct',
+    'molpro_template',
     'structure',
     'mc_flux',
     'convert',
