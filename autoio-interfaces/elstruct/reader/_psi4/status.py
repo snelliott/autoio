@@ -57,11 +57,16 @@ def _has_symmetry_detection_error_message(output_str):
 
 ERROR_READER_DCT = {
     elstruct.par.Error.SCF_NOCONV: _has_scf_nonconvergence_error_message,
+    elstruct.par.Error.MCSCF_NOCONV: False,
+    elstruct.par.Error.CC_NOCONV: False,  # not checked
     elstruct.par.Error.OPT_NOCONV: _has_opt_nonconvergence_error_message,
+    elstruct.par.Error.IRC_NOCONV: False,
+    elstruct.par.Error.LIN_DEP_BASIS: False,
     elstruct.par.Error.SYMM_NOFIND: _has_symmetry_detection_error_message
 }
 SUCCESS_READER_DCT = {
     elstruct.par.Success.SCF_CONV: _has_scf_convergence_message,
+    elstruct.par.Error.CC_NOCONV: False,  # not checked
     elstruct.par.Success.OPT_CONV: _has_opt_convergence_message,
 }
 
@@ -81,10 +86,16 @@ def success_list():
 def has_error_message(error, output_str):
     """ does this output string have an error message?
     """
+
     assert error in error_list()
-    # get the appropriate reader and call it
+
     error_reader = ERROR_READER_DCT[error]
-    return error_reader(output_str)
+    if isinstance(error_reader, bool):
+        err_val = False
+    else:
+        err_val = error_reader(output_str)
+
+    return err_val
 
 
 def check_convergence_messages(error, success, output_str):
@@ -93,13 +104,8 @@ def check_convergence_messages(error, success, output_str):
     assert error in error_list()
     assert success in success_list()
 
-    job_success = False
-    has_error = ERROR_READER_DCT[error](output_str)
-    if has_error:
-        print('has error:', error)
-        has_success = SUCCESS_READER_DCT[success](output_str)
-        if has_success:
-            job_success = True
+    if has_error_message(error, output_str):
+        job_success = SUCCESS_READER_DCT[success](output_str)
     else:
         job_success = True
 

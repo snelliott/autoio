@@ -932,10 +932,12 @@ class Error():
         program output files.
     """
     SCF_NOCONV = 'scf_noconv'
+    MCSCF_NOCONV = 'mcscf_noconv'
     CC_NOCONV = 'cc_noconv'
     OPT_NOCONV = 'opt_noconv'
     IRC_NOCONV = 'irc_noconv'
     SYMM_NOFIND = 'symm_nofind'
+    LIN_DEP_BASIS = 'linear_dependent_basis'
 
 
 class Success():
