@@ -13,4 +13,5 @@
   NonFluxionalFrequencies[1/cm]  8
   NoHessian
   ReferenceConfiguration           ref.dat
+  ExcludedVolumeFactor             0.85679
   UseCMShift

@@ -38,7 +38,6 @@ HESSES = [HESS for i in range(21)]
 ENES = tuple(float(val) for val in range(21))
 SYM_FACTOR = 3.0
 ELEC_LEVELS = ((2, 0.00),)
-FREQS = (100., 200., 300., 400., 500., 600., 700., 800.)
 FORMULA = 'CH3OH'
 DATA_FILE_NAME = 'tau.dat'
 REF_CONFIG_FILE_NAME = 'ref.dat'
@@ -46,6 +45,7 @@ GROUND_ENE = 32.724
 REF_ENE = 0.00
 FLUX_IDX = (5, 1, 0, 2)
 FLUX_SPAN = 2.0944
+EXCLUDED_VOLUME_FACTOR = 0.85679
 USE_CM_SHIFT = True
 
 
@@ -87,8 +87,11 @@ def test__species():
         ref_config_file_name=REF_CONFIG_FILE_NAME,
         ground_ene=GROUND_ENE,
         reference_ene=REF_ENE,
-        freqs=FREQS,
+        excluded_volume_factor=EXCLUDED_VOLUME_FACTOR,
         use_cm_shift=USE_CM_SHIFT)
+
+    print(repr(mc_spc2_str))
+    print(repr(pathtools.read_file(INP_PATH, 'mc_spc2.inp')))
 
     assert mc_spc1_str == pathtools.read_file(INP_PATH, 'mc_spc1.inp')
     assert mc_spc2_str == pathtools.read_file(INP_PATH, 'mc_spc2.inp')
@@ -110,4 +113,4 @@ def test__dat():
 
 
 if __name__ == '__main__':
-    test__dat()
+    test__species()
