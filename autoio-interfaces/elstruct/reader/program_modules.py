@@ -107,7 +107,7 @@ READER_MODULE_DCT = {
     ),
     par.Program.MOLPRO2015: (
         Job.ENERGY, Job.GRADIENT,
-        Job.HESSIAN,
+        Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.OPT_GEO, Job.OPT_ZMA,
         Job.EXIT_MSG, Job.ERR_LST,
         Job.ERR_MSG, Job.CONV_MSG,
@@ -115,7 +115,7 @@ READER_MODULE_DCT = {
     ),
     par.Program.MOLPRO2021: (
         Job.ENERGY, Job.GRADIENT,
-        Job.HESSIAN,
+        Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.OPT_GEO, Job.OPT_ZMA,
         Job.EXIT_MSG, Job.ERR_LST,
         Job.ERR_MSG, Job.CONV_MSG,
