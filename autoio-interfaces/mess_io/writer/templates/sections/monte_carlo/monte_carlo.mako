@@ -18,6 +18,9 @@ ${levels}
   NoHessian
   ReferenceConfiguration           ${ref_config_file_name} 
 % endif
+% if excluded_volume_factor is not None:
+  ExcludedVolumeFactor             ${excluded_volume_factor}
+% endif
 % if use_cm_shift:
   UseCMShift
 % endif

@@ -23,7 +23,8 @@ def monte_carlo_species(geo, sym_factor, elec_levels,
                         flux_mode_str, data_file_name,
                         ref_config_file_name='',
                         ground_ene=None, reference_ene=None,
-                        freqs=(), use_cm_shift=False):
+                        freqs=(), excluded_volume_factor=None,
+                        use_cm_shift=False):
     """ Writes a monte carlo species section
 
         :param geo: geometry of species
@@ -84,6 +85,7 @@ def monte_carlo_species(geo, sym_factor, elec_levels,
         'levels': levels,
         'nfreqs': nfreqs,
         'freqs': freqs,
+        'excluded_volume_factor': excluded_volume_factor,
         'use_cm_shift': use_cm_shift
     }
 

@@ -36,7 +36,11 @@ def _has_opt_nonconvergence_error_message(output_string):
 
 ERROR_READER_DCT = {
     elstruct.par.Error.SCF_NOCONV: _has_scf_nonconvergence_error_message,
+    elstruct.par.Error.MCSCF_NOCONV: False,
+    elstruct.par.Error.CC_NOCONV: False,  # not checked
     elstruct.par.Error.OPT_NOCONV: _has_opt_nonconvergence_error_message,
+    elstruct.par.Error.IRC_NOCONV: False,
+    elstruct.par.Error.LIN_DEP_BASIS: False
 }
 
 
@@ -49,10 +53,16 @@ def error_list():
 def has_error_message(error, output_string):
     """ does this output string have an error message?
     """
+
     assert error in error_list()
-    # get the appropriate reader and call it
+
     error_reader = ERROR_READER_DCT[error]
-    return error_reader(output_string)
+    if isinstance(error_reader, bool):
+        err_val = False
+    else:
+        err_val = error_reader(output_str)
+
+    return err_val
 
 
 def check_convergence_messages(error, success, output_string):

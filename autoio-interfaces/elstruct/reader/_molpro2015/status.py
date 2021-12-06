@@ -81,6 +81,26 @@ def _has_scf_nonconvergence_error_message(output_str):
     return apf.has_match(pattern, output_str, case=False)
 
 
+def _has_mcscf_nonconvergence_error_message(output_str):
+    """ Assess whether the output file string contains the
+        message signaling the failure of the MCSCF procedure.
+
+        When an MCSCF WF calculation fails to converge at
+        some step in opt it is not clear how to save the
+        optimization, so we give up on opt
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: bool
+    """
+
+    pattern = app.one_of_these([
+        app.escape('The problem occurs in Multi'),
+        app.escape('The problem occurs in cipro')
+    ])
+    return apf.has_match(pattern, output_str, case=True)
+
+
 def _has_opt_nonconvergence_error_message(output_str):
     """ Assess whether the output file string contains the
         message signaling the failure of the geometry optimization.
@@ -99,13 +119,30 @@ def _has_opt_nonconvergence_error_message(output_str):
     return error
 
 
+def _has_linear_dependence_error_message(output_str):
+    """ Assess whether the output file string contains the
+        message signaling Hartee-Fock failure as a result of
+        linear dependencies in the basis set.
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: bool
+    """
+    pattern = 'ERROR: BASIS LINEARLY DEPENDENT OR WRONG S'
+    return apf.has_match(pattern, output_str, case=False)
+
+
 ERROR_READER_DCT = {
     elstruct.par.Error.SCF_NOCONV: _has_scf_nonconvergence_error_message,
+    elstruct.par.Error.MCSCF_NOCONV: _has_mcscf_nonconvergence_error_message,
+    elstruct.par.Error.CC_NOCONV: False,  # not checked
     elstruct.par.Error.OPT_NOCONV: _has_opt_nonconvergence_error_message,
+    elstruct.par.Error.IRC_NOCONV: False,
+    elstruct.par.Error.LIN_DEP_BASIS: _has_linear_dependence_error_message
 }
 SUCCESS_READER_DCT = {
     elstruct.par.Success.SCF_CONV: _has_scf_convergence_message,
-    elstruct.par.Success.OPT_CONV: _has_opt_convergence_message,
+    elstruct.par.Success.OPT_CONV: _has_opt_convergence_message
 }
 
 
@@ -133,8 +170,12 @@ def has_error_message(error, output_str):
     assert error in error_list()
 
     error_reader = ERROR_READER_DCT[error]
+    if isinstance(error_reader, bool):
+        err_val = False
+    else:
+        err_val = error_reader(output_str)
 
-    return error_reader(output_str)
+    return err_val
 
 
 def check_convergence_messages(error, success, output_str):
@@ -149,9 +190,9 @@ def check_convergence_messages(error, success, output_str):
     assert error in error_list()
     assert success in success_list()
 
-    job_success = True
-    has_error = ERROR_READER_DCT[error](output_str)
-    if has_error:
-        job_success = False
+    if has_error_message(error, output_str):
+        job_success = SUCCESS_READER_DCT[success](output_str)
+    else:
+        job_success = True
 
     return job_success
