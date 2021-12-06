@@ -86,8 +86,8 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
         corr_method = prog_method
     else:
         corr_method = ''
-    print('molpro method test since I cant write code...')
-    print(prog_reference, corr_method)
+    # print('molpro method test since I cant write code...')
+    # print(prog_reference, corr_method)
 
     # Set the geometry (combine opt+constrainted coordinates
     geo_str, zmat_vval_str, zmat_cval_str = fill.geometry_strings(
