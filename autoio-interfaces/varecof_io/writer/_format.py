@@ -42,7 +42,7 @@ def format_coords(geo):
     # Get the geometry information
     symbs = geom.symbols(geo)
     coords = geom.coordinates(geo)
-    masses = geom.masses(geo)
+    masses = tuple(int(mass) for mass in geom.masses(geo))
 
     # Build a string with the formatted coordinates string
     if geom.is_atom(geo):

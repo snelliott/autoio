@@ -38,18 +38,18 @@ INTDER = (
 MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/mc_flux mc_flux.inp"
+    "/home/ygeorgi/build/rotd/mc_flux mc_flux.inp >& mc_flux.out"
 )
 VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct"
-    "{} {} >& /dev/null"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct "
+    "tst.inp >& varecof_conv.out"
 )
 TSTCHECK = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/tst_check"
+    "/home/ygeorgi/build/rotd/tst_check >& tst_check.out"
 )
 THERMP = (
     "#!/usr/bin/env bash\n"

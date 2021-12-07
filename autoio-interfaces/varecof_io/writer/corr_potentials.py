@@ -38,6 +38,10 @@ def species(rvalues, potentials, bnd_frm_idxs,
     [aidx, bidx] = bnd_frm_idxs
     asym, bsym = 'A', 'B'
 
+    print('potentials')
+    for x in potentials:
+        print(x)
+
     assert npot > 0
     assert all(len(potential) == npot_terms for potential in potentials)
 
