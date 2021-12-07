@@ -18,6 +18,31 @@ def read(string,
          last=True,
          tril=False,
          case=False):
+    """ Read
+    """
+
+    mats = read_all(string,
+                    val_ptt=val_ptt,
+                    start_ptt=start_ptt,
+                    block_start_ptt=block_start_ptt,
+                    line_start_ptt=line_start_ptt,
+                    tril=tril,
+                    case=case)
+    if mats is not None:
+        mat = mats[-1] if last else mats[0]
+    else:
+        mat = None
+
+    return mat
+
+
+def read_all(string,
+             val_ptt=VALUE_PATTERN,
+             start_ptt=None,
+             block_start_ptt=None,
+             line_start_ptt=None,
+             tril=False,
+             case=False):
     """ Reads an M x N matrix from a string by capturing the matrix values,
         which can be rectangular or lower-triangular, and
         may or may not be broken into multiple blocks.
@@ -49,35 +74,43 @@ def read(string,
                                  line_start_ptt=line_start_ptt,
                                  capture_blocks=True)
 
-    blocks_str = (apf.last_capture(blocks_ptt_, string, case=case) if last else
-                  apf.first_capture(blocks_ptt_, string, case=case))
+    blocks_str_lst = apf.all_captures(blocks_ptt_, string, case=case)
+    blocks_str_lst = blocks_str_lst if blocks_str_lst is not None else ()
+    # blocks_str_lst = (
+    #     apf.last_capture(blocks_ptt_, string, case=case) if last else
+    #     apf.first_capture(blocks_ptt_, string, case=case))
 
-    block_strs = apf.all_captures(block_ptt_, blocks_str, case=case)
+    mats = ()
+    for blocks_str in blocks_str_lst:
+        block_strs = apf.all_captures(block_ptt_, blocks_str, case=case)
 
-    if block_strs is not None:
-        if not tril:
-            rows = numpy.concatenate(
-                [_block_rows(block_str, val_ptt, line_ptt_, case=case)
-                 for block_str in block_strs], axis=1)
-            mat = _matrix(rows)
+        if block_strs is not None:
+            if not tril:
+                rows = numpy.concatenate(
+                    [_block_rows(block_str, val_ptt, line_ptt_, case=case)
+                     for block_str in block_strs], axis=1)
+                mats += (_matrix(rows),)
+            else:
+                rows = list(_block_rows(
+                    block_strs[0], val_ptt, line_ptt_, case=case))
+                nrows = len(rows)
+                for block_str in block_strs[1:]:
+                    block_rows = _block_rows(
+                        block_str, val_ptt, line_ptt_, case=case)
+                    nblock_rows = len(block_rows)
+                    for block_row_idx, row_idx in enumerate(
+                            range(nrows-nblock_rows, nrows)):
+                        rows[row_idx] += block_rows[block_row_idx]
+
+                mats += (_symmetric_matrix_from_lower_triangle(rows),)
+
         else:
-            rows = list(_block_rows(
-                block_strs[0], val_ptt, line_ptt_, case=case))
-            nrows = len(rows)
-            for block_str in block_strs[1:]:
-                block_rows = _block_rows(
-                    block_str, val_ptt, line_ptt_, case=case)
-                nblock_rows = len(block_rows)
-                for block_row_idx, row_idx in enumerate(
-                        range(nrows-nblock_rows, nrows)):
-                    rows[row_idx] += block_rows[block_row_idx]
+            mats += (None,)
 
-            mat = _symmetric_matrix_from_lower_triangle(rows)
+    if not mats:
+        mats = None
 
-    else:
-        mat = None
-
-    return mat
+    return mats
 
 
 def _matrix(rows):

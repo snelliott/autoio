@@ -63,13 +63,13 @@ VRC_DCT = {
 
 # Specialized runners
 def flux_file(varecof_script_str, mcflux_script_str,
-              run_dir, input_strs):
+              run_dir, input_strs_dct):
     """  Calculate the flux file
     """
 
     # Write all of the input strings
-    for name, string in input_strs:
-        ioformat.pathtools.read_file(string, run_dir, name)
+    for name, string in input_strs_dct.items():
+        ioformat.pathtools.write_file(string, run_dir, name)
 
     # Run VaReCoF
     run_script(varecof_script_str, run_dir)
@@ -139,8 +139,10 @@ def compile_potentials(vrc_path, mep_distances, potentials,
 
 def frame_oriented_structure(script_str, run_dir,
                              divsur_inp_str,
+                             struct_inp_str,
                              divsur_name='divsur.inp',
                              tst_name='tst.inp',
+                             struct_name='structure.inp',
                              output_names=('divsur.out',)):
     """ get the divsur.out string containing divsur-frame geoms
     """
@@ -152,7 +154,8 @@ def frame_oriented_structure(script_str, run_dir,
     tst_str = varecof_io.writer.input_file.tst(1, 1, .1, 1)
 
     # Put the tst string in the aux dct
-    aux_dct = {tst_name: tst_str}
+    aux_dct = {tst_name: tst_str,
+               struct_name: struct_inp_str}
 
     # Run the script to generate the divsur.out file
     output_strs = from_input_string(
@@ -200,6 +203,7 @@ def write_input(run_dir,
         vrc_dct['r1dists_lr'], 1, 1, [0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
 
     # Write the short-range divsur files
+    d1dists, d2dists = vrc_dct['d1dists'], vrc_dct['d2dists']
     t1angs = [pivot_angles[0]] if pivot_angles[0] is not None else []
     t2angs = [pivot_angles[1]] if pivot_angles[1] is not None else []
     if automol.geom.is_atom(isol_fgeos[0]):
@@ -231,13 +235,14 @@ def write_input(run_dir,
         **vrc_dct['conditions'])
 
     # Build the structure input file string
+    print(isol_fgeos[0])
     struct_inp_str = varecof_io.writer.input_file.structure(
         isol_fgeos[0], isol_fgeos[1])
 
     # Obtain symmetries of the fragment molecules
     script_str = SCRIPT_DCT['varecof_conv_struct']
     _, faces, faces_symm = frame_oriented_structure(
-        script_str, run_dir, srdivsur_inp_str)
+        script_str, run_dir, srdivsur_inp_str, struct_inp_str)
 
     # Write the tst.inp file
     tst_inp_str = varecof_io.writer.input_file.tst(
@@ -263,12 +268,14 @@ def write_input(run_dir,
 
     # Collate the input strings and write the remaining files
     input_strs = (
-        lrdivsur_inp_str, tst_inp_str,
+        srdivsur_inp_str, lrdivsur_inp_str,
+        tst_inp_str,
         els_inp_str, struct_inp_str,
         mc_flux_inp_str, conv_inp_str,
         machine_file_str, script_str)
     input_names = (
-        'lr_divsur.inp', 'tst.inp',
+        'divsur.inp', 'lr_divsur.inp',
+        'tst.inp',
         'molpro.inp', 'structure.inp',
         'mc_flux.inp', 'convert.inp',
         'machines', 'molpro.sh')
