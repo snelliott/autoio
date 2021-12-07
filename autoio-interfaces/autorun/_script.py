@@ -86,6 +86,13 @@ MOLPRO_2021 = (
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
+MOLPRO_2021_MPPX = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro --mppx -n {} run.inp -o run.out "
+    "--nouse-logfile --no-xml-output >> "
+    "stdout.log &> stderr.log"
+)
 MOLPRO = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
@@ -96,7 +103,7 @@ MOLPRO = (
 MOLPRO_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molprop --mppx -n {} run.inp -o run.out "
+    "molpro --mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
@@ -110,7 +117,7 @@ MOLPRO_MREF = (
 MOLPRO_MREF_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "molprop --mppx -n {} run.inp -o run.out "
+    "molpro --mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
@@ -129,6 +136,7 @@ SCRIPT_DCT = {
     'dsarrfit': DSARRFIT,
     'gaussian09': G09,
     'molpro2021': MOLPRO_2021,
+    'molpro2021_mppx': MOLPRO_2021_MPPX,
     'molpro2015': MOLPRO,
     'molpro2015_mppx': MOLPRO_MPPX,
     'molpro2015_mr': MOLPRO_MREF,
