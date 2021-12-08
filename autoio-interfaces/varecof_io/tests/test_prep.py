@@ -110,9 +110,9 @@ def __pivot():
          ('H', (1.0956829577601233, 1.5983181400102573, 3.521337399315168)),
          ('H', (-1.9323777167961476, 0.1436340237618356, 3.5197633532363044)),
          ('H', (0.0, 1.7695715856390393, -1.0304541736496604)),
-         ('H', (-0.2614848607838837, -1.7501380729830145, -1.030466152722124)),
-         ('X', (-1.3834863617693014, -9.2597795066476, -3.513182172200509))),
-        (('H', (8.108209279316, 4.6812918417618885, 6.370557717988566)),)
+         ('H', (-0.26148486078388367, -1.750138072983014, -1.030466152722124)),
+         ('X', (9.33894282675913, -0.6646035686457461, -3.513182172200509))),
+        (('H', (8.108209279316, 4.6812918417618889, 6.370557717988566)),)
     )
 
     ref_a1_idxs = (1, 1)
@@ -121,8 +121,10 @@ def __pivot():
         CH3CH2_H_ZMA, (CH3CH2_ZMA, H_ZMA), FRM_KEYS)
 
     assert automol.geom.almost_equal_dist_matrix(ref_tot_geo, tot_geo)
-    assert automol.geom.almost_equal_dist_matrix(ref_isol_geos[0], tot_geo[0])
-    assert automol.geom.almost_equal_dist_matrix(ref_isol_geos[1], tot_geo[1])
+    assert automol.geom.almost_equal_dist_matrix(
+        ref_isol_geos[0], isol_fgeos[0])
+    assert automol.geom.almost_equal_dist_matrix(
+        ref_isol_geos[1], isol_fgeos[1])
     assert ref_a1_idxs == a1_idxs
 
     ref_frames = ((2, 1, 8, 2), (0, 0, 0, 0))

@@ -2,6 +2,7 @@
 """
 
 import automol
+from automol.graph import atom_sorted_neighbor_atom_keys
 
 
 def intramolecular_constraint_dct(inf_sep_zma, rct_zmas):
@@ -82,6 +83,14 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
         :param bond-keys: atom indices for forming/breaking bond
     """
 
+    def _get_chain_idx(geo, idx, excl_idxs=()):
+        """ get neighbor to atom specified by idx. Take nonHs first
+        """
+        gra = automol.geom.graph(geo)
+        chain_idxs = atom_sorted_neighbor_atom_keys(
+            gra, idx, excl_atm_keys=excl_idxs, symbs_last=('H',))
+        return chain_idxs[0]
+
     # Group the forming bond where higher value is first (MAX, MIN)
     bnd_keys = sorted(list(bnd_keys), reverse=True)
 
@@ -102,16 +111,15 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
     # Used to define the X via set of internal coordinates
     # x_idx: index for geom to place dummy X atom
     # a1_idx: index corresponding to "bonding" atom in geometry
-    # a2_idx and a3_idx are just some atom down the line, no restriction
-    # Because of the align procedure we can assuem the idxs in MEP and iso same
-    # f1_a1 = isof1_a1 since presence of frag2 wont affect indexing
-    # For each reacting fragment of TS, determine idxs for A1-X bond, where
-    # X = dummy to add to frag, corresponds to other frag atom where bond forms
-    # A1 = idx of X neighbors with lower number ({idx < Xidxs}=frag1)
+    # a2_idx and a3_idx are just some atom down a chain, preferably nonHs
+    # Because of the align procedure we can assume the idxs in MEP and iso same
+    # possible this will only work for H (with regard to 2nd set of frag idxs)
     x_idx = len(mep_fgeos[0])
     a1_idx = bnd_keys[1]
+    a2_idx = _get_chain_idx(iso_fgeos[0], a1_idx, excl_idxs=())
+    a3_idx = _get_chain_idx(iso_fgeos[0], a2_idx, excl_idxs=(a1_idx,))
     frag_idxs = (
-        (x_idx, a1_idx, a1_idx-1, a1_idx-2),
+        (x_idx, a1_idx, a2_idx, a3_idx),
         (0, 1, 2, 3)
     )
 
@@ -120,7 +128,7 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
     # (1) Calculate values of internal coords that define X
     #     relative to 4 atoms in the MEP geom
     # (2) Use values from (1) and frag xyzs to calculate xyz of X in frag geom
-    iso_fgeos_wdummy = []
+    iso_fgeos_wdummy = ()
     mol_data = zip(mep_fgeos, iso_fgeos, bnd_keys, frag_idxs)
     for i, (mep_fgeo, iso_fgeo, bnd_key, fidxs) in enumerate(mol_data):
 
@@ -160,11 +168,11 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
                 iso_geo_wdummy = (('X', xyzp),) + iso_fgeo
 
             # Append to final geoms
-            iso_fgeos_wdummy.append(iso_geo_wdummy)
+            iso_fgeos_wdummy += (iso_geo_wdummy,)
 
         else:
             # If atom, set IsoFragGeom+X coords equal to mep_geo
-            iso_fgeos_wdummy.append(mep_fgeo)
+            iso_fgeos_wdummy += (mep_fgeo,)
 
     return mep_total_geo, iso_fgeos_wdummy, (frag_idxs[0][1], frag_idxs[1][1])
 

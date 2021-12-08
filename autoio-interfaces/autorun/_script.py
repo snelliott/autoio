@@ -28,7 +28,8 @@ MESSRATE = (
 VARECOF = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/multi tst.inp >& varecof.out"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
+    "tst.inp >& varecof.out"
 )
 INTDER = (
     "#!/usr/bin/env bash\n"
@@ -38,7 +39,8 @@ INTDER = (
 MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/mc_flux mc_flux.inp >& mc_flux.out"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
+    "mc_flux.inp >& mc_flux.out"
 )
 VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
