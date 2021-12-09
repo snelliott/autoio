@@ -301,15 +301,22 @@ def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
     method_lines = (
         "if (iterations.ge.0) then",
         f"  {{{method},shift=0.25}}",
-        f"  molpro_energy = energy + {inf_sep_ene}",
+        f"  molpro_energy = energy + {-1.0*inf_sep_ene}",
         "else",
-        "  molpro_energy = 10.0"
+        "  molpro_energy = 10.0",
+        "endif\n"
+        "show[1,e25.15],molpro_energy"
     )
 
-    # Update the cas kwargs dct
-    gen_lines_dct = cas_kwargs.get('gen_lines')
-    gen_lines_dct.update({3: method_lines})
-    cas_kwargs.update({'gen_lines': gen_lines_dct})
+    # Hacky nonsense to get the correct elstruct string
+
+    # Get the guess into a string
+    init_guess_lines = cas_kwargs.get('gen_lines')[1]
+    init_guess_str = '\n'.join(init_guess_lines)
+
+    # Write the string using just method lines
+    # Then just grab a portion of the string
+    cas_kwargs.update({'gen_lines': {3: method_lines}})
 
     inp_str = elstruct.writer.energy(
         geo='GEOMETRY_HERE',
@@ -321,8 +328,15 @@ def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
         orb_type=mod_var_scn_thy_info[3],
         **cas_kwargs
         )
+    inp_str = '\n'.join(inp_str.splitlines()[7:])
 
-    return inp_str
+    tml_str = (
+        init_guess_str +
+        '\nGEOMETRY_HERE\n' +
+        inp_str
+    )
+
+    return tml_str
 
 
 def mc_flux():

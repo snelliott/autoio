@@ -28,8 +28,13 @@ MESSRATE = (
 VARECOF = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
-    "tst.inp >& varecof.out"
+    "MPI=`which mpirun`\n"
+    # 'MPI_OPTIONS="-machinefile machines"'
+    # 'MPI_OPTIONS="-host b460"'
+    # 'MPI_OPTIONS="-n {}"\n'
+    'MPI_OPTIONS="-n 5"\n'
+    "VARECOFEXE=/lcrc/project/CMRP/amech/VaReCoF/build/multi\n\n"
+    "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
 INTDER = (
     "#!/usr/bin/env bash\n"
@@ -84,14 +89,16 @@ PSI4 = (
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro -n {} run.inp -o run.out "
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "-n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO_2021_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro --mppx -n {} run.inp -o run.out "
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "--mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )

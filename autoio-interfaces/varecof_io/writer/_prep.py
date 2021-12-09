@@ -209,19 +209,21 @@ def assess_face_symmetries(fgeo1, fgeo2):
 
     # Set the face and face_sym keywords based on the above tests
     [symm1, symm2] = symms
-    if symm1 and symm2:
-        faces = [0, 1]
-        face_symm = 4
-    elif symm1 and not symm2:
-        faces = [0, 1]
-        face_symm = 2
-    elif not symm1 and symm2:
-        faces = [0, 1]
-        face_symm = 2
-    elif not symm1 and not symm2:
-        faces = [0]
-        face_symm = 1
+    # if symm1 and symm2:
+    #     faces = [0, 1]
+    #     face_symm = 4
+    # elif symm1 and not symm2:
+    #     faces = [0, 1]
+    #     face_symm = 2
+    # elif not symm1 and symm2:
+    #     faces = [0, 1]
+    #     face_symm = 2
+    # elif not symm1 and not symm2:
+    #     faces = [0]
+    #     face_symm = 1
 
+    faces = [0]
+    face_symm = 1
     return faces, face_symm
 
 
