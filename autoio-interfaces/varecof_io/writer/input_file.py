@@ -305,13 +305,15 @@ def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
         "else",
         "  molpro_energy = 10.0",
         "endif\n"
-        "show[1,e25.15],molpro_energy"
+        # "show[1,e25.15],molpro_energy"
     )
 
     # Hacky nonsense to get the correct elstruct string
 
     # Get the guess into a string
     init_guess_lines = cas_kwargs.get('gen_lines')[1]
+    init_guess_lines = tuple(line for line in init_guess_lines
+                             if 'molpro_energy' not in line)
     init_guess_str = '\n'.join(init_guess_lines)
 
     # Write the string using just method lines
