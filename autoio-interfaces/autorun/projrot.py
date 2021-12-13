@@ -7,6 +7,7 @@ from autorun._run import from_input_string
 
 
 # Default names of input and output files
+SCRIPT_NAME = 'run_projrot.sh'
 INPUT_NAME = 'RPHt_input_data.dat'
 OUTPUT_NAMES = (
         'RTproj_freq.dat',
@@ -89,11 +90,12 @@ def small_curvature_tunneling(script_str, run_dir, geoms, grads, hessians,
         bnd1=(), bnd2=())
     aux_dct = {'RPHt_coord_en.dat': projrot_en_str}
 
-    output_name = 'imactint.dat'
     output_strs = direct(
         script_str, run_dir, geoms, grads, hessians,
         rotors_str=rotors_str, aux_dct=aux_dct,
-        output_names=(output_name,))
+        script_name=SCRIPT_NAME,
+        input_name=INPUT_NAME,
+        output_names=('imactint.dat',))
     # coord_proj=cart/int
 
     return output_strs[0]
@@ -102,7 +104,9 @@ def small_curvature_tunneling(script_str, run_dir, geoms, grads, hessians,
 # Generalized Runner
 def direct(script_str, run_dir, geoms, grads, hessians,
            rotors_str='', aux_dct=None,
-           input_name=INPUT_NAME, output_names=OUTPUT_NAMES):
+           script_name=SCRIPT_NAME,
+           input_name=INPUT_NAME,
+           output_names=OUTPUT_NAMES):
     """ Generates an input file for a ProjRot job, runs it directly, and
         obtains all of the possible output file strings
     """
@@ -113,6 +117,7 @@ def direct(script_str, run_dir, geoms, grads, hessians,
     output_strs = from_input_string(
         script_str, run_dir, input_str,
         aux_dct=aux_dct,
+        script_name=script_name,
         input_name=input_name,
         output_names=output_names)
 

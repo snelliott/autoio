@@ -5,6 +5,7 @@ import thermp_io.writer
 from autorun._run import from_input_string
 
 
+SCRIPT_NAME = 'run_thermp.sh'
 INPUT_NAME = 'thermp.dat'
 OUTPUT_NAMES = ['thermp.out', '{}.i97']
 
@@ -29,6 +30,7 @@ def direct(script_str, run_dir,
     output_strs = from_input_string(
         script_str, run_dir, input_str,
         aux_dct=aux_dct,
+        script_name=SCRIPT_NAME,
         input_name=INPUT_NAME,
         output_names=output_names)
 

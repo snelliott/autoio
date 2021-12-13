@@ -4,17 +4,23 @@
 from autorun._run import from_input_string as from_istring
 
 
-def direct(script_str, run_dir, input_str, pot_str):
+SCRIPT_NAME = 'run_polyrate.sh'
+INPUT_NAME = 'input.dat'
+OUTPUT_NAMES = ('poly.fu6',)
+
+
+def direct(script_str, run_dir, input_str, pot_str,
+           script_name=SCRIPT_NAME,
+           input_name=INPUT_NAME,
+           output_names=OUTPUT_NAMES):
     """ Lazy runner polyrate
     """
 
-    aux_dct = {'input.fu40': pot_str}
-    input_name = 'input.dat'
-    output_name = 'poly.fu6'
     output_str = from_istring(
         script_str, run_dir, input_str,
-        aux_dct=aux_dct,
+        aux_dct={'input.fu40': pot_str},
+        script_name=script_name,
         input_name=input_name,
-        output_names=(output_name,))
+        output_names=output_names)
 
     return input_str, output_str

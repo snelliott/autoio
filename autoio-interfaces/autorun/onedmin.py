@@ -7,6 +7,7 @@ import elstruct.writer
 from autorun._run import from_parallel_input_strings
 
 
+SCRIPT_NAME = 'run_onedmin.sh'
 INPUT_NAME = 'input.dat'
 OUTPUT_NAMES = ('output.dat', 'lj.out', 'min_geoms.dat', 'zero_ene')
 
@@ -68,7 +69,10 @@ def lennard_jones_params(sp_script_str, run_dir, nsamp, njobs,
 # General runners
 def direct(sp_script_str, run_dir, nsamp, njobs,
            tgt_geo, bath_geo, thy_info, charge, mult,
-           smin=3.779, smax=11.339, spin_method=1, ranseeds=None):
+           smin=3.779, smax=11.339, spin_method=1, ranseeds=None,
+           script_name=SCRIPT_NAME,
+           input_name=INPUT_NAME,
+           output_names=OUTPUT_NAMES):
     """ Write input and run output.
 
         :param sp_script_str: submission script for single-point calculation
@@ -130,8 +134,9 @@ def direct(sp_script_str, run_dir, nsamp, njobs,
     output_str_lst = from_parallel_input_strings(
         script_str, run_dir, input_str_lst,
         aux_dct=aux_dct,
-        input_name=INPUT_NAME,
-        output_names=OUTPUT_NAMES)
+        script_name=script_name,
+        input_name=input_name,
+        output_names=output_names)
 
     return input_str_lst, elstruct_inp_str, output_str_lst
 

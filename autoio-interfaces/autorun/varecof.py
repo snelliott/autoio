@@ -12,6 +12,9 @@ from autorun._script import SCRIPT_DCT
 
 
 # Default names of input and output files
+MULTI_SCRIPT_NAME = 'run_varecof_multi.sh'
+CONVSTRUCT_SCRIPT_NAME = 'run_varecof_convstruct.sh'
+MCFLUX_SCRIPT_NAME = 'run_varecof_mcflux.sh'
 INPUT_NAME = 'tst.inp'
 AUX_NAMES = (
     'structure.inp',
@@ -59,7 +62,6 @@ VRC_DCT = {
     'nsamp_max': 2000,
     'nsamp_min': 50,
     'flux_err': 10,
-    'pes_size': 2
 }
 
 
@@ -84,14 +86,15 @@ def flux_file(varecof_script_str, mcflux_script_str,
     os.mkdir(os.path.join(run_dir, 'scratch'))
 
     # Run VaReCoF
-    run_script(varecof_script_str, run_dir)
+    run_script(varecof_script_str, run_dir,
+               script_name=MULTI_SCRIPT_NAME)
 
     print('Running', run_dir)
 
     # Generate and read the flux file for the return
     # print('Generating flux file with TS N(E) '
     #       'from VaReCoF output...')
-    # run_script(mcflux_script_str, run_dir)
+    # run_script(mcflux_script_str, run_dir, script_name=MCFLUX_SCRIPT_NAME)
 
     # flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
 
@@ -175,6 +178,7 @@ def frame_oriented_structure(script_str, run_dir,
     output_strs = from_input_string(
         script_str, run_dir, divsur_inp_str,
         aux_dct=aux_dct,
+        script_name=CONVSTRUCT_SCRIPT_NAME,
         input_name=divsur_name,
         output_names=output_names)
     divsur_out_str = output_strs[0]
@@ -257,10 +261,10 @@ def write_input(run_dir,
     _, faces, faces_symm = frame_oriented_structure(
         conv_script_str, run_dir, srdivsur_inp_str, struct_inp_str)
 
-    # Write the tst.inp file
+    # Write the tst.inp file (assuming pes_size=npot+1)
     tst_inp_str = varecof_io.writer.input_file.tst(
         vrc_dct['nsamp_max'], vrc_dct['nsamp_min'],
-        vrc_dct['flux_err'], vrc_dct['pes_size'],
+        vrc_dct['flux_err'], npot+1,
         faces=faces, faces_symm=faces_symm)
 
     # Write the molpro executable and potential energy surface input string

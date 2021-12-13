@@ -10,7 +10,7 @@ EXTERN_PATH = os.path.join(PATH, 'extern')
 PROJROT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "RPHt.exe >& /dev/null"
+    "RPHt.exe >& rpht.out"
 )
 MESSPF = (
     "#!/usr/bin/env bash\n"
@@ -66,7 +66,7 @@ THERMP = (
 PAC99 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "pac99 << EOF >& pacc.log\n"
+    "pac99 << EOF >& pacc.out\n"
     "{}\n"
     "EOF"
     # "EOF >& pac99.out"
