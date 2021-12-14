@@ -9,6 +9,7 @@ from autorun._run import from_input_string
 from autorun._script import SCRIPT_DCT
 
 
+SCRIPT_NAME = 'run_nst.sh'
 INPUT_NAME = 'input.dat'
 OUTPUT_NAMES = ('output.dat',
                 'ne_lz.dat', 'nej_lz.dat',
@@ -152,6 +153,7 @@ def hessians_for_nst(run_dir,
 def direct(run_dir, nst_job,
            qc_prog, geo, zero_ene,
            aux_dct=None,
+           script_name=SCRIPT_NAME,
            input_name=INPUT_NAME,
            output_names=OUTPUT_NAMES):
     """ Write input and run output.
@@ -164,6 +166,7 @@ def direct(run_dir, nst_job,
     return from_input_string(
         nst_script_str, run_dir, inp_str,
         aux_dct=aux_dct,
+        script_name=script_name,
         input_name=input_name,
         output_names=output_names)
 

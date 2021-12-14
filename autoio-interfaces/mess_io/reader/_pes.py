@@ -51,13 +51,14 @@ def pes(input_string, read_fake=False):
                     # Add value to energy dct
                     energy_dct[label] = ene
 
-                    prior_line = input_lines[idx-1]
-                    line_lst2 = prior_line.split('!')
-                    try:
+                    line_lst2 = line.split('!')
+                    if len(line_lst2) == 1:
+                        line_lst2 = line.split('#')
+                    if len(line_lst2) > 1:
                         spc = line_lst2[1]
-                        # strip gets rid of the spaces before and after
                         pes_label_dct[spc.strip()] = label
-                    except IndexError:
+                    else:
+                        pes_label_dct[label] = label
                         print('Warning: labeling not found for '
                               f'species {label}')
 
@@ -83,15 +84,29 @@ def pes(input_string, read_fake=False):
 
                 # Add value to PES dct - NB THIS DEPENDS ON THE INPUT FILE.
                 # IF NOT PRESENT, DO NOT GENERATE THE PES LABEL DICTIONARY
-                prior_line = input_lines[idx-1]
-                line_lst2 = prior_line.split('!')
-                try:
-                    spc = line_lst2[1]
-                    # strip gets rid of the spaces before and after
-                    pes_label_dct[spc.strip()] = label
-                except IndexError:
-                    print('Warning: labeling not found for '
-                          f'species {label}')
+                cnt = 0
+                frags = []
+                for line2 in input_lines[idx:]:
+                    if 'Fragment' in line2:
+                        # Try and grab name from comment line
+                        frag_line_lst = line2.split('!')
+                        if len(frag_line_lst) == 1:
+                            frag_line_lst = line2.split('#')
+                        if len(frag_line_lst) > 1:
+                            frag = frag_line_lst[1]
+                            # strip gets rid of the spaces before and after
+                            frags.append(frag.strip())
+                        else:
+                            frag_line_lst = line2.split()
+                            frag = frag_line_lst[1]
+                            frags.append(frag.strip())
+                            print('Warning: labeling not found for '
+                                  f'bimol fragments for {label}')
+                        cnt += 1
+                    if cnt == 2:
+                        break
+
+                pes_label_dct[' + '.join(frags)] = label
 
         if 'Barrier' in line:
 

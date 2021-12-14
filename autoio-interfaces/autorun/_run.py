@@ -161,7 +161,8 @@ def run_script(script_str, run_dir, script_name=SCRIPT_NAME):
         try:
             subprocess.check_call(f'./{script_name:s}')
         except subprocess.CalledProcessError:
-            warnings.warn(f'Program run failed in {run_dir}')
+            msg = f'Program run failed in {run_dir}'
+            warnings.warn(msg)
         # except subprocess.CalledProcessError as err:
             # As long as the program wrote an output, continue with a warning
             # if all(os.path.isfile(name) for name in output_names):

@@ -10,7 +10,7 @@ EXTERN_PATH = os.path.join(PATH, 'extern')
 PROJROT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "RPHt.exe >& /dev/null"
+    "RPHt.exe >& rpht.out"
 )
 MESSPF = (
     "#!/usr/bin/env bash\n"
@@ -28,7 +28,13 @@ MESSRATE = (
 VARECOF = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/multi tst.inp >& varecof.out"
+    "MPI=`which mpirun`\n"
+    # 'MPI_OPTIONS="-machinefile machines"'
+    # 'MPI_OPTIONS="-host b460"'
+    # 'MPI_OPTIONS="-n {}"\n'
+    'MPI_OPTIONS="-n 5"\n'
+    "VARECOFEXE=/lcrc/project/CMRP/amech/VaReCoF/build/multi\n\n"
+    "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
 INTDER = (
     "#!/usr/bin/env bash\n"
@@ -38,7 +44,8 @@ INTDER = (
 MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/mc_flux mc_flux.inp >& mc_flux.out"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
+    "mc_flux.inp >& mc_flux.out"
 )
 VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
@@ -59,7 +66,7 @@ THERMP = (
 PAC99 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "pac99 << EOF >& pacc.log\n"
+    "pac99 << EOF >& pacc.out\n"
     "{}\n"
     "EOF"
     # "EOF >& pac99.out"
@@ -82,14 +89,16 @@ PSI4 = (
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro -n {} run.inp -o run.out "
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "-n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )
 MOLPRO_2021_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro --mppx -n {} run.inp -o run.out "
+    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "--mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
 )

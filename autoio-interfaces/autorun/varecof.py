@@ -1,6 +1,8 @@
 """ Generate the information necessary to product the vrctst input files
 """
 
+import os
+import stat
 import ioformat
 import automol
 import varecof_io
@@ -10,13 +12,16 @@ from autorun._script import SCRIPT_DCT
 
 
 # Default names of input and output files
+MULTI_SCRIPT_NAME = 'run_varecof_multi.sh'
+CONVSTRUCT_SCRIPT_NAME = 'run_varecof_convstruct.sh'
+MCFLUX_SCRIPT_NAME = 'run_varecof_mcflux.sh'
 INPUT_NAME = 'tst.inp'
 AUX_NAMES = (
     'structure.inp',
     'divsur.inp',
     'lr_divsur.inp',
     'molpro.inp',
-    'mol.tml',
+    'run.tml',
     'mc_flux.inp',
     'convert.inp',
     'machines',
@@ -31,7 +36,7 @@ POT_INPUT_NAMES = (
 DUMMY_NAME = 'dummy_corr_'
 LIB_NAME = 'libcorrpot.so'
 EXE_NAME = 'molpro.sh'
-SPC_NAME = 'mol'
+SPC_NAME = 'run'
 GEOM_PTT = 'GEOMETRY_HERE'
 ENE_PTT = 'molpro_energy'
 
@@ -45,8 +50,8 @@ DIVSUR_OUTPUT_NAMES1 = ('divsur.out',)
 # Default dictionary of parameters for VRC-TST
 VRC_DCT = {
     'fortran_compiler': 'gfortran',
-    'base_name': 'mol',
-    'spc_name': 'mol',
+    'base_name': 'run',
+    'spc_name': 'run',
     'memory': 4.0,
     'r1dists_lr': [8., 6., 5., 4.5, 4.],
     'r1dists_sr': [4., 3.8, 3.6, 3.4, 3.2, 3., 2.8, 2.6, 2.4, 2.2],
@@ -57,7 +62,6 @@ VRC_DCT = {
     'nsamp_max': 2000,
     'nsamp_min': 50,
     'flux_err': 10,
-    'pes_size': 2
 }
 
 
@@ -71,15 +75,28 @@ def flux_file(varecof_script_str, mcflux_script_str,
     for name, string in input_strs_dct.items():
         ioformat.pathtools.write_file(string, run_dir, name)
 
+    # Convert the molpro.sh file into an executable
+    molpro_sh_script = os.path.join(run_dir, 'molpro.sh')
+    os.chmod(
+        molpro_sh_script,
+        mode=(os.stat(molpro_sh_script).st_mode |
+              stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
+
+    # Make the scratch directory
+    os.mkdir(os.path.join(run_dir, 'scratch'))
+
     # Run VaReCoF
-    run_script(varecof_script_str, run_dir)
+    run_script(varecof_script_str, run_dir,
+               script_name=MULTI_SCRIPT_NAME)
+
+    print('Running', run_dir)
 
     # Generate and read the flux file for the return
-    print('Generating flux file with TS N(E) '
-          'from VaReCoF output...')
-    run_script(mcflux_script_str, run_dir)
+    # print('Generating flux file with TS N(E) '
+    #       'from VaReCoF output...')
+    # run_script(mcflux_script_str, run_dir, script_name=MCFLUX_SCRIPT_NAME)
 
-    flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
+    # flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
 
     return flux_str
 
@@ -90,7 +107,7 @@ def compile_potentials(vrc_path, mep_distances, potentials,
                        dist_restrict_idxs=(),
                        pot_labels=(),
                        pot_file_names=(),
-                       spc_name='mol'):
+                       spc_name=SPC_NAME):
     """  use the MEP potentials to compile the correction potential .so file
     """
 
@@ -161,6 +178,7 @@ def frame_oriented_structure(script_str, run_dir,
     output_strs = from_input_string(
         script_str, run_dir, divsur_inp_str,
         aux_dct=aux_dct,
+        script_name=CONVSTRUCT_SCRIPT_NAME,
         input_name=divsur_name,
         output_names=output_names)
     divsur_out_str = output_strs[0]
@@ -235,22 +253,22 @@ def write_input(run_dir,
         **vrc_dct['conditions'])
 
     # Build the structure input file string
-    print(isol_fgeos[0])
     struct_inp_str = varecof_io.writer.input_file.structure(
         isol_fgeos[0], isol_fgeos[1])
 
     # Obtain symmetries of the fragment molecules
-    script_str = SCRIPT_DCT['varecof_conv_struct']
+    conv_script_str = SCRIPT_DCT['varecof_conv_struct']
     _, faces, faces_symm = frame_oriented_structure(
-        script_str, run_dir, srdivsur_inp_str, struct_inp_str)
+        conv_script_str, run_dir, srdivsur_inp_str, struct_inp_str)
 
-    # Write the tst.inp file
+    # Write the tst.inp file (assuming pes_size=npot+1)
     tst_inp_str = varecof_io.writer.input_file.tst(
         vrc_dct['nsamp_max'], vrc_dct['nsamp_min'],
-        vrc_dct['flux_err'], vrc_dct['pes_size'],
+        vrc_dct['flux_err'], npot+1,
         faces=faces, faces_symm=faces_symm)
 
     # Write the molpro executable and potential energy surface input string
+    molpro_sh_script_str = SCRIPT_DCT['molpro2015'].format(1)
     els_inp_str = varecof_io.writer.input_file.elec_struct(
         run_dir, vrc_dct['base_name'], npot,
         dummy_name='dummy_corr_', lib_name='libcorrpot.so',
@@ -272,7 +290,7 @@ def write_input(run_dir,
         tst_inp_str,
         els_inp_str, struct_inp_str,
         mc_flux_inp_str, conv_inp_str,
-        machine_file_str, script_str)
+        machine_file_str, molpro_sh_script_str)
     input_names = (
         'divsur.inp', 'lr_divsur.inp',
         'tst.inp',

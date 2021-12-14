@@ -5,9 +5,9 @@ import intder_io
 from autorun._run import from_input_string
 
 
-# Default names of input and output files
 INPUT_NAME = 'intder.inp'
 OUTPUT_NAMES = ('intder.out',)
+SCRIPT_NAME = 'run_intder.sh'
 
 
 # Specialized Runners
@@ -23,7 +23,9 @@ def ted_zmatrix_coordinates(script_str, run_dir,
 
     # Run INTDER
     output_strs = direct(script_str, run_dir, zma, geo, hess,
-                         input_name=input_name, output_names=output_names)
+                         script_name=SCRIPT_NAME,
+                         input_name=input_name,
+                         output_names=output_names)
     output_str = output_strs[0]
 
     # Get modes from TED output
@@ -43,7 +45,9 @@ def ted_zmatrix_coordinates(script_str, run_dir,
 
 # Generalized Runner
 def direct(script_str, run_dir, zma, geo, hess,
-           input_name=INPUT_NAME, output_names=OUTPUT_NAMES):
+           script_name=SCRIPT_NAME,
+           input_name=INPUT_NAME,
+           output_names=OUTPUT_NAMES):
     """ Generates an input file for a ProjRot job, runs it directly, and
         obtains all of the possible output file strings
     """
@@ -51,10 +55,9 @@ def direct(script_str, run_dir, zma, geo, hess,
     input_str = intder_io.writer.input_file(geo, zma)
     aux_dct = {'file15': intder_io.writer.cartesian_hessian_file(hess)}
 
-    output_strs = from_input_string(
+    return from_input_string(
         script_str, run_dir, input_str,
         aux_dct=aux_dct,
+        script_name=script_name,
         input_name=input_name,
         output_names=output_names)
-
-    return output_strs
