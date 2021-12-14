@@ -1,6 +1,7 @@
 """ Combined process for getting frequencies
 """
 
+import os
 import automol.formula
 from phydat import phycon
 import mess_io.reader
@@ -34,8 +35,10 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
         dist_cutoff_dct=dist_cutoff_dct1)
     aux_dct1 = {'dist_rotpr.dat': rotor_dist1_str}
 
+    print('running projrot the first time:')
+    run_dir_1 = os.path.join(run_dir,'1')
     rt_freqs1, rth_freqs1, rt_imag1, _ = frequencies(
-        projrot_script_str, run_dir, [projrot_geo], [[]], [hess],
+        projrot_script_str, run_dir_1, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct1)
 
     if dist_cutoff_dct2 is not None:
@@ -45,8 +48,10 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
         dist_cutoff_dct=dist_cutoff_dct2)
     aux_dct2 = {'dist_rotpr.dat': rotor_dist2_str}
 
+    print('running projrot the second time:')
+    run_dir_2 = os.path.join(run_dir,'2')
     _, rth_freqs2, rt_imag2, _ = frequencies(
-        projrot_script_str, run_dir, [projrot_geo], [[]], [hess],
+        projrot_script_str, run_dir_2, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct2)
 
     # Calculate ZPVEs from all harmonic freqs and torsional freqs
@@ -91,7 +96,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
     diff_tors_zpe_2 *= phycon.EH2KCAL
     if abs(diff_tors_zpe) > 0.2 and abs(diff_tors_zpe_2) > 0.2:
         print(
-            'There is a difference of ',
+            'The first and second runs yield differences of ',
             f'{diff_tors_zpe:.2f} and {diff_tors_zpe_2:.2f}',
             'kcal/mol between harmonic and hindered torsional ZPVEs')
 
