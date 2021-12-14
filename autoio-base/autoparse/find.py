@@ -96,7 +96,7 @@ def all_captures(pattern, string, case=True):
     :param case: if capitalization matters
     :type case: bool
     :return: all the instances of this pattern
-    :rtype: list
+    :rtype: tuple
     """
     caps = _re_findall(pattern, string, case=case)
     if caps is not None:
@@ -104,6 +104,35 @@ def all_captures(pattern, string, case=True):
     else:
         cap_lst = None
     return cap_lst
+
+
+def all_captures_with_spans(pattern, string, case=True):
+    """ capture(s) for all matches of a capturing pattern, with spans showing
+        the start and end of the match
+
+    :param pattern: pattern to search for
+    :type pattern: str
+    :param string: string to search
+    :type string: str
+    :param case: if capitalization matters
+    :type case: bool
+    :return: all the instances of this pattern, with spans
+    :rtype: tuple
+    """
+    lst = []
+    for match in _re_finditer(pattern, string, case=case):
+        cap = match.groups()
+
+        if len(cap) == 0:
+            cap = None
+        elif len(cap) == 1:
+            cap = cap[0]
+
+        span = match.span()
+        lst.append((cap, span))
+
+    lst = tuple(lst)
+    return lst
 
 
 def first_capture(pattern, string, case=True):
@@ -250,6 +279,15 @@ def _re_findall(pattern, string, case=True):
     else:
         ret = None
     return ret
+
+
+def _re_finditer(pattern, string, case=True):
+    if pattern and string is not None:
+        flags = _re_flags(case=case)
+        match_iter = re.finditer(pattern, string, flags=flags)
+    else:
+        match_iter = iter([])
+    return match_iter
 
 
 def _re_split(pattern, string, case=True):

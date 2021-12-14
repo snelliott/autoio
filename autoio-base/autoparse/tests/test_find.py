@@ -116,6 +116,10 @@ def test__simple_finders():
         autoparse.pattern.capturing(autoparse.pattern.NUMBER))
     assert autoparse.find.all_captures(pattern, XYZ_STRING) == ('0',)
 
+    pattern = autoparse.pattern.capturing(autoparse.pattern.LETTER)
+    assert autoparse.find.all_captures_with_spans(pattern, 'abcd') == (
+        ('a', (0, 1)), ('b', (1, 2)), ('c', (2, 3)), ('d', (3, 4)))
+
 
 def test__advanced_finders():
     """ test find.first_matching_pattern
