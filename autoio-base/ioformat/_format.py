@@ -179,3 +179,16 @@ def remove_comment_lines(string, delim_pattern):
     pattern = delim_pattern + app.zero_or_more(app.NONNEWLINE)
 
     return apf.remove(pattern, string)
+
+
+def remove_empty_lines(string):
+    """ Removes empty lines from a input string.
+
+        :param string: string to remove trailing whitespace
+        :type string: str
+        :rtype: str
+    """
+
+    empty_line = app.LINE_START + app.maybe(app.LINESPACES) + app.NEWLINE
+
+    return apf.remove(empty_line, string)
