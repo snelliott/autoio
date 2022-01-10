@@ -81,6 +81,46 @@ def get_rxn_param_dct(block_str, ea_units, a_units):
     return rxn_param_dct
 
 
+def get_pes_dct(block_str):
+    """ Parses all of the chemical equations
+        and uses special comment line to parse them into PESs
+
+        ! pes.subpes.channel  7.3.35
+
+        :param block_str: raw string for the entire reactions block
+        :type block_str: str
+        :param ea_units: units of activation energy
+        :type ea_units: str
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
+        :return rxn_param_dct: dct {rxn1: params1, rxn2: ...}
+        :rtype: dict
+    """
+
+    rxn_strs = get_rxn_strs(block_str)
+
+    if rxn_strs is not None:
+        pes_dct = {}
+        for rxn_str in rxn_strs:
+            rxn = get_rxn_name(rxn_str)
+            idx_inf = get_pes_info(rxn_str)
+            if idx_inf is not None:
+                pes_idx, subpes_idx, chnl_idx = idx_inf
+                pes_inf = ('PES', pes_idx, subpes_idx)
+                chnl_inf = (chnl_idx, rxn)
+                if pes_inf in pes_dct:
+                    pes_dct[pes_inf] += (chnl_inf,)
+                else:
+                    pes_dct[pes_inf] = ((chnl_inf,))
+            else:
+                pes_dct = None
+                break
+    else:
+        pes_dct = None
+
+    return pes_dct
+
+
 def get_rxn_name(rxn_str):
     """ Parses a rxn_str to get the reaction key
 
@@ -165,6 +205,30 @@ def get_params(rxn_str, ea_units, a_units):
         params = RxnParams(arr_dct=arr_dct)
 
     return params
+
+
+def get_pes_info(rxn_str):
+    """ Get PES info
+    """
+
+    ptt = (
+        app.escape('#') +
+        app.SPACES +
+        'pes.subpes.channel' +
+        app.SPACES +
+        app.capturing(
+            app.INTEGER + app.escape('.') +
+            app.INTEGER + app.escape('.') +
+            app.INTEGER)
+    )
+
+    cap = apf.first_capture(ptt, rxn_str)
+    if cap is not None:
+        pes_inf = tuple(int(x)-1 for x in cap.strip().split('.'))
+    else:
+        pes_inf = None
+
+    return pes_inf
 
 
 def get_rxn_strs(block_str, remove_bad_fits=False):
