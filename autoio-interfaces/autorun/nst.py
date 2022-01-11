@@ -242,7 +242,7 @@ def _qc_script_str(prog, replace=True):
     if replace:
         script_str = script_str.replace('run.inp', 'qc.in')
         script_str = script_str.replace('run.out', 'qc.out')
-    if 'molpro' in prog:
+    if 'molpro' in prog:  # catch case when # of processors is missing
         script_str = script_str.format(4)
 
     return script_str
@@ -253,9 +253,9 @@ def _nst_script_str(prog):
     """
 
     if 'gaussian' in prog:
-        exe = "/lcrc/project/CMRP/amech/NST/build/nst-gaussian.x"
+        exe = "nst-gaussian.x"
     else:
-        exe = "/lcrc/project/CMRP/amech/NST/build/nst-molpro.x"
+        exe = "nst-molpro.x"
     nst_script_str = (
         "#!/usr/bin/env bash\n"
         "ulimit -c 0\n"
