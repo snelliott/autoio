@@ -32,11 +32,11 @@ def input_file(ntemps, formula, delta_h, enthalpy_temp=0.0, break_temp=1000.0):
     atom_dict = util.get_atom_counts_dict(formula)
     composition_str = ''
     for key, val in atom_dict.items():
-        composition_str += '{0}  {1}\n'.format(key, val)
+        composition_str += f'{key}  {val}\n'
     composition_str = composition_str.rstrip()
 
     # Get the delta H in kcal
-    delta_h = '{0:.3f}'.format(delta_h * phycon.EH2KCAL)
+    delta_h = f'{delta_h * phycon.EH2KCAL:.3f}'
 
     # Create a fill value dictionary
     thermp_keys = {

@@ -1,6 +1,7 @@
 """ test autoparse
 """
 
+import numpy as np
 import autoparse
 
 
@@ -115,6 +116,10 @@ def test__simple_finders():
         autoparse.pattern.capturing(autoparse.pattern.NUMBER))
     assert autoparse.find.all_captures(pattern, XYZ_STRING) == ('0',)
 
+    pattern = autoparse.pattern.capturing(autoparse.pattern.LETTER)
+    assert autoparse.find.all_captures_with_spans(pattern, 'abcd') == (
+        ('a', (0, 1)), ('b', (1, 2)), ('c', (2, 3)), ('d', (3, 4)))
+
 
 def test__advanced_finders():
     """ test find.first_matching_pattern
@@ -205,3 +210,78 @@ def test__multis():
                      ('Cl', -1.602333, 0.736678, -0.026051),
                      ('H', 0.916321, 1.229946, -0.227127),
                      ('H', -0.8823, -1.224388, -0.229636))
+
+
+STRING_TESTWHERE = [
+    'Species CH3C2CH3',
+    '      RRHO',
+    '        Geometry[angstrom]      10',
+    '        C         0.000000        0.000000        0.000000',
+    '        C         0.000000        0.000000        1.486233',
+    '        C         1.282262        0.000000        2.237693',
+    '        H        -0.917155       -0.221794        2.011789',
+    '        H        -0.994756        0.165640       -0.409314',
+    '        H         0.665488        0.771240       -0.396783',
+    '        H         0.363930       -0.953867       -0.405851',
+    '        H         1.132439        0.165640        3.302884',
+    '        H         1.961070        0.771240        1.864155',
+    '        H         1.816422       -0.953867        2.128913',
+    '        Core    RigidRotor',
+    '          SymmetryFactor        2',
+    '        End',
+    '        Rotor     Hindered',
+    '          Group                  5 6 7          ',
+    '          Axis                   2 1            ',
+    '          Symmetry               3              ',
+    '          Potential[kcal/mol]    6              ',
+    '                0.00  0.06  0.18  0.47  0.15  0.04',
+    '          End',
+    '        Rotor     Hindered',
+    '          Group                  8 9 10         ',
+    '          Axis                   2 3            ',
+    '          Symmetry               3              ',
+    '          Potential[kcal/mol]    6              ',
+    '                0.00  0.06  0.18  0.47  0.15  0.04',
+    '          End',
+    '        Frequencies[1/cm]       22',
+    '         344.5',
+    '         390.8   895.9   945.7',
+    '         954.8  1037.6  1155.3',
+    '        1191.5  1378.3  1422.2',
+    '        1422.9  1482.7  1490.8',
+    '        1493.7  1504.5  2970.6',
+    '        2973.5  3043.5  3043.6',
+    '        3116.5  3117.6  3200.6',
+    '        ZeroEnergy[kcal/mol]    0.0',
+    '        ElectronicLevels[1/cm]  1',
+    '            0   2',
+    '      End'
+]
+
+
+def test__where_is():
+    """ test find.where_is
+    """
+    line = ('                0.00  0.06  0.18  0.47  0.15  0.04')
+    assert (autoparse.find.where_is(line, STRING_TESTWHERE)
+            == np.array([21, 28])).all()
+    line_single = '        ElectronicLevels[1/cm]  1'
+    assert autoparse.find.where_is(line_single, STRING_TESTWHERE)[0] == 40
+
+
+def test__where_in():
+    """ test find.where_in
+    """
+    line = 'End'
+    assert (autoparse.find.where_in(line, STRING_TESTWHERE)
+            == np.array([15, 22, 29, 42])).all()
+    nonlines = ['ciao']
+    assert len(autoparse.find.where_in(nonlines, STRING_TESTWHERE)) == 0
+
+
+def test__where_in_any():
+    """ test find.where_in_any
+    """
+    lines = ['End', 'RRHO']
+    assert (autoparse.find.where_in_any(lines, STRING_TESTWHERE)
+            == np.array([1, 15, 22, 29, 42])).all()

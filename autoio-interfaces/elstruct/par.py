@@ -1,6 +1,7 @@
 """ elstruct parameters
 """
 
+from automol.util import sort_by_list
 from elstruct import pclass
 from elstruct import option
 
@@ -26,6 +27,7 @@ class Program():
     CFOUR2 = 'cfour2'
     GAUSSIAN09 = 'gaussian09'
     GAUSSIAN16 = 'gaussian16'
+    MOLPRO2021 = 'molpro2021'
     MOLPRO2015 = 'molpro2015'
     MRCC2018 = 'mrcc2018'
     NWCHEM6 = 'nwchem6'
@@ -82,6 +84,9 @@ class Method():
            Program.MOLPRO2015: (
                'hf', 'hf',
                ('R',), ('U', 'R')),
+           Program.MOLPRO2021: (
+               'hf', 'hf',
+               ('R',), ('U', 'R')),
            Program.MRCC2018: (
                'hf', 'hf',
                ('R',), ('U', 'R')),
@@ -89,12 +94,8 @@ class Method():
                'hf', 'uhf',
                ('R',), ('U', 'R')),
            Program.PSI4: (
-               'hf', 'uhf',
+               'hf', 'hf',
                ('R',), ('U', 'R'))})
-    DF_HF = ('df-hf',
-             {Program.PSI4: (
-                 'hf', 'uhf',
-                 ('R',), ('U', 'R'))})
 
     class Corr():
         """ Correlated method names """
@@ -111,6 +112,9 @@ class Method():
                 Program.MOLPRO2015: (
                     'mp2', 'ump2',
                     ('R',), ('U', 'R')),
+                Program.MOLPRO2021: (
+                    'mp2', 'ump2',
+                    ('R',), ('U', 'R')),
                 Program.MRCC2018: (
                     'mp2', 'mp2',
                     ('R',), ('U', 'R')),
@@ -120,20 +124,19 @@ class Method():
                 Program.PSI4: (
                     'mp2', 'mp2',
                     ('R',), ('U', 'R'))})
-        # DF_MP2 = ('df-mp2',
-        #           {Program.PSI4: (
-        #            'mp2', 'mp2',
-        #            ('R',), ('U', 'R'))})
         CCSD = ('ccsd',
                 {Program.CFOUR2: (
                     'ccsd', 'ccsd',
                     ('R',), ('U', 'R',)),
-                 # Program.PSI4: (
-                 #    'ccsd', 'ccsd',
-                 #    ('R',), ('U', 'R',)),
                  Program.MOLPRO2015: (
                      'ccsd', 'uccsd',
-                     ('R',), ('R', 'R'))})
+                     ('R',), ('R', 'R')),
+                 Program.MOLPRO2021: (
+                     'ccsd', 'uccsd',
+                     ('R',), ('R', 'R')),
+                 Program.PSI4: (
+                    'ccsd', 'ccsd',
+                    ('R',), ('U', 'R',))})
         CCSD_T = ('ccsd(t)',
                   {Program.CFOUR2: (
                       'ccsd(t)', 'ccsd(t)',
@@ -141,14 +144,20 @@ class Method():
                    Program.MOLPRO2015: (
                        'ccsd(t)', 'uccsd(t)',
                        ('R',), ('R',)),
+                   Program.MOLPRO2021: (
+                       'ccsd(t)', 'uccsd(t)',
+                       ('R',), ('R',)),
                    Program.MRCC2018: (
                        'ccsd(t)', 'ccsd(t)',
-                       ('R',), ('R', 'R'))})
-        # Program.PSI4: (
-        #  'ccsd(t)', 'ccsd(t)',
-        #  ('R',), ('U', 'R'))})
+                       ('R',), ('R', 'R')),
+                   Program.PSI4: (
+                        'ccsd(t)', 'ccsd(t)',
+                        ('R',), ('U', 'R'))})
         CCSDT = ('ccsdt',
                  {Program.MOLPRO2015: (
+                     'mrcc,method=ccsdt', 'mrcc,method=ccsdt',
+                     ('R',), ('U', 'R')),
+                  Program.MOLPRO2021: (
                      'mrcc,method=ccsdt', 'mrcc,method=ccsdt',
                      ('R',), ('U', 'R')),
                   Program.MRCC2018: (
@@ -158,11 +167,31 @@ class Method():
                    {Program.MOLPRO2015: (
                        'mrcc,method=ccsdt(q)', 'mrcc,method=ccsdt(q)',
                        ('R',), ('U', 'R')),
+                    Program.MOLPRO2021: (
+                       'mrcc,method=ccsdt(q)', 'mrcc,method=ccsdt(q)',
+                       ('R',), ('U', 'R')),
                     Program.MRCC2018: (
                         'ccsdt(q)', 'ccsdt(q)',
                         ('R',), ('R', 'R'))})
+        MP2_F12 = ('mp2-f12',
+                   {Program.MOLPRO2015: (
+                       'mp2-f12', 'ump2-f12',
+                       ('R',), ('R',)),
+                    Program.MOLPRO2021: (
+                       'mp2-f12', 'ump2-f12',
+                       ('R',), ('R',))})
+        CCSD_F12 = ('ccsd-f12',
+                    {Program.MOLPRO2015: (
+                        'ccsd-f12', 'uccsd-f12',
+                        ('R',), ('R',)),
+                     Program.MOLPRO2021: (
+                        'ccsd-f12', 'uccsd-f12',
+                        ('R',), ('R',))})
         CCSD_T_F12 = ('ccsd(t)-f12',
                       {Program.MOLPRO2015: (
+                          'ccsd(t)-f12', 'uccsd(t)-f12',
+                          ('R',), ('R',)),
+                       Program.MOLPRO2021: (
                           'ccsd(t)-f12', 'uccsd(t)-f12',
                           ('R',), ('R',))})
 
@@ -172,21 +201,36 @@ class Method():
         CASSCF = ('casscf',
                   {Program.MOLPRO2015: (
                       'casscf', 'casscf',
+                      ('R',), ('R', 'R')),
+                   Program.MOLPRO2021: (
+                      'casscf', 'casscf',
                       ('R',), ('R', 'R'))})
         CASPT2 = ('caspt2',
                   {Program.MOLPRO2015: (
+                      'rs2', 'rs2',
+                      ('R',), ('R', 'R')),
+                   Program.MOLPRO2021: (
                       'rs2', 'rs2',
                       ('R',), ('R', 'R'))})
         CASPT2I = ('caspt2i',
                    {Program.MOLPRO2015: (
                        'rs2', 'rs2',
+                       ('R',), ('R', 'R')),
+                    Program.MOLPRO2021: (
+                       'rs2', 'rs2',
                        ('R',), ('R', 'R'))})
         CASPT2C = ('caspt2c',
                    {Program.MOLPRO2015: (
                        'rs2c', 'rs2c',
+                       ('R',), ('R', 'R')),
+                    Program.MOLPRO2021: (
+                       'rs2c', 'rs2c',
                        ('R',), ('R', 'R'))})
         MRCISDQ = ('mrcisd_q',
                    {Program.MOLPRO2015: (
+                       'mrci', 'mrci',
+                       ('R',), ('R', 'R')),
+                    Program.MOLPRO2021: (
                        'mrci', 'mrci',
                        ('R',), ('R', 'R'))})
 
@@ -202,10 +246,6 @@ class Method():
                   Program.GAUSSIAN16: (
                       'b3lyp', 'b3lyp',
                       ('R',), ('U',))})
-        DF_B3LYP = ('df-b3lyp',
-                    {Program.PSI4: (
-                        'B3LYP', 'B3LYP',
-                        ('R',), ('U',))})
         WB97XD = ('wb97xd',
                   {Program.PSI4: (
                       'WB97X-D', 'WB97X-D',
@@ -233,6 +273,16 @@ class Method():
                      Program.GAUSSIAN16: (
                          'b2plypd3', 'b2plypd3',
                          ('R',), ('U',))})
+
+    class ModPrefix():
+        """ Allowed Prefixes for methods
+            (full prefix name, prefix used in method names)
+        """
+        ALL_ELEC = ('all-electron', 'ae-')
+        DBOC = ('diagonal-Born-Oppenheimer-correction', 'dboc-')
+        DF = ('density-fitting', 'df-')
+        L_PNO = ('pair-natural-orbital-local', 'pno-l')
+        REL_DKH = ('relativistic-dkh', 'dkh-')
 
     @classmethod
     def contains(cls, name):
@@ -279,8 +329,8 @@ class Method():
 
         return name in multiref_names
 
-    @classmethod
-    def is_casscf(cls, name):
+    @staticmethod
+    def is_casscf(name):
         """ Assess if a method is CASSCF.
 
             :param cls: class object
@@ -336,16 +386,69 @@ class Method():
         assert cls.is_nonstandard_dft(name)
         return name[4:]
 
-    @staticmethod
-    def is_density_fitting(name):
-        """ Assess if a method is `density-fitting` variant.
+    # Handle prefixes to methods
+    @classmethod
+    def ordered_prefix_lst(cls, pfx_lst):
+        """ Returns a list of prefix corresponding to a certain order
+            to be used by other functions
+        """
+        ord_lst = (cls.ModPrefix.ALL_ELEC[0],
+                   cls.ModPrefix.DBOC[0],
+                   cls.ModPrefix.DF[0],
+                   cls.ModPrefix.L_PNO[0],
+                   cls.ModPrefix.REL_DKH[0])
+        return sort_by_list(pfx_lst, ord_lst)
 
-            :param cls: class object
-            :type cls: obj
+    @classmethod
+    def evaluate_method_type(cls, name):
+        """ Analyze a method name and alter to return the core method
+            and flags signaling if it is modified.
+
+            All modifications presented as 'mod-' as a prefix to the core name
+
+            Ex: ae-ccsd => ccsd, all_electron=True
+            Ex: dkh-ae-ccsd => ccsd, all_electron=True, douglas_kroll=True
+
             :param name: name of method
             :type name: str
         """
-        return 'df-' in standard_case(name)
+
+        def _demodify_name(_name, mod):
+            """ Assess if the electronic structure method modifier exists in
+                the method name and remove it if so.
+            """
+            if mod in _name:
+                _mod_name = _name.replace(mod, '')
+                _has_mod = True
+            else:
+                _mod_name = _name
+                _has_mod = False
+            return _mod_name, _has_mod
+
+        # Assess what method modifiers exist and remove prefix from name
+        _core = name
+        _core, has_ae = _demodify_name(_core, cls.ModPrefix.ALL_ELEC[1])
+        _core, has_dkh = _demodify_name(_core, cls.ModPrefix.REL_DKH[1])
+        _core, has_pnol = _demodify_name(_core, cls.ModPrefix.L_PNO[1])
+        _core, has_dboc = _demodify_name(_core, cls.ModPrefix.DBOC[1])
+        _core, has_df = _demodify_name(_core, cls.ModPrefix.DF[1])
+
+        # Build list of prefixes in standard order
+        pfxs = ()
+        if has_ae:
+            pfxs += (cls.ModPrefix.ALL_ELEC[0],)
+        if has_dkh:
+            pfxs += (cls.ModPrefix.REL_DKH[0],)
+        if has_pnol:
+            pfxs += (cls.ModPrefix.L_PNO[0],)
+        if has_dboc:
+            pfxs += (cls.ModPrefix.DBOC[0],)
+        if has_df:
+            pfxs += (cls.ModPrefix.DF[0],)
+
+        ord_pfxs = cls.ordered_prefix_lst(pfxs)
+
+        return _core, ord_pfxs
 
 
 def program_methods_info(prog):
@@ -480,6 +583,7 @@ class Basis():
                         Program.GAUSSIAN09: None,
                         Program.GAUSSIAN16: None,
                         Program.MOLPRO2015: None,
+                        Program.MOLPRO2021: None,
                         Program.MRCC2018: None,
                         Program.NWCHEM6: None,
                         Program.ORCA4: None,
@@ -491,6 +595,7 @@ class Basis():
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN16: None,
                           Program.MOLPRO2015: None,
+                          Program.MOLPRO2021: None,
                           Program.MRCC2018: None,
                           Program.NWCHEM6: None,
                           Program.ORCA4: None,
@@ -500,6 +605,7 @@ class Basis():
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN16: None,
                           Program.MOLPRO2015: None,
+                          Program.MOLPRO2021: None,
                           Program.MRCC2018: None,
                           Program.NWCHEM6: None,
                           Program.ORCA4: None,
@@ -508,26 +614,38 @@ class Basis():
                             Program.GAUSSIAN09: None,
                             Program.GAUSSIAN16: None,
                             Program.MOLPRO2015: None,
+                            Program.MOLPRO2021: None,
                             Program.MRCC2018: None,
                             Program.NWCHEM6: None,
                             Program.ORCA4: None,
                             Program.PSI4: None})
-        P6311SS = ('6-311g**', {Program.CFOUR2: None,
-                                Program.GAUSSIAN09: None,
-                                Program.GAUSSIAN16: None,
-                                Program.MOLPRO2015: None,
-                                Program.MRCC2018: None,
-                                Program.NWCHEM6: None,
-                                Program.ORCA4: None,
-                                Program.PSI4: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
                               Program.GAUSSIAN09: None,
                               Program.GAUSSIAN16: None,
                               Program.MOLPRO2015: None,
+                              Program.MOLPRO2021: None,
                               Program.MRCC2018: None,
                               Program.NWCHEM6: None,
                               Program.ORCA4: None,
                               Program.PSI4: None})
+        P6311SS = ('6-311g**', {Program.CFOUR2: None,
+                                Program.GAUSSIAN09: None,
+                                Program.GAUSSIAN16: None,
+                                Program.MOLPRO2015: None,
+                                Program.MOLPRO2021: None,
+                                Program.MRCC2018: None,
+                                Program.NWCHEM6: None,
+                                Program.ORCA4: None,
+                                Program.PSI4: None})
+        P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
 
     class Dunning():
         """ Dunning basis sets """
@@ -535,6 +653,7 @@ class Basis():
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
+                         Program.MOLPRO2021: None,
                          Program.MRCC2018: None,
                          Program.NWCHEM6: None,
                          Program.ORCA4: None,
@@ -543,6 +662,7 @@ class Basis():
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
+                         Program.MOLPRO2021: None,
                          Program.MRCC2018: None,
                          Program.NWCHEM6: None,
                          Program.ORCA4: None,
@@ -551,6 +671,7 @@ class Basis():
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
+                         Program.MOLPRO2021: None,
                          Program.MRCC2018: None,
                          Program.NWCHEM6: None,
                          Program.ORCA4: None,
@@ -559,10 +680,47 @@ class Basis():
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
+                         Program.MOLPRO2021: None,
                          Program.MRCC2018: None,
                          Program.NWCHEM6: None,
                          Program.ORCA4: None,
                          Program.PSI4: None})
+        CD = ('cc-pcvdz', {Program.CFOUR2: None,
+                           Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN16: None,
+                           Program.MOLPRO2015: None,
+                           Program.MOLPRO2021: None,
+                           Program.MRCC2018: None,
+                           Program.NWCHEM6: None,
+                           Program.ORCA4: None,
+                           Program.PSI4: None})
+        CT = ('cc-pcvtz', {Program.CFOUR2: None,
+                           Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN16: None,
+                           Program.MOLPRO2015: None,
+                           Program.MOLPRO2021: None,
+                           Program.MRCC2018: None,
+                           Program.NWCHEM6: None,
+                           Program.ORCA4: None,
+                           Program.PSI4: None})
+        CQ = ('cc-pcvqz', {Program.CFOUR2: None,
+                           Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN16: None,
+                           Program.MOLPRO2015: None,
+                           Program.MOLPRO2021: None,
+                           Program.MRCC2018: None,
+                           Program.NWCHEM6: None,
+                           Program.ORCA4: None,
+                           Program.PSI4: None})
+        CP = ('cc-pcv5z', {Program.CFOUR2: None,
+                           Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN16: None,
+                           Program.MOLPRO2015: None,
+                           Program.MOLPRO2021: None,
+                           Program.MRCC2018: None,
+                           Program.NWCHEM6: None,
+                           Program.ORCA4: None,
+                           Program.PSI4: None})
 
         class Aug():
             """ Augmented Dunning basis sets """
@@ -570,6 +728,7 @@ class Basis():
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None,
                                   Program.MRCC2018: None,
                                   Program.NWCHEM6: None,
                                   Program.ORCA4: None,
@@ -578,6 +737,7 @@ class Basis():
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None,
                                   Program.MRCC2018: None,
                                   Program.NWCHEM6: None,
                                   Program.ORCA4: None,
@@ -586,6 +746,7 @@ class Basis():
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None,
                                   Program.MRCC2018: None,
                                   Program.NWCHEM6: None,
                                   Program.ORCA4: None,
@@ -594,16 +755,62 @@ class Basis():
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None,
                                   Program.MRCC2018: None,
                                   Program.NWCHEM6: None,
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
+            CAD = ('aug-cc-pcvdz', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
+            CAT = ('aug-cc-pcvtz', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
+            CAQ = ('aug-cc-pcvqz', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
+            CA5 = ('aug-cc-pcv5z', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
 
         class F12():
             """ Dunning F12 basis sets """
-            DF = ('cc-pvdz-f12', {Program.MOLPRO2015: None})
-            TF = ('cc-pvtz-f12', {Program.MOLPRO2015: None})
-            QF = ('cc-pvqz-f12', {Program.MOLPRO2015: None})
+            DF = ('cc-pvdz-f12', {Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None})
+            TF = ('cc-pvtz-f12', {Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None})
+            QF = ('cc-pvqz-f12', {Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None})
+            CDF = ('cc-pcvdz-f12', {Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None})
+            CTF = ('cc-pcvtz-f12', {Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None})
+            CQF = ('cc-pcvqz-f12', {Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None})
 
     @classmethod
     def contains(cls, name):
@@ -725,10 +932,12 @@ class Error():
         program output files.
     """
     SCF_NOCONV = 'scf_noconv'
+    MCSCF_NOCONV = 'mcscf_noconv'
     CC_NOCONV = 'cc_noconv'
     OPT_NOCONV = 'opt_noconv'
     IRC_NOCONV = 'irc_noconv'
     SYMM_NOFIND = 'symm_nofind'
+    LIN_DEP_BASIS = 'linear_dependent_basis'
 
 
 class Success():
@@ -775,6 +984,7 @@ class Option():
     class MRCorr():
         """ Correlated multiref method options (passed to `corr_options`) """
         SHIFT_ = option.create('level_shift', ['num'])
+        IPEA_ = option.create('ipea', ['num'])
 
     class Opt():
         """ Optimization options (passed to `job_options`) """

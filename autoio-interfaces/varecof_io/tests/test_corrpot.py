@@ -4,14 +4,15 @@
 
 import os
 import tempfile
-from ioformat import read_text_file
-from ioformat import write_text_file
+from ioformat import pathtools
 import varecof_io
 
 
 # Set paths for building files
 TMP_PATH = tempfile.mkdtemp()
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+
 
 # Set variables
 NPOT = 5
@@ -47,8 +48,8 @@ def test__species_writer():
         pot_labels=POT_LABELS,
         dist_restrict_idxs=DIST_RESTRICT_IDXS)
 
-    assert spc_corr1_str == read_text_file(['data'], 'mol_corr2.f', PATH)
-    assert spc_corr2_str == read_text_file(['data'], 'mol_corr.f', PATH)
+    assert spc_corr1_str == pathtools.read_file(DAT_PATH, 'mol_corr2.f')
+    assert spc_corr2_str == pathtools.read_file(DAT_PATH, 'mol_corr.f')
 
 
 def test__dummy_writer():
@@ -57,7 +58,7 @@ def test__dummy_writer():
 
     dummy_corr_str = varecof_io.writer.corr_potentials.dummy()
 
-    assert dummy_corr_str == read_text_file(['data'], 'dummy_corr.f', PATH)
+    assert dummy_corr_str == pathtools.read_file(DAT_PATH, 'dummy_corr.f')
 
 
 def test__auxiliary_writer():
@@ -65,7 +66,7 @@ def test__auxiliary_writer():
     """
     pot_aux_str = varecof_io.writer.corr_potentials.auxiliary()
 
-    assert pot_aux_str == read_text_file(['data'], 'pot_aux.f', PATH)
+    assert pot_aux_str == pathtools.read_file(DAT_PATH, 'pot_aux.f')
 
 
 def test__makefile_writer():
@@ -79,22 +80,26 @@ def test__makefile_writer():
         FORTRAN_COMPILER,
         pot_file_names=SPECIES_CORR_POTENTIALS)
 
-    assert makefile1_str == read_text_file(['data'], 'makefile1', PATH)
-    assert makefile2_str == read_text_file(['data'], 'makefile', PATH)
+    assert makefile1_str == pathtools.read_file(DAT_PATH, 'makefile1')
+    assert makefile2_str == pathtools.read_file(DAT_PATH, 'makefile')
 
 
 def test__compile_correction_potential():
     """ test varecof_io.writer.corr_potentials.compile_correction_pot
     """
 
-    write_text_file([TMP_PATH], 'mol_corr.f',
-                    read_text_file(['data'], 'mol_corr.f', PATH), PATH)
-    write_text_file([TMP_PATH], 'pot_aux.f',
-                    read_text_file(['data'], 'pot_aux.f', PATH), PATH)
-    write_text_file([TMP_PATH], 'dummy_corr.f',
-                    read_text_file(['data'], 'dummy_corr.f', PATH), PATH)
-    write_text_file([TMP_PATH], 'makefile',
-                    read_text_file(['data'], 'makefile', PATH), PATH)
+    pathtools.write_file(
+        pathtools.read_file(DAT_PATH, 'mol_corr.f'),
+        TMP_PATH, 'mol_corr.f')
+    pathtools.write_file(
+        pathtools.read_file(DAT_PATH, 'pot_aux.f'),
+        TMP_PATH, 'pot_aux.f')
+    pathtools.write_file(
+        pathtools.read_file(DAT_PATH, 'dummy_corr.f'),
+        TMP_PATH, 'dummy_corr.f')
+    pathtools.write_file(
+        pathtools.read_file(DAT_PATH, 'makefile'),
+        TMP_PATH, 'makefile')
     varecof_io.writer.corr_potentials.compile_corr_pot(TMP_PATH)
 
     assert os.path.exists(os.path.join(TMP_PATH, 'libcorrpot.so'))

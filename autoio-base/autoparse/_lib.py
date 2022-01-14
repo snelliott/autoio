@@ -60,5 +60,6 @@ INTEGRAL_NUMBER = one_of_these([EXPONENTIAL_INTEGER, INTEGER])
 NUMBER = one_of_these([EXPONENTIAL_FLOAT, EXPONENTIAL_INTEGER, FLOAT, INTEGER])
 
 UNDERSCORE = escape('_')
+VARIABLE_STRING = one_or_more(one_of_these([NONNEWLINE, NONSPACE]))
 VARIABLE_NAME = (one_of_these([LETTER, UNDERSCORE]) +
                  one_or_more(one_of_these([LETTER, UNDERSCORE, DIGIT])))

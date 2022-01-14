@@ -4,6 +4,7 @@
 from chemkin_io.writer.mechanism import species_block as writer
 from chemkin_io.parser.species import names as parser
 
+
 SPC_IDENT_DCT = {
     'O': {'smiles': 'smiles_1',
           'inchi': 'inchi_1',

@@ -1,104 +1,48 @@
-""" Utilility functions to format the data into strings appropriate
-    for INTDER input files.
+""" Functions that take data parsed from INTDER output
+    as well as other functionality and calculate useful
+    values
 """
 
-import os
-from itertools import chain
-import automol.geom
-import automol.zmat
-import automol.util
-from ioformat import build_mako_str
-from ioformat import indent
+from automol.zmat import distance_coordinate_name
+from automol.zmat import central_angle_coordinate_name
+from automol.zmat import dihedral_angle_coordinate_name
 
 
-# OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
-SRC_PATH = os.path.dirname(os.path.realpath(__file__))
-TEMPLATE_PATH = os.path.join(SRC_PATH, 'templates')
+def ted_zmatrix_coordinates(zma, mode_idx, intl_coords, ted_assignments):
+    """ Take the output of a Total Energy Distribution analysis
+        from INTDER and determine what internal coordinates
+        defined in a Z-Matrix make up that mode.
 
+        The output has the internal coordinates defined in terms of
+        atom indices of a Cartesian geometry+Hessian. Therefore, the
+        input zmatrix must have an atom ordering that aligns with
+        that Cartesian system used to generate the TED analysis.
 
-def header_format(geo):
-    """ format the header
+        See intder_io.reader documentation for what intl_coords and
+        ted_assignment variable objects are structured like.
+
+        :param zma: Z-Matrix with coordinates to get names for
+        :typ zma: automol.zmat object
+        :param intl_coords: definition of internal coordinates in INTDER
+            in terms of the atom indices
+        :type inl_coords: tuple(tuple(str, tuple(int)))
     """
 
-    natom = automol.geom.count(geo)
-    if not automol.geom.is_linear(geo):
-        nintl = 3 * natom - 6
-    else:
-        nintl = 3 * natom - 5
+    # Get the intl coord idxs associated with vibrational mode
+    ted_mode = ted_assignments[mode_idx]
+    ted_mode_intls = tuple(ted_mode[1].keys())
 
-    header_keys = {'natom': natom, 'nintl': nintl,
-                   'comment': ''}
-    return build_mako_str(
-        template_file_name='header.mako',
-        template_src_path=TEMPLATE_PATH,
-        template_keys=header_keys)
+    # For each internal coordinate for the TED,
+    # Get the type and atom and use this to get zmat coordinate name
+    ted_zmat_names = ()
+    for intl_idx in ted_mode_intls:
+        typ, idxs = intl_coords[abs(intl_idx)]
+        if typ == 'STRE':
+            name = distance_coordinate_name(zma, *idxs)
+        elif typ == 'BEND':
+            name = central_angle_coordinate_name(zma, *idxs)
+        elif typ == 'TORS':
+            name = dihedral_angle_coordinate_name(zma, *idxs)
+        ted_zmat_names += (name,)
 
-
-def internals_format(zma):
-    """ Format the strings with the internal coordinates
-    """
-
-    key_mat = automol.zmat.key_matrix(zma)
-
-    # Write the stretch, bend, and torsion coordinates
-    intl_str = ''
-    for i, row in enumerate(key_mat[1:]):
-        print(row)
-        intl_str += 'STRE{0:>6d}{1:>6d}\n'.format(
-            i+1, row[0])
-    for i, row in enumerate(key_mat[2:]):
-        intl_str += 'BEND{0:>6d}{1:>6d}{2:>6d}\n'.format(
-            i+2, row[0], row[1])
-    for i, row in enumerate(key_mat[3:]):
-        intl_str += 'TORS{0:>6d}{1:>6d}{2:>6d}{3:>6d}\n'.format(
-            i+3, row[0], row[1], row[2])
-
-    # Remove final newline character
-    intl_str.rstrip()
-
-    return intl_str
-
-
-def geometry_format(geo):
-    """ Format the geometry string
-    """
-
-    # Build geom str
-    geo_str = ''
-    for (_, xyz) in geo:
-        geo_str += '{:>14.5f}{:>14.5f}{:>14.5f}\n'.format(*xyz)
-
-    # Remove final newline character and indent the lines
-    geo_str = indent(geo_str.rstrip(), 4)
-
-    return geo_str
-
-
-def symbols_format(geo):
-    """ Format the symbols
-    """
-
-    symbs = automol.geom.symbols(geo)
-    symb_str = automol.util.vec.string(
-        symbs, num_per_row=6, val_format='{0:>6s}')
-
-    symb_str = indent(symb_str, 6)
-
-    return symb_str
-
-
-def hessian_format(hess):
-    """ Format a mass-weighted Hessian into a string for the
-        auxiliary input file for INTDER.
-
-        :param hess: mass-weighted Hessian
-        :type hess: numpy.ndarray
-        :rtype: str
-    """
-
-    # Flatten the Hessian out for ease of writing the string
-    hess = tuple(chain.from_iterable(hess))
-    hess_str = automol.util.vec.string(
-        hess, num_per_row=3, val_format='{0:>20.10f}')
-
-    return hess_str
+    return ted_zmat_names

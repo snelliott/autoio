@@ -7,20 +7,11 @@ import pac99_io.reader
 from autorun._run import from_input_string
 
 
-# Read the new groups file stored with src
-def _new_groups_str():
-    """ Read the new groups string
-    """
-    src_path = os.path.dirname(os.path.realpath(__file__))
-    new_groups_path = os.path.join(src_path, 'aux', NEW_GROUPS_NAME)
-    with open(new_groups_path) as fobj:
-        new_groups_str = fobj.read()
-    return new_groups_str
-
-
-NEW_GROUPS_NAME = 'new.groups'
+SCRIPT_NAME = 'run_pac99.sh'
 INPUT_NAME = '{}.i97'
 OUTPUT_NAMES = ('{}.o97', '{}.c97')
+
+NEW_GROUPS_NAME = 'new.groups'
 
 
 # Specialized runner
@@ -63,6 +54,7 @@ def direct(script_str, run_dir, input_str, formula_str):
     output_strs = from_input_string(
         script_str, run_dir, input_str,
         aux_dct=aux_dct,
+        script_name=SCRIPT_NAME,
         input_name=input_name,
         output_names=output_names)
 
@@ -72,6 +64,18 @@ def direct(script_str, run_dir, input_str, formula_str):
     return output_strs
 
 
+# Read the new groups file stored with src
+def _new_groups_str():
+    """ Read the new groups string
+    """
+    src_path = os.path.dirname(os.path.realpath(__file__))
+    new_groups_path = os.path.join(src_path, 'aux', NEW_GROUPS_NAME)
+    with open(new_groups_path, mode='r', encoding='utf-8') as fobj:
+        new_groups_str = fobj.read()
+    return new_groups_str
+
+
+# Checks the output to see if there are errors
 def _check(output_strs):
     """ assess the output (.o97, .c97 fileS)
     """

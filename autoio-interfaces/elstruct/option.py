@@ -22,7 +22,7 @@ def create(name_, keys_=()):
         :type keys: tuple(obj)
     """
 
-    keys_str = ','.join('{{{}}}'.format(key) for key in keys_)
+    keys_str = ','.join(f'{{{key}}}' for key in keys_)
 
     return FORMAT.format(name_, keys_str)
 

@@ -247,17 +247,6 @@ def idx_lst_from_line(line):
 
 
 # Formats the values associated with various keywords
-def format_tsk_keywords(keyword_lst):
-    """ format keywords string
-    """
-    keyword_dct = {}
-    for keyword in keyword_lst:
-        [key, val] = keyword.split('=')
-        keyword_dct[key] = set_value_type(val)
-
-    return keyword_dct
-
-
 def format_keyword_values(keyword, value):
     """ Takes a keyword-value pair in string formats and then returns
         the pair with their types matching the internal Python version.
@@ -268,8 +257,6 @@ def format_keyword_values(keyword, value):
         :rtype: (type(str), type(str))
     """
 
-    # [keyword, value] = key_val_pair
-
     # Format the keyword
     frmtd_keyword = set_value_type(keyword.strip().lower())
 
@@ -277,14 +264,20 @@ def format_keyword_values(keyword, value):
     # Additional functionality is used to handle when values are lists
     value = value.strip()
     if all(sym in value for sym in ('[[', ']]')):
-        value = value.replace('D', '').replace('d', '')
-        value = ast.literal_eval(value)
-        frmtd_value = ()
-        for sub_lst in value:
-            assert all(isinstance(val, int) for val in sub_lst)
-            frmtd_value += (
-                tuple('D{}'.format(val) for val in sub_lst),
-            )
+        # Need to fix to handle dihedrals
+        # ast converson breaks for strings if they are not in quotes
+        if frmtd_keyword == 'tors_names':
+            value = value.replace('D', '').replace('d', '')
+            value = ast.literal_eval(value)
+            frmtd_value = ()
+            for sub_lst in value:
+                assert all(isinstance(val, int) for val in sub_lst)
+                frmtd_value += (
+                    tuple(f'D{val}' for val in sub_lst),
+                )
+        else:
+            frmtd_value = ast.literal_eval(value)
+            frmtd_value = tuple(tuple(x) for x in frmtd_value)
     elif all(sym in value for sym in ('[', ']')):
         value = value.replace('[', '').replace(']', '')
         value = value.split(',')
@@ -294,7 +287,10 @@ def format_keyword_values(keyword, value):
             elm = elm.strip()
             if ':' in elm:
                 elm_lst = elm.split(':')
-                frmtd_value += ((float(elm_lst[0]), elm_lst[1]),)
+                if 'ene' in frmtd_keyword:
+                    frmtd_value += ((float(elm_lst[0]), elm_lst[1]),)
+                else:
+                    frmtd_value += ((float(elm_lst[0]), float(elm_lst[1])),)
             else:
                 frmtd_value += (set_value_type(elm),)
     else:
@@ -317,14 +313,11 @@ def set_value_type(value):
         frmtd_value = None
     elif value.isdigit():
         frmtd_value = int(value)
-    elif 'e' in value:
+    elif 'e' in value or '.' in value:
         try:
             frmtd_value = float(value)
         except ValueError:
             frmtd_value = value
-    elif '.' in value:
-        if value.replace('.', '').replace('-', '').isdigit():
-            frmtd_value = float(value)
     else:
         frmtd_value = value
 

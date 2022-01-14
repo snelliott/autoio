@@ -1,8 +1,11 @@
 """ gradient and hessian readers
 """
 
+import numpy
+from phydat import phycon
 import autoread as ar
 import autoparse.pattern as app
+import autoparse.find as apf
 
 
 def gradient(output_str):
@@ -57,3 +60,81 @@ def hessian(output_str):
         mat = tuple(map(tuple, mat))
 
     return mat
+
+
+def harmonic_frequencies(output_str):
+    """ Reads the harmonic vibrational frequencies from
+        the output file string. Returns the frequencies in cm-1.
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: tuple(float)
+    """
+
+    pattern = (app.escape('Wavenumbers [cm-1]') +
+               app.capturing(app.LINE_FILL))
+    captures = apf.all_captures(pattern, output_str)
+    if captures is not None:
+        freqs = []
+        for capture in captures:
+            vals = capture.split()
+            for val in vals:
+                freqs.append(float(val))
+    else:
+        freqs = None
+
+    return freqs
+
+
+def normal_coordinates(output_str):
+    """ Reads the displacement along the normal modes (in Cartesian coordinates)
+        from the output string. Returns the coordinates in Bohr.
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: tuple(tuple(float))
+    """
+
+    block = apf.last_capture(
+        ('Normal Modes' +
+         app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
+         'Frequencies dumped to record'),
+        output_str)
+
+    if block is not None:
+
+        start_ptt = app.escape('Intensities [relative]') + app.LINE_FILL + '\n'
+        line_start_ptt = app.one_or_more(app.NONSPACE)
+        mats = ar.matrix.read_all(
+            block,
+            start_ptt=start_ptt,
+            line_start_ptt=line_start_ptt
+        )
+        mats = tuple(numpy.array(mat) * phycon.ANG2BOHR for mat in mats)
+
+        nmodes = ()
+        for mat in mats:
+            for column in mat.transpose():
+                nrow = len(column) // 3
+                ncol = 3
+
+                nmode = numpy.zeros(shape=(nrow, ncol))
+                for i in range(nrow):
+                    for j in range(ncol):
+                        nmode[i, j] = column[ncol*i+j]
+
+                nmodes += (nmode,)
+
+    else:
+        nmodes = None
+
+    return nmodes
+
+
+if __name__ == '__main__':
+    with open('run.out', encoding='utf-8') as fobj:
+        OUTSTR = fobj.read()
+    print(harmonic_frequencies(OUTSTR))
+    NCS = normal_coordinates(OUTSTR)
+    for x in NCS:
+        print(x)

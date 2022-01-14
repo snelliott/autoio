@@ -4,11 +4,13 @@
 
 import os
 import numpy
-from ioformat import read_text_file
+from ioformat import pathtools
 import polyrate_io.writer
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+
 
 # Base data to build the info objects
 GEO = (('C', (-4.0048955763, -0.3439866053, -0.0021431734)),
@@ -54,4 +56,4 @@ def test__pot40():
 
     inp_str = polyrate_io.writer.potential_file(
         RCT_INFO, SADPT_INFO, MEP_INFOS)
-    assert inp_str == read_text_file(['data'], 'pot.fu40', PATH)
+    assert inp_str == pathtools.read_file(DAT_PATH, 'pot.fu40')

@@ -96,9 +96,10 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='='):
             cval_dct, setval_sign=zma_sign).strip()
     elif geo in ('GEOMETRY', 'GEOMETRY_HERE'):
         geo_str = geo
+        zmat_cval_str = ''
         zmat_vval_str = ''
     else:
-        raise ValueError("Invalid geometry value:\n{0}".format(geo))
+        raise ValueError(f"Invalid geometry value:\n{geo}")
 
     return geo_str, zmat_vval_str, zmat_cval_str
 
@@ -153,6 +154,48 @@ def build_gen_lines(gen_lines, line1=None, line2=None, line3=None):
     return gen_lines_1, gen_lines_2, gen_lines_3
 
 
+def update_gen_lines(gen_lines,
+                     lines1=None, lines2=None, lines3=None):
+    """ Update gen lines dictionary with new input lines
+    """
+
+    if gen_lines is not None:
+        gen_lines_1 = gen_lines.get(1)
+        gen_lines_2 = gen_lines.get(2)
+        gen_lines_3 = gen_lines.get(3)
+
+        if lines1 is not None:
+            if gen_lines_1 is not None:
+                gen_lines_1 += tuple(lines1)
+            else:
+                gen_lines_1 = tuple(lines1)
+        if lines2 is not None:
+            if gen_lines_2 is not None:
+                gen_lines_2 += tuple(lines2)
+            else:
+                gen_lines_2 = tuple(lines2)
+        if lines3 is not None:
+            if gen_lines_3 is not None:
+                gen_lines_3 += tuple(lines3)
+            else:
+                gen_lines_3 = tuple(lines3)
+
+        gen_lines = {1: gen_lines_1,
+                     2: gen_lines_2,
+                     3: gen_lines_3}
+
+    else:
+        gen_lines = {}
+        if lines1:
+            gen_lines.update({1: tuple(lines1)})
+        if lines2:
+            gen_lines.update({2: tuple(lines2)})
+        if lines3:
+            gen_lines.update({3: tuple(lines3)})
+
+    return gen_lines
+
+
 # Handle setting options for various programs
 def evaluate_options(options, option_eval_dct):
     """ Build a list of program specific options.
@@ -166,11 +209,15 @@ def evaluate_options(options, option_eval_dct):
 
     options = list(options)
     option_names = tuple(sorted(option_eval_dct.keys()))
+
     for idx, option in enumerate(options):
-        if _option_is_valid(option):  # failing for some reason
+        # Will evaluate option if possible, or just put in (very bad)
+        try:
             name = _option_name(option)
             assert name in option_names
             options[idx] = option_eval_dct[name](option)
+        except AssertionError:
+            options[idx] = option
 
     return tuple(options)
 
@@ -218,6 +265,9 @@ def program_method_names(prog, method, basis, mult, orb_restricted):
         :rtype: (str, str, str)
     """
 
+    # Set the singlet variable used by prog_method
+    singlet = (mult == 1)
+
     # Determine the reference for the given method
     prog_reference = _reference(prog, method, mult, orb_restricted)
 
@@ -228,14 +278,17 @@ def program_method_names(prog, method, basis, mult, orb_restricted):
         if prog in (Program.GAUSSIAN09, Program.GAUSSIAN16):
             prog_method = prog_reference
         else:
-            prog_method = program_method_name(prog, method)
+            prog_method = program_method_name(prog, method, singlet=singlet)
     else:
-        prog_method = program_method_name(prog, method)
+        prog_method = program_method_name(prog, method, singlet=singlet)
+
+    # core_prog_method, mod = elstruct.Method.evaluate_method_type(prog_method)
 
     # Set the basis
     prog_basis = program_basis_name(prog, basis)
 
     return prog_method, prog_reference, prog_basis
+    # return prog_method, prog_reference, prog_basis, mods
 
 
 def _reference(prog, method, mult, orb_restricted):

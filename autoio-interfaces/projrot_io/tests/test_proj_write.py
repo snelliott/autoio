@@ -1,13 +1,18 @@
 """
  tests writing of projrot inumpyut
 """
-import os
 
-from ioformat import read_text_file
+import os
+import automol
+from ioformat import pathtools
 import projrot_io
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+
+
+# methanol
 GEO = (('C', (-4.0048955763, -0.3439866053, -0.0021431734)),
        ('O', (-1.3627056155, -0.3412713280, 0.0239463418)),
        ('H', (-4.7435343957, 1.4733340928, 0.7491098889)),
@@ -36,6 +41,68 @@ AXIS1 = [2, 3]
 GROUP1 = [0, 1]
 AXIS2 = [4, 5]
 GROUP2 = [6, 7, 8, 9, 10, 11]
+
+# methane
+GEO2 = (
+    ('C', (0.0, 0.0, 0.0)),
+    ('H', (1.1916291693695737, 1.1916291693695737, 1.1916291693695737)),
+    ('H', (-1.1916291693695737, -1.1916291693695737, 1.1916291693695737)),
+    ('H', (1.1916291693695737, -1.1916291693695737, -1.1916291693695737)),
+    ('H', (-1.1916291693695737, 1.1916291693695737, -1.1916291693695737))
+)
+GRAD2 = (
+    (0.00000e+00, -0.00000e+00,  0.00000e+00),
+    (-0.00000e+00, -0.00000e+00, -2.18196e-04),
+    (-2.05717e-04, -0.00000e+00,  7.27320e-05),
+    (1.02859e-04, -1.78156e-04,  7.27320e-05),
+    (1.02859e-04,  1.78156e-04,  7.27320e-05)
+)
+HESS2 = (
+    (0.568864, 0.0, 0.0, -0.0487407, 0.0, 0.0, -0.298008,
+     0.0, 0.0881295, -0.111058, 0.107936, -0.0440647,
+     -0.111058, -0.107936, -0.0440647),
+    (0.0, 0.568864, 0.0, 0.0, -0.0487407, 0.0, 0.0,
+     -0.0487407, 0.0, 0.107936, -0.235692, 0.0763223,
+     -0.107936, -0.235692, -0.0763223),
+    (0.0, 0.0, 0.568864, 0.0, 0.0, -0.329167, 0.0881295,
+     0.0, -0.0798992, -0.0440647, 0.0763223, -0.0798992,
+     -0.0440647, -0.0763223, -0.0798992),
+    (-0.0487407, 0.0, 0.0, 0.0470772, 0.0, 0.0,
+     0.00278847, 0.0, 0.0328176, -0.000562499, -0.00193468,
+     -0.0164088, -0.000562499, 0.00193468, -0.0164088),
+    (0.0, -0.0487407, 0.0, 0.0, 0.0470772, 0.0, 0.0,
+     -0.00167949, 0.0, -0.00193468, 0.00167148, 0.0284208,
+     0.00193468, 0.00167148, -0.0284208),
+    (0.0, 0.0, -0.329167, 0.0, 0.0, 0.354211, -0.00131841,
+     0.0, -0.00834816, 0.000659204, -0.00114177, -0.00834816,
+     0.000659204, 0.00114177, -0.00834816),
+    (-0.298008, 0.0, 0.0881295, 0.00278847, 0.0, -0.00131841,
+     0.320085, 0.0, -0.096523, -0.0124327, -0.00172137, 0.00485595,
+     -0.0124327, 0.00172137, 0.00485595),
+    (0.0, -0.0487407, 0.0, 0.0, -0.00167949, 0.0, 0.0, 0.0470772,
+     0.0, 0.0261505, 0.00167148, -0.0112977, -0.0261505,
+     0.00167148, 0.0112977),
+    (0.0881295, 0.0, -0.0798992, 0.0328176, 0.0, -0.00834816,
+     -0.096523, 0.0, 0.0812033, -0.012212, -0.00144345, 0.00352204,
+     -0.012212, 0.00144345, 0.00352204),
+    (-0.111058, 0.107936, -0.0440647, -0.000562499, -0.00193468,
+     0.000659204, -0.0124327, 0.0261505, -0.012212, 0.115329,
+     -0.118216, 0.0482615, 0.00872357, -0.0139359, 0.00735608),
+    (0.107936, -0.235692, 0.0763223, -0.00193468, 0.00167148,
+     -0.00114177, -0.00172137, 0.00167148, -0.00144345, -0.118216,
+     0.251833, -0.0835913, 0.0139359, -0.0194848, 0.0098542),
+    (-0.0440647, 0.0763223, -0.0798992, -0.0164088, 0.0284208,
+     -0.00834816, 0.00485595, -0.0112977, 0.00352204, 0.0482615,
+     -0.0835913, 0.0812033, 0.00735608, -0.0098542, 0.00352204),
+    (-0.111058, -0.107936, -0.0440647, -0.000562499, 0.00193468,
+     0.000659204, -0.0124327, -0.0261505, -0.012212, 0.00872357,
+     0.0139359, 0.00735608, 0.115329, 0.118216, 0.0482615),
+    (-0.107936, -0.235692, -0.0763223, 0.00193468, 0.00167148,
+     0.00114177, 0.00172137, 0.00167148, 0.00144345, -0.0139359,
+     -0.0194848, -0.0098542, 0.118216, 0.251833, 0.0835913),
+    (-0.0440647, -0.0763223, -0.0798992, -0.0164088, -0.0284208,
+     -0.00834816, 0.00485595, 0.0112977, 0.00352204, 0.00735608,
+     0.0098542, 0.00352204, 0.0482615, 0.0835913, 0.0812033))
 
 CART_PROJ = 'cartesian'
 
@@ -70,13 +137,21 @@ def test_rt_projections():
     """ test projrot_io.writer.rpht_input
     """
 
-    inp_str = projrot_io.writer.rpht_input(
+    inp1_str = projrot_io.writer.rpht_input(
         [GEO], [GRAD], [HESS],
         saddle_idx=1,
         rotors_str='',
         coord_proj=CART_PROJ,
         proj_rxn_coord=False)
-    assert inp_str == read_text_file(['data'], 'rpht.inp', PATH)
+    inp2_str = projrot_io.writer.rpht_input(
+        [GEO2], [GRAD2], [HESS2],
+        saddle_idx=1,
+        rotors_str='',
+        coord_proj=CART_PROJ,
+        proj_rxn_coord=False)
+
+    assert inp1_str == pathtools.read_file(DAT_PATH, 'rpht1.inp')
+    assert inp2_str == pathtools.read_file(DAT_PATH, 'rpht2.inp')
 
 
 def test_rt_hr_projections():
@@ -96,7 +171,7 @@ def test_rt_hr_projections():
         rotors_str=rotors_str,
         coord_proj=CART_PROJ,
         proj_rxn_coord=False)
-    assert inp_str == read_text_file(['data'], 'rpht_hr.inp', PATH).rstrip()
+    assert inp_str == pathtools.read_file(DAT_PATH, 'rpht_hr.inp').rstrip()
 
 
 def test__rotor_dist_cutoffs():
@@ -112,8 +187,8 @@ def test__rotor_dist_cutoffs():
     rotor_dist2_str = projrot_io.writer.projection_distance_aux(
         dist_cutoff_dct=dist_cutoff_dct)
 
-    assert rotor_dist1_str == read_text_file(['data'], 'rotor_dist1.inp', PATH)
-    assert rotor_dist2_str == read_text_file(['data'], 'rotor_dist2.inp', PATH)
+    assert rotor_dist1_str == pathtools.read_file(DAT_PATH, 'rotor_dist1.inp')
+    assert rotor_dist2_str == pathtools.read_file(DAT_PATH, 'rotor_dist2.inp')
 
 
 def test_sct_rpht_input():
@@ -127,7 +202,7 @@ def test_sct_rpht_input():
         rotors_str='',
         coord_proj=CART_PROJ,
         proj_rxn_coord=True)
-    assert inp_str == read_text_file(['data'], 'rpht_sct.inp', PATH)
+    assert inp_str == pathtools.read_file(DAT_PATH, 'rpht_sct.inp')
 
 
 def test_sct_coord_en():
@@ -137,17 +212,26 @@ def test_sct_coord_en():
     en1_str = projrot_io.writer.rpht_path_coord_en(
         RXN_PATH_COORDS, RXN_PATH_ENERGIES,
         bnd1=(), bnd2=())
-    assert en1_str == read_text_file(['data'], 'rpht_en1.inp', PATH)
+    assert en1_str == pathtools.read_file(DAT_PATH, 'rpht_en1.inp')
 
     en2_str = projrot_io.writer.rpht_path_coord_en(
         RXN_PATH_COORDS, RXN_PATH_ENERGIES,
         bnd1=RCT_DISTS, bnd2=PRD_DISTS)
-    assert en2_str == read_text_file(['data'], 'rpht_en2.inp', PATH)
+    assert en2_str == pathtools.read_file(DAT_PATH, 'rpht_en2.inp')
 
 
-if __name__ == '__main__':
-    test_rt_projections()
-    test_rt_hr_projections()
-    test__rotor_dist_cutoffs()
-    test_sct_rpht_input()
-    test_sct_coord_en()
+def __bc_mat():
+    """ test projrot_io.writer.bmatrix
+        test projrot_io.writer.cmatrix
+    """
+
+    mat3d_str = pathtools.read_file(DAT_PATH, 'mat3d.dat')
+    mat4d_str = pathtools.read_file(DAT_PATH, 'mat4d.dat')
+    mat3d = automol.util.highd_mat.from_string(mat3d_str)
+    mat4d = automol.util.highd_mat.from_string(mat4d_str)
+
+    bmat_str = projrot_io.writer.bmatrix(mat3d)
+    cmat_str = projrot_io.writer.cmatrix(mat4d)
+
+    print(bmat_str)
+    print(cmat_str)

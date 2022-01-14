@@ -5,6 +5,7 @@ Extract information from a file using re patterns.
 """
 import re
 from functools import partial
+import numpy as np
 from autoparse._lib import STRING_START as _STRING_START
 from autoparse._lib import STRING_END as _STRING_END
 from autoparse._lib import LINE_START as _LINE_START
@@ -95,7 +96,7 @@ def all_captures(pattern, string, case=True):
     :param case: if capitalization matters
     :type case: bool
     :return: all the instances of this pattern
-    :rtype: list
+    :rtype: tuple
     """
     caps = _re_findall(pattern, string, case=case)
     if caps is not None:
@@ -103,6 +104,35 @@ def all_captures(pattern, string, case=True):
     else:
         cap_lst = None
     return cap_lst
+
+
+def all_captures_with_spans(pattern, string, case=True):
+    """ capture(s) for all matches of a capturing pattern, with spans showing
+        the start and end of the match
+
+    :param pattern: pattern to search for
+    :type pattern: str
+    :param string: string to search
+    :type string: str
+    :param case: if capitalization matters
+    :type case: bool
+    :return: all the instances of this pattern, with spans
+    :rtype: tuple
+    """
+    lst = []
+    for match in _re_finditer(pattern, string, case=case):
+        cap = match.groups()
+
+        if len(cap) == 0:
+            cap = None
+        elif len(cap) == 1:
+            cap = cap[0]
+
+        span = match.span()
+        lst.append((cap, span))
+
+    lst = tuple(lst)
+    return lst
 
 
 def first_capture(pattern, string, case=True):
@@ -251,6 +281,15 @@ def _re_findall(pattern, string, case=True):
     return ret
 
 
+def _re_finditer(pattern, string, case=True):
+    if pattern and string is not None:
+        flags = _re_flags(case=case)
+        match_iter = re.finditer(pattern, string, flags=flags)
+    else:
+        match_iter = iter([])
+    return match_iter
+
+
 def _re_split(pattern, string, case=True):
     flags = _re_flags(case=case)
     return re.split(pattern, string, maxsplit=0, flags=flags)
@@ -266,3 +305,57 @@ def _re_flags(case=True):
     if not case:
         flags |= re.IGNORECASE
     return flags
+
+
+def where_in(word, lines):
+    """ Finds where word is in lines and returns array
+        For multiple words: all words must be find in lines
+        :param word: word/s to look for
+        :type word: str/list for multiple words
+        :param lines: lines to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+    if isinstance(word, str):
+        word = [word]
+
+    _arr = np.array(
+        [all(word_i in line for word_i in word) for line in lines], dtype=int)
+
+    return np.where(_arr == 1)[0]
+
+
+def where_in_any(word, lines):
+    """ Finds where word is in lines and returns array
+        For multiple words: any of the listed words may be found in line
+        :param word: word/s to look for
+        :type word: str/list for multiple words
+        :param lines: list to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+    if isinstance(word, str):
+        word = [word]
+
+    _arr = np.array(
+        [any(word_i in line for word_i in word) for line in lines], dtype=int)
+
+    return np.where(_arr == 1)[0]
+
+
+def where_is(word, lines):
+    """ Finds where list corresponds to the required word
+        :param word: word to look for
+        :type word: str
+        :param lines: list to scan
+        :type lines: list(str)
+        :return where_array: array with the indices
+        :rtype: numpy array
+    """
+
+    where_array = np.where(
+        np.array([line == word for line in lines], dtype=int) == 1)[0]
+
+    return where_array

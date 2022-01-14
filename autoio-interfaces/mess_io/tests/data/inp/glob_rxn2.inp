@@ -5,13 +5,12 @@ TemperatureList[K]                     100.0  200.0  300.0  400.0  500.0  600.0 
 PressureList[atm]                      0.01  0.1  1.0  10.0  100.0
 !
 EnergyStepOverTemperature              .2
-ExcessEnergyOverTemperature            10000.00
 ModelEnergyLimit[kcal/mol]             800
 !
-CalculationMethod                      direct
+CalculationMethod                      well-reduction
+WellReductionThreshold                 10.00
 !
 WellCutoff                             10
-WellExtension                          20000.00
 ChemicalEigenvalueMax                  0.2
 !
 ReductionMethod                        diagonalization

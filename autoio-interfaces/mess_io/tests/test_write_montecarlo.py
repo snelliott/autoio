@@ -3,11 +3,14 @@ Tests writing the input for a Monte Carlo sampling routine
 """
 
 import os
-from ioformat import read_text_file
+from ioformat import pathtools
 import mess_io.writer
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+INP_PATH = os.path.join(PATH, 'data', 'inp')
+
+
 GEO = (('C', (-4.0048955763, -0.3439866053, -0.0021431734)),
        ('O', (-1.3627056155, -0.3412713280, 0.0239463418)),
        ('H', (-4.7435343957, 1.4733340928, 0.7491098889)),
@@ -35,14 +38,14 @@ HESSES = [HESS for i in range(21)]
 ENES = tuple(float(val) for val in range(21))
 SYM_FACTOR = 3.0
 ELEC_LEVELS = ((2, 0.00),)
-FREQS = (100., 200., 300., 400., 500., 600., 700., 800.)
 FORMULA = 'CH3OH'
 DATA_FILE_NAME = 'tau.dat'
 REF_CONFIG_FILE_NAME = 'ref.dat'
 GROUND_ENE = 32.724
 REF_ENE = 0.00
-FLUX_IDX = (6, 2, 1, 3)
-FLUX_SPAN = 120.0
+FLUX_IDX = (5, 1, 0, 2)
+FLUX_SPAN = 2.0944
+EXCLUDED_VOLUME_FACTOR = 0.85679
 USE_CM_SHIFT = True
 
 
@@ -63,51 +66,51 @@ def test__flux_mode():
     flux_mode2_str = mess_io.writer.fluxional_mode(
         FLUX_IDX, span=FLUX_SPAN)
 
-    assert flux_mode1_str == read_text_file(
-        ['data', 'inp'], 'flux_mode1.inp', PATH)
-    assert flux_mode2_str == read_text_file(
-        ['data', 'inp'], 'flux_mode2.inp', PATH)
+    assert flux_mode1_str == pathtools.read_file(
+        INP_PATH, 'flux_mode1.inp')
+    assert flux_mode2_str == pathtools.read_file(
+        INP_PATH, 'flux_mode2.inp')
 
 
 def test__species():
     """ test mess_io.writer.mc_species
     """
 
-    flux_mode_str = read_text_file(['data', 'inp'], 'flux_mode1.inp', PATH)
+    flux_mode_str = pathtools.read_file(INP_PATH, 'flux_mode1.inp')
 
-    mc_spc1_str = mess_io.writer.mc_species(
+    mc_spc1_str = mess_io.writer.monte_carlo_species(
         GEO, SYM_FACTOR, ELEC_LEVELS,
         flux_mode_str, DATA_FILE_NAME)
-    mc_spc2_str = mess_io.writer.mc_species(
+    mc_spc2_str = mess_io.writer.monte_carlo_species(
         GEO, SYM_FACTOR, ELEC_LEVELS,
         flux_mode_str, DATA_FILE_NAME,
         ref_config_file_name=REF_CONFIG_FILE_NAME,
         ground_ene=GROUND_ENE,
         reference_ene=REF_ENE,
-        freqs=FREQS,
+        excluded_volume_factor=EXCLUDED_VOLUME_FACTOR,
         use_cm_shift=USE_CM_SHIFT)
 
-    assert mc_spc1_str == read_text_file(['data', 'inp'], 'mc_spc1.inp', PATH)
-    assert mc_spc2_str == read_text_file(['data', 'inp'], 'mc_spc2.inp', PATH)
+    print(repr(mc_spc2_str))
+    print(repr(pathtools.read_file(INP_PATH, 'mc_spc2.inp')))
+
+    assert mc_spc1_str == pathtools.read_file(INP_PATH, 'mc_spc1.inp')
+    assert mc_spc2_str == pathtools.read_file(INP_PATH, 'mc_spc2.inp')
 
 
 def test__dat():
     """ test mess_io.writer.mc_data
     """
 
-    mc_dat1_str = mess_io.writer.mc_data(
+    mc_dat1_str = mess_io.writer.monte_carlo_data(
         GEOS, ENES)
-    mc_dat2_str = mess_io.writer.mc_data(
+    mc_dat2_str = mess_io.writer.monte_carlo_data(
         GEOS, ENES,
         grads=GRADS,
         hessians=HESSES)
 
-    print(mc_dat2_str)
-    print(read_text_file(['data', 'inp'], 'mc_dat2.inp', PATH))
-
-    assert mc_dat1_str == read_text_file(['data', 'inp'], 'mc_dat1.inp', PATH)
-    assert mc_dat2_str == read_text_file(['data', 'inp'], 'mc_dat2.inp', PATH)
+    assert mc_dat1_str == pathtools.read_file(INP_PATH, 'mc_dat1.inp')
+    assert mc_dat2_str == pathtools.read_file(INP_PATH, 'mc_dat2.inp')
 
 
 if __name__ == '__main__':
-    test__dat()
+    test__species()

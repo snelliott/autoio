@@ -37,7 +37,7 @@ def input_file(nsamp, smin, smax, ranseed=None,
     if ranseed is not None:
         assert isinstance(ranseed, int)
     else:
-        ranseed = randrange(1E8, 1E9)
+        ranseed = randrange(1.0e7, 9.9e7)
 
     assert isinstance(nsamp, int)
     assert target_xyz_name.endswith('.xyz')
@@ -46,8 +46,8 @@ def input_file(nsamp, smin, smax, ranseed=None,
     assert isinstance(smax, float)
 
     # Format smin and smax
-    smin = '{0:.3f}'.format(smin * phycon.BOHR2ANG)
-    smax = '{0:.3f}'.format(smax * phycon.BOHR2ANG)
+    smin = f'{smin*phycon.BOHR2ANG:.3f}'
+    smax = f'{smax*phycon.BOHR2ANG:.3f}'
 
     # Set the dictionary for the 1DMin input file
     inp_keys = {
@@ -81,12 +81,11 @@ def submission_script(njobs, run_dir, exe_path):
 
     # Write the string for running all of the job lines
     # job_lines = 'mkdir -p {0}/run1\n'.format(run_dir)
-    job_lines = 'cd {0}/run1\n'.format(run_dir)
-    job_lines += 'time $ONEDMINEXE < input.dat > output.dat &\n'
+    job_lines = f'cd {run_dir}/run1\n'
+    job_lines += '$ONEDMINEXE < input.dat > output.dat &\n'
     for i in range(njobs-1):
-        # job_lines += 'mkdir -p ../run{0}\n'.format(str(i+2))
-        job_lines += 'cd ../run{0}\n'.format(str(i+2))
-        job_lines += 'time $ONEDMINEXE < input.dat > output.dat &\n'
+        job_lines += f'cd ../run{str(i+2)}\n'
+        job_lines += '$ONEDMINEXE < input.dat > output.dat &\n'
     job_lines += 'wait\n'
 
     # Set the dictionary for the 1DMin input file

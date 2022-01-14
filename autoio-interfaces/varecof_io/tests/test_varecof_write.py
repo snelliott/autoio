@@ -1,13 +1,17 @@
 """
   Tests the varecof_io.writer functions
 """
-import os
 
-from ioformat import read_text_file
+
+import os
+from ioformat import pathtools
 import varecof_io.writer
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+
+
 # TST parameters
 NSAMP_MAX = 2000
 NSAMP_MIN = 500
@@ -84,8 +88,8 @@ def test__tst_writer():
         ener_grid=ENER_GRID,
         amom_grid=AMOM_GRID)
 
-    assert tst_inp1_str == read_text_file(['data'], 'tst1.inp', PATH)
-    assert tst_inp2_str == read_text_file(['data'], 'tst2.inp', PATH)
+    assert tst_inp1_str == pathtools.read_file(DAT_PATH, 'tst1.inp')
+    assert tst_inp2_str == pathtools.read_file(DAT_PATH, 'tst2.inp')
 
 
 def test__divsur_writer():
@@ -105,8 +109,8 @@ def test__divsur_writer():
         phi_dependence=False,
         **CONDITIONS_DCT)
 
-    assert divsur_inp1_str == read_text_file(['data'], 'divsur1.inp', PATH)
-    assert divsur_inp2_str == read_text_file(['data'], 'divsur2.inp', PATH)
+    assert divsur_inp1_str == pathtools.read_file(DAT_PATH, 'divsur1.inp')
+    assert divsur_inp2_str == pathtools.read_file(DAT_PATH, 'divsur2.inp')
 
 
 def test__els_writer():
@@ -122,8 +126,8 @@ def test__els_writer():
         dummy_name=DUMMY_NAME, lib_name=LIB_NAME,
         geo_ptt=GEO_PTT, ene_ptt=ENE_PTT)
 
-    assert els_inp1_str == read_text_file(['data'], 'els1.inp', PATH)
-    assert els_inp2_str == read_text_file(['data'], 'els2.inp', PATH)
+    assert els_inp1_str == pathtools.read_file(DAT_PATH, 'els1.inp')
+    assert els_inp2_str == pathtools.read_file(DAT_PATH, 'els2.inp')
 
 
 def test__structure_writer():
@@ -133,7 +137,7 @@ def test__structure_writer():
     struct_inp_str = varecof_io.writer.input_file.structure(
         C2H5_GEO, OH_GEO)
 
-    assert struct_inp_str == read_text_file(['data'], 'structure.inp', PATH)
+    assert struct_inp_str == pathtools.read_file(DAT_PATH, 'structure.inp')
 
 
 def test__mcflux_writer():
@@ -142,7 +146,7 @@ def test__mcflux_writer():
 
     mc_flux_inp_str = varecof_io.writer.input_file.mc_flux()
 
-    assert mc_flux_inp_str == read_text_file(['data'], 'mc_flux.inp', PATH)
+    assert mc_flux_inp_str == pathtools.read_file(DAT_PATH, 'mc_flux.inp')
 
 
 def test__convert_writer():
@@ -151,7 +155,7 @@ def test__convert_writer():
 
     conv_inp_str = varecof_io.writer.input_file.convert()
 
-    assert conv_inp_str == read_text_file(['data'], 'conv.inp', PATH)
+    assert conv_inp_str == pathtools.read_file(DAT_PATH, 'conv.inp')
 
 
 if __name__ == '__main__':

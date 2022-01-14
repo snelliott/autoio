@@ -117,8 +117,11 @@ def _has_opt_nonconvergence_error_message(output_str):
 
 ERROR_READER_DCT = {
     elstruct.par.Error.SCF_NOCONV: _has_scf_nonconvergence_error_message,
+    elstruct.par.Error.MCSCF_NOCONV: False,
     elstruct.par.Error.CC_NOCONV: _has_cc_nonconvergence_error_message,
     elstruct.par.Error.OPT_NOCONV: _has_opt_nonconvergence_error_message,
+    elstruct.par.Error.IRC_NOCONV: False,
+    elstruct.par.Error.LIN_DEP_BASIS: False  # not checked
 }
 SUCCESS_READER_DCT = {
     elstruct.par.Success.SCF_CONV: _has_scf_convergence_message,
@@ -150,10 +153,13 @@ def has_error_message(error, output_str):
 
     assert error in error_list()
 
-    # Get the appropriate reader and call it
     error_reader = ERROR_READER_DCT[error]
+    if isinstance(error_reader, bool):
+        err_val = False
+    else:
+        err_val = error_reader(output_str)
 
-    return error_reader(output_str)
+    return err_val
 
 
 def check_convergence_messages(error, success, output_str):
@@ -168,9 +174,9 @@ def check_convergence_messages(error, success, output_str):
     assert error in error_list()
     assert success in success_list()
 
-    job_success = True
-    has_error = ERROR_READER_DCT[error](output_str)
-    if has_error:
-        job_success = False
+    if has_error_message(error, output_str):
+        job_success = SUCCESS_READER_DCT[success](output_str)
+    else:
+        job_success = True
 
     return job_success

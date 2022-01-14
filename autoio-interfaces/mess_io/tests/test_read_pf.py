@@ -3,12 +3,14 @@
 
 import os
 import numpy
-from ioformat import read_text_file
+from ioformat import pathtools
 import mess_io.reader
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-OUT_STR = read_text_file(['data', 'out'], 'pf.dat1', PATH)
+OUT_PATH = os.path.join(PATH, 'data', 'out')
+
+OUT_STR = pathtools.read_file(OUT_PATH, 'pf.dat1')
 
 
 def test__partition_function():
@@ -101,7 +103,6 @@ def test__thermo():
     ref_s_dct = {
         100.0: 125.642,
         200.0: 130.404,
-        298.2: 133.973,
         300.0: 134.037,
         400.0: 137.677,
         500.0: 141.754,
@@ -129,13 +130,13 @@ def test__thermo():
         2700.0: 687.501,
         2800.0: 748.084,
         2900.0: 813.082,
-        3000.0: 882.657
+        3000.0: 882.657,
+        298.2: 133.973
     }
 
     ref_cp_dct = {
         100.0: 6.26152,
         200.0: 7.79248,
-        298.2: 10.5319,
         300.0: 10.5982,
         400.0: 15.2508,
         500.0: 21.8742,
@@ -164,6 +165,7 @@ def test__thermo():
         2800.0: 1757.37,
         2900.0: 1950.52,
         3000.0: 2157.52,
+        298.2: 10.5319
     }
 
     s_dct = mess_io.reader.pfs.entropy(OUT_STR)

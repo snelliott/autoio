@@ -73,6 +73,9 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     geo_str, zmat_var_val_str, zmat_const_val_str = fill.geometry_strings(
         geo, frozen_coordinates)
 
+    # Round the memory since Gaussian doesn't deal with floats
+    memory = int(memory)
+
     # Set theory methods and options
     if elstruct.par.Method.is_correlated(method):
         assert not corr_options
@@ -87,11 +90,12 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     # Build various options
     scf_guess_options, scf_options = fill.intercept_scf_guess_option(
         scf_options, OPTION_EVAL_DCT)
-    casscf_options = fill.evaluate_options(casscf_options, OPTION_EVAL_DCT)
     job_options = fill.evaluate_options(job_options, OPTION_EVAL_DCT)
     if saddle:
         job_options += ('CALCFC', 'TS', 'NOEIGEN', 'MAXCYCLES=60')
 
+    if 'Tight' in job_options and job_key == 'optimization':
+        job_key = 'tight_optimization'
     # Set the gen lines blocks
     gen_lines_1, _, _ = fill.build_gen_lines(gen_lines)
 
@@ -104,6 +108,7 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
         fill.TemplateKey.BASIS: prog_basis,
         fill.TemplateKey.SCF_OPTIONS: ','.join(scf_options),
         fill.TemplateKey.SCF_GUESS_OPTIONS: ','.join(scf_guess_options),
+        fill.TemplateKey.CASSCF_OPTIONS: ','.join(casscf_options),
         fill.TemplateKey.MOL_OPTIONS: ','.join(mol_options),
         fill.TemplateKey.COMMENT: comment,
         fill.TemplateKey.CHARGE: charge,

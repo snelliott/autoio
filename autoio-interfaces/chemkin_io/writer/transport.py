@@ -31,13 +31,13 @@ def properties(spc_trans_dct):
 
     # Add the headers for each of the columns
     chemkin_str += (
-        '{0:20s}'.format('! Species') +
-        '{0:>5s}'.format('Shape') +
-        '{0:>12s}'.format('Epsilon') +
-        '{0:>8s}'.format('Sigma') +
-        '{0:>8s}'.format('Mu') +
-        '{0:>8s}'.format('Alpha') +
-        '{0:>8s}'.format('Z_Rot')
+        f'{"! Species":20s}' +
+        f'{"Shape":>5s}' +
+        f'{"Epsilon":>12s}' +
+        f'{"Sigma":>8s}' +
+        f'{"Mu":>8s}' +
+        f'{"Alpha":>8s}' +
+        f'{"Z_Rot":>8s}'
     )
     chemkin_str += '\n'
 
@@ -54,13 +54,13 @@ def properties(spc_trans_dct):
         zrot = dct.get('zrot', 1.00)
 
         chemkin_str += (
-            '{0:20s}'.format(name) +
-            '{0:>5d}'.format(shape_idx) +
-            '{0:>12.3f}'.format(eps) +
-            '{0:>8.3f}'.format(sig) +
-            '{0:>8.3f}'.format(dmom) +
-            '{0:>8.3f}'.format(polar) +
-            '{0:>8.3f}'.format(zrot)
+            f'{name:20s}' +
+            f'{shape_idx:>5d}' +
+            f'{eps:>12.3f}' +
+            f'{sig:>8.3f}' +
+            f'{dmom:>8.3f}' +
+            f'{polar:>8.3f}' +
+            f'{zrot:>8.3f}'
         )
         chemkin_str += '\n'
 

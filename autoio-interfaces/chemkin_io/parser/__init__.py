@@ -12,5 +12,5 @@ __all__ = [
     'mechanism',
     'reaction',
     'species',
-    'thermo'
+    'thermo',
 ]

@@ -5,7 +5,8 @@ Writes the global keyword section of a MESS input file
 import os
 from ioformat import build_mako_str
 from phydat import phycon
-from varecof_io.writer import util
+import elstruct.writer
+from varecof_io.writer import _format as vrcformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -45,12 +46,12 @@ def tst(nsamp_max, nsamp_min, flux_err, pes_size,
         amom_grid = [0, 4, 1.10, 40]
     else:
         assert len(amom_grid) == 4
-    ener_grid = util.format_grids_string(ener_grid, 'ener', 'Kelvin')
-    amom_grid = util.format_grids_string(amom_grid, 'amom', 'Kelvin')
+    ener_grid = vrcformat.format_grids_string(ener_grid, 'ener', 'Kelvin')
+    amom_grid = vrcformat.format_grids_string(amom_grid, 'amom', 'Kelvin')
 
     # Set the faces
     print(faces)
-    faces = util.format_faces_string(faces)
+    faces = vrcformat.format_faces_string(faces)
 
     # Create dictionary to fill template
     tst_keys = {
@@ -122,21 +123,21 @@ def divsur(rdists,
 
     # Format values strings for the coordinates
     # Function returns the empty string if list is empty
-    r1_string = util.format_values_string(
+    r1_string = vrcformat.format_values_string(
         'r1', rdists, conv_factor=phycon.ANG2BOHR)
-    r2_string = util.format_values_string(
+    r2_string = vrcformat.format_values_string(
         'r2', r2dists, conv_factor=phycon.ANG2BOHR)
-    d1_string = util.format_values_string(
+    d1_string = vrcformat.format_values_string(
         'd1', d1dists, conv_factor=phycon.ANG2BOHR)
-    d2_string = util.format_values_string(
+    d2_string = vrcformat.format_values_string(
         'd2', d2dists, conv_factor=phycon.ANG2BOHR)
-    t1_string = util.format_values_string(
+    t1_string = vrcformat.format_values_string(
         't1', t1angs, conv_factor=phycon.RAD2DEG)
-    t2_string = util.format_values_string(
+    t2_string = vrcformat.format_values_string(
         't2', t2angs, conv_factor=phycon.RAD2DEG)
-    p1_string = util.format_values_string(
+    p1_string = vrcformat.format_values_string(
         'p1', p1angs, conv_factor=phycon.RAD2DEG)
-    p2_string = util.format_values_string(
+    p2_string = vrcformat.format_values_string(
         'p2', p2angs, conv_factor=phycon.RAD2DEG)
 
     # Fromat the frames
@@ -148,9 +149,9 @@ def divsur(rdists,
     idx2 = 1 + npivot1
     if p1angs:
         phi_dependence = True
-    pivot_xyz_string1 = util.format_pivot_xyz_string(
+    pivot_xyz_string1 = vrcformat.format_pivot_xyz_string(
         idx1, npivot1, xyz_pivot1, phi_dependence=phi_dependence)
-    pivot_xyz_string2 = util.format_pivot_xyz_string(
+    pivot_xyz_string2 = vrcformat.format_pivot_xyz_string(
         idx2, npivot2, xyz_pivot2, phi_dependence=phi_dependence)
 
     # Calculate the number of cycles
@@ -187,8 +188,8 @@ def divsur(rdists,
     nconditions = len(conditions)
     if 'delta_r' in conditions:
         alpha = str(conditions['delta_r'])
-        conditions_string += '(r2-r1) < 0.01 + {0}\n'.format(alpha)
-        conditions_string += '(r2-r1) > 0.01 + {0}'.format(alpha)
+        conditions_string += f'(r2-r1) < 0.01 + {alpha}\n'
+        conditions_string += f'(r2-r1) > 0.01 + {alpha}'
 
     # Create dictionary to fill template
     divsur_keys = {
@@ -231,9 +232,9 @@ def elec_struct(lib_path, base_name, npot,
     pot_path = os.path.join(lib_path, lib_name)
     pot_params_str = ''
     for i in range(npot):
-        pot_params_str += '{0:<42s}{1:<8d}\n'.format(base_name+'_corr_', 1)
-        pot_params_str += '{0:<42s}{1:<8d}\n'.format('ParameterInteger', i+1)
-    pot_params_str += '{0:<42s}{1:<8d}\n'.format(dummy_name, 1)
+        pot_params_str += f'{base_name+"_corr_":<42s}{"1":<8s}\n'
+        pot_params_str += f'{"ParameterInteger":<42s}{i+1:<8d}\n'
+    pot_params_str += f'{dummy_name:<42s}{"1":<8s}\n'
 
     # Set the exe path
     exe_path = os.path.join(lib_path, exe_name)
@@ -262,12 +263,12 @@ def structure(geo1, geo2):
     """
 
     # Determine linearity of molecule
-    struct_type1 = util.determine_struct_type(geo1)
-    struct_type2 = util.determine_struct_type(geo2)
+    struct_type1 = vrcformat.determine_struct_type(geo1)
+    struct_type2 = vrcformat.determine_struct_type(geo2)
 
     # Format the coordinates of the geoetry
-    natoms1, coords1 = util.format_coords(geo1)
-    natoms2, coords2 = util.format_coords(geo2)
+    natoms1, coords1 = vrcformat.format_coords(geo1)
+    natoms2, coords2 = vrcformat.format_coords(geo2)
 
     # Create dictionary to fill template
     struct_keys = {
@@ -283,6 +284,61 @@ def structure(geo1, geo2):
         template_file_name='struct.mako',
         template_src_path=TEMPLATE_PATH,
         template_keys=struct_keys)
+
+
+def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
+    """ Writes a template file for a MOLPRO energy calculation that is
+        vrcformatized in the VRC-TST sampling procedure.
+    """
+
+    method_dct = {
+        'caspt2': 'rs2',
+        'caspt2c': 'rs2c',
+    }
+    method = method_dct[mod_var_scn_thy_info[1]]
+
+    # Set the lines for methods
+    method_lines = (
+        "if (iterations.ge.0) then",
+        f"  {{{method},shift=0.25}}",
+        f"  molpro_energy = energy + {-1.0*inf_sep_ene}",
+        "else",
+        "  molpro_energy = 10.0",
+        "endif\n"
+        # "show[1,e25.15],molpro_energy"
+    )
+
+    # Hacky nonsense to get the correct elstruct string
+
+    # Get the guess into a string
+    init_guess_lines = cas_kwargs.get('gen_lines')[1]
+    init_guess_lines = tuple(line for line in init_guess_lines
+                             if 'molpro_energy' not in line)
+    init_guess_str = '\n'.join(init_guess_lines)
+
+    # Write the string using just method lines
+    # Then just grab a portion of the string
+    cas_kwargs.update({'gen_lines': {3: method_lines}})
+
+    inp_str = elstruct.writer.energy(
+        geo='GEOMETRY_HERE',
+        charge=ts_info[1],
+        mult=ts_info[2],
+        method='casscf',
+        basis=mod_var_scn_thy_info[2],
+        prog=mod_var_scn_thy_info[0],
+        orb_type=mod_var_scn_thy_info[3],
+        **cas_kwargs
+        )
+    inp_str = '\n'.join(inp_str.splitlines()[7:])
+
+    tml_str = (
+        init_guess_str +
+        '\nGEOMETRY_HERE\n' +
+        inp_str
+    )
+
+    return tml_str
 
 
 def mc_flux():
@@ -305,15 +361,17 @@ def convert():
     return 'MultiInputFile    tst.inp'
 
 
-def machinefile(host_node, num_cores=10):
-    """ Take machine list and write the string for the machine file
+def machinefile(machine_dct):
+    """ Writes a string that details what machines to run VaReCoF on
+        as well as the number of cores to use for each host.
 
-        node_dct maybe? {node_name: num_cores}
+        :param machine_dct: {host name: num cores}
+        :type machine_dct: dict[str: int]
+        :rtype: str
     """
 
-    machines = ['{}:{}'.format(host_node, num_cores)]
     machine_file_str = ''
-    for machine in machines:
-        machine_file_str += machine + '\n'
+    for name, nproc in machine_dct.items():
+        machine_file_str += f'{name}:{nproc}\n'
 
-    return machine_file_str
+    return machine_file_str.rstrip()

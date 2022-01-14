@@ -4,6 +4,7 @@
 from chemkin_io.writer.mechanism import thermo_block as writer
 from chemkin_io.parser.thermo import create_spc_nasa7_dct as parser
 
+
 # Define a sample spc_nasa7_dct
 SPC_NASA7_DCT = {
     'O2': ['RUS 89', 'O   2               ', 'G', [200.0, 6000.0, 1000.0],

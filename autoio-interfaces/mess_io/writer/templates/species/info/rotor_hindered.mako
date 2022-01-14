@@ -7,11 +7,17 @@ Rotor  Hindered
   Geometry[angstrom]     ${natom}
 ${geo}
 % endif
-  Group                  ${group}
-  Axis                   ${axis}
-  Symmetry               ${symmetry}
-  Potential[kcal/mol]    ${npotential}
-${potential} 
+  Group                        ${group}
+  Axis                         ${axis}
+  Symmetry                     ${symmetry}
+% if potential_form == 'spline':
+  PotentialSpline[kcal/mol]    ${npotential}   20
+${pot_coords} 
+${pot_enes} 
+% elif potential_form == 'fourier':
+  Potential[kcal/mol]          ${npotential}
+${pot_enes} 
+% endif
 % if hmin is not None:
   HamiltonSizeMin            ${hmin}
 % endif

@@ -1,12 +1,15 @@
 """ Test writing files for ThermP
 """
-import os
 
-from ioformat import read_text_file
+import os
+from ioformat import pathtools
 import thermp_io
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+DAT_PATH = os.path.join(PATH, 'data')
+
+
 TEMPS = (100.0, 200.0, 300.0, 400.0, 500.0,
          600.0, 700.0, 800.0, 900.0, 1000.0)
 NTEMPS = len(TEMPS)
@@ -26,8 +29,4 @@ def test__input_file():
         delta_h=H0FORM,
         enthalpy_temp=ENTHALPYT,
         break_temp=BREAKT)
-    assert inp_str == read_text_file(['data'], 'thermp.inp', PATH)
-
-
-if __name__ == '__main__':
-    test__input_file()
+    assert inp_str == pathtools.read_file(DAT_PATH, 'thermp.inp')

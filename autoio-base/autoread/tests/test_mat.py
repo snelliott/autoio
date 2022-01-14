@@ -140,6 +140,9 @@ def test__energy():
     ene = autoread.energy.read(ENE1_STR, app.escape('@RKS Final Energy:'))
     assert ene == -149.44268093948725
 
+    ene = autoread.energy.read(ENE1_STR, app.escape('@UKS Final Energy:'))
+    assert ene is None
+
     ene = autoread.energy.read(ENE2_STR, app.escape('E(RB3LYP) ='))
     assert ene == -149.442473330
 
@@ -204,6 +207,17 @@ def test__geom():
 
     with pytest.raises(ValueError):
         symbs, xyzs = autoread.geom.read_xyz(BAD_XYZ_STR)
+
+    # Search for string missing requested header (in start_ptt)
+    start_ptt = (
+        app.padded(app.NEWLINE).join([
+            app.escape('Final (previous) structure:'), app.LINE, '']))
+
+    symbs, xyzs = autoread.geom.read(
+        GEO3_STR,
+        start_ptt=start_ptt)
+
+    assert symbs is None and xyzs is None
 
 
 def test__matrix():

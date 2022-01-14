@@ -6,6 +6,7 @@
 
 from mess_io.writer._glob import messrates_inp_str
 from mess_io.writer._glob import messpf_inp_str
+from mess_io.writer._glob import messhr_inp_str
 from mess_io.writer._glob import global_rates_input
 from mess_io.writer._glob import global_pf_input
 from mess_io.writer._glob import global_energy_transfer_input
@@ -18,7 +19,6 @@ from mess_io.writer._rxnchan import well
 from mess_io.writer._rxnchan import bimolecular
 from mess_io.writer._rxnchan import ts_sadpt
 from mess_io.writer._rxnchan import ts_variational
-from mess_io.writer._rxnchan import barrier
 from mess_io.writer._rxnchan import configs_union
 from mess_io.writer._rxnchan import dummy
 from mess_io.writer._spc import atom
@@ -33,16 +33,17 @@ from mess_io.writer._mol_inf import mdhr_data
 from mess_io.writer._mol_inf import umbrella_mode
 from mess_io.writer._mol_inf import tunnel_eckart
 from mess_io.writer._mol_inf import tunnel_read
-from mess_io.writer._monte_carlo import mc_species
-from mess_io.writer._monte_carlo import mc_data
+from mess_io.writer._monte_carlo import monte_carlo_species
+from mess_io.writer._monte_carlo import monte_carlo_data
 from mess_io.writer._monte_carlo import fluxional_mode
-from mess_io.writer._sec import species_separation_str
+from mess_io.writer._sec import SPC_SEP_STR
 
 
 __all__ = [
     # global writers
     'messrates_inp_str',
     'messpf_inp_str',
+    'messhr_inp_str',
     'global_rates_input',
     'global_pf_input',
     'global_energy_transfer_input',
@@ -58,7 +59,6 @@ __all__ = [
     'bimolecular',
     'ts_sadpt',
     'ts_variational',
-    'barrier',
     'configs_union',
     'dummy',
     # species
@@ -75,9 +75,9 @@ __all__ = [
     'tunnel_eckart',
     'tunnel_read',
     # monte carlo
-    'mc_species',
-    'mc_data',
+    'monte_carlo_species',
+    'monte_carlo_data',
     'fluxional_mode',
     # section library
-    'species_separation_str'
+    'SPC_SEP_STR'
 ]

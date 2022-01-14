@@ -30,7 +30,7 @@ ${gen_lines_2}
 % endif
 ## 6. method block 
 % if scf_method:
-{${scf_method},${scf_options},maxit=300}
+{${scf_method},${scf_options}}
 % endif
 % if ismultiref:
 {casscf,${casscf_options}}

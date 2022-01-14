@@ -16,11 +16,19 @@ def call_module_function(prog, function, *args, **kwargs):
         :type function_template: function
     """
 
+    def _rename_prog(prog):
+        """ Rename a program if number does not match module name """
+        if prog == 'molpro2021':
+            prog = 'molpro2015'
+        elif prog == 'gaussian16':
+            prog = 'gaussian09'
+        return prog
+
     assert prog in pclass.values(par.Program)
     assert prog in program_modules_with_function(function)
 
-    name = '_{}'.format(prog)
-    module = importlib.import_module('elstruct.reader.{:s}'.format(name))
+    name = f'_{_rename_prog(prog)}'
+    module = importlib.import_module(f'elstruct.reader.{name:s}')
     reader = getattr(module, function)
 
     return reader(*args, **kwargs)
@@ -99,7 +107,15 @@ READER_MODULE_DCT = {
     ),
     par.Program.MOLPRO2015: (
         Job.ENERGY, Job.GRADIENT,
-        Job.HESSIAN,
+        Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
+        Job.OPT_GEO, Job.OPT_ZMA,
+        Job.EXIT_MSG, Job.ERR_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    par.Program.MOLPRO2021: (
+        Job.ENERGY, Job.GRADIENT,
+        Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.OPT_GEO, Job.OPT_ZMA,
         Job.EXIT_MSG, Job.ERR_LST,
         Job.ERR_MSG, Job.CONV_MSG,

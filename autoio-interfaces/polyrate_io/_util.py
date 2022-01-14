@@ -13,7 +13,7 @@ def pt_format(header, hess, vlabel, vval,
     """
 
     # Intialize with header
-    pt_str = '*{}'.format(header)
+    pt_str = f'*{header}'
     pt_str += '\n\n'
 
     # Write the energy and coordinate along reaction coordinate
@@ -44,10 +44,10 @@ def energy_format(label, ene):
     """
 
     assert label in ('smep', 'vmep', 'svalue', 'vvalue'), (
-        'Label {} != smep, vmep, svalue, or vvalue'.format(label)
+        f'Label {label} != smep, vmep, svalue, or vvalue'
     )
 
-    ene_str = '{0:<8s}{1:<14.12f}'.format(label, ene)
+    ene_str = f'{label:<8s}{ene:<14.12f}'
 
     return ene_str
 

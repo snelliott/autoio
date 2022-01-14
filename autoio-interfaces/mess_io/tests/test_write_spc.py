@@ -2,12 +2,16 @@
 """
 
 import os
-from ioformat import read_text_file
+from ioformat import pathtools
 import mess_io.writer
 
 
-# Atom/Molecule Data
 PATH = os.path.dirname(os.path.realpath(__file__))
+INP_PATH = os.path.join(PATH, 'data', 'inp')
+
+
+# Atom/Molecule Data
+ddPATH = os.path.dirname(os.path.realpath(__file__))
 CORE_STR = """  Geometry[angstrom]        8
     C         -0.75583       0.00710      -0.01604
     C          0.75582      -0.00710       0.01604
@@ -48,7 +52,7 @@ def test__atom_writer():
     """
 
     atom_str = mess_io.writer.atom(MASS, ELEC_LEVELS1)
-    assert atom_str == read_text_file(['data', 'inp'], 'atom_data.inp', PATH)
+    assert atom_str == pathtools.read_file(INP_PATH, 'atom_data.inp')
 
 
 def test__molecule_writer():
@@ -57,14 +61,14 @@ def test__molecule_writer():
 
     mol1_str = mess_io.writer.molecule(
         CORE_STR, ELEC_LEVELS2)
-    assert mol1_str == read_text_file(['data', 'inp'], 'mol1_data.inp', PATH)
+    assert mol1_str == pathtools.read_file(INP_PATH, 'mol1_data.inp')
 
     mol2_str = mess_io.writer.molecule(
         CORE_STR, ELEC_LEVELS2,
         freqs=FREQS,
         freq_scale_factor=FREQ_SCALE_FACTOR,
         use_harmfreqs_key=True)
-    assert mol2_str == read_text_file(['data', 'inp'], 'mol2_data.inp', PATH)
+    assert mol2_str == pathtools.read_file(INP_PATH, 'mol2_data.inp')
 
     mol3_str = mess_io.writer.molecule(
         CORE_STR, ELEC_LEVELS2,
@@ -73,7 +77,7 @@ def test__molecule_writer():
         rovib_coups=ROVIB_COUPS,
         rot_dists=ROT_DISTS,
         inf_intens=INF_INTENS)
-    assert mol3_str == read_text_file(['data', 'inp'], 'mol3_data.inp', PATH)
+    assert mol3_str == pathtools.read_file(INP_PATH, 'mol3_data.inp')
 
 
 if __name__ == '__main__':

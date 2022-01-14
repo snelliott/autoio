@@ -2,11 +2,12 @@
 """
 
 import os
-from ioformat import read_text_file
+from ioformat import pathtools
 import mess_io.writer
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+INP_PATH = os.path.join(PATH, 'data', 'inp')
 
 WELL_MERGE_LST = (
     ('W2', 'W1'),
@@ -19,8 +20,8 @@ def test__():
     """ test mess_io.writer._lump.well_lump_scheme
     """
 
-    ref_lump1_str = read_text_file(['data', 'inp'], 'well_lump1.inp', PATH)
-    ref_lump2_str = read_text_file(['data', 'inp'], 'well_lump2.inp', PATH)
+    ref_lump1_str = pathtools.read_file(INP_PATH, 'well_lump1.inp')
+    ref_lump2_str = pathtools.read_file(INP_PATH, 'well_lump2.inp')
 
     lump1_str = mess_io.writer.well_lump_scheme(WELL_MERGE_LST)
     lump2_str = mess_io.writer.well_lump_scheme(

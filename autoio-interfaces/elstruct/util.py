@@ -8,6 +8,26 @@ import automol
 X = numpy.newaxis
 
 
+# Modify parameters for dealoing files
+def set_orbital_restriction_label(orb_label, mult):
+    """ Choose the correct part of the orbital restriction
+        label based on the multiplicity.
+    """
+
+    if orb_label == 'RR':
+        mod_orb_label = 'R'
+    elif orb_label == 'UU':
+        mod_orb_label = 'U'
+    elif orb_label == 'RU':
+        if mult == 1:
+            mod_orb_label = 'R'
+        else:
+            mod_orb_label = 'U'
+
+    return mod_orb_label
+
+
+# Calculate quantities
 def rotational_constants(geo):
     """ Calculate the rotational constants in atomic units.
         (may want to convert to other units here)

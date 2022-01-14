@@ -6,6 +6,23 @@ import numpy
 from ioformat import indent
 
 
+# Format MESS labels
+def mess_label_format(spc_label, aux_id_label=None, calc_dens=False):
+    """ Format the full MESS label line that proceeds a reaction channel
+        section keyword such as `Species`, `Well`, `Fragment`, etc.
+        Function will add an additional id label (e.g., SMILES) and a
+        density of state keyword, if requested.
+    """
+
+    lbl = spc_label
+    if calc_dens:
+        lbl = f'{lbl} density'
+    if aux_id_label is not None:
+        lbl = f'{lbl}   ! {aux_id_label}'
+
+    return lbl
+
+
 # Format various pieces of data into strings for MESS input files
 def zero_energy_format(zero_ene):
     """ Formats the zero point energy into a string that
@@ -16,12 +33,7 @@ def zero_energy_format(zero_ene):
         :return zero_ene_str: MESS-format string containing energy
         :rtype string
     """
-
-    zero_ene_str = (
-        'ZeroEnergy[kcal/mol]      {0:<8.2f}'.format(zero_ene)
-    )
-
-    return zero_ene_str
+    return f'ZeroEnergy[kcal/mol]      {zero_ene:<8.2f}'
 
 
 def elec_levels_format(elec_levels):
@@ -65,15 +77,29 @@ def geometry_format(geo):
     natoms = len(geo)
 
     # Build geom string; converting the coordinates to angstrom
-    geo_str = ''
-    for (asymb, xyz) in geo:
-        geo_str += '{:<4s}{:>14.5f}{:>14.5f}{:>14.5f}\n'.format(
-            asymb, *tuple((val*0.529177 for val in xyz)))
+    gstr = ''
+    for (symb, xyz) in geo:
+        xyzc = tuple(val*0.529177 for val in xyz)
+        gstr += f'{symb:<4s}{xyzc[0]:>14.5f}{xyzc[1]:>14.5f}{xyzc[2]:>14.5f}\n'
 
     # Remove final newline character and indent the lines
-    geo_str = indent(geo_str.rstrip(), 4)
+    gstr = indent(gstr.rstrip(), 4)
 
-    return natoms, geo_str
+    return natoms, gstr
+
+
+def mc_geometry_format(geo):
+    """ Formats the geometry of a species into a string that
+        is appropriate for a MESS MonteCarlo auxiliary data file.
+
+        :param geo: geometry of a species
+        :return natoms: number of atoms in the geometry
+        :rtype int
+        :return geo_str: MESS-format string containing geometry
+        :rtype string
+    """
+    natoms, gstr = geometry_format(geo)
+    return f'{natoms}\n{gstr}'
 
 
 def freqs_format(freqs):
@@ -95,9 +121,9 @@ def freqs_format(freqs):
     freq_str = ''
     for i, freq in enumerate(freqs):
         if ((i+1) % 6) == 0 and (i+1) != len(freqs):
-            freq_str += '{0:<8.0f}\n'.format(int(freq))
+            freq_str += f'{int(freq):<8.0f}\n'
         else:
-            freq_str += '{0:<8.0f}'.format(freq)
+            freq_str += f'{int(freq):<8.0f}'
 
     # Indent the lines
     freq_str = indent(freq_str, 4)
@@ -124,9 +150,9 @@ def intensities_format(intens):
     inten_str = ''
     for i, inten in enumerate(intens):
         if ((i+1) % 6) == 0 and (i+1) != len(intens):
-            inten_str += '{0:<8.1f}\n'.format(int(inten))
+            inten_str += f'{int(inten):<8.1f}\n'
         else:
-            inten_str += '{0:<8.1f}'.format(inten)
+            inten_str += f'{int(inten):<8.1f}'
 
     # Indent the lines
     inten_str = indent(inten_str, 4)
@@ -148,7 +174,7 @@ def format_rotor_key_defs(rotor_keyword_vals):
     # Build string containing the values of each keyword
     rotor_keyword_str = ''
     for vals in rotor_keyword_vals:
-        rotor_keyword_str += '{0:<4d}'.format(vals+1)
+        rotor_keyword_str += f'{vals+1:<4d}'
 
     return rotor_keyword_str
 
@@ -166,20 +192,23 @@ def format_rotor_potential(potential):
     """
 
     # Get the number of the terms in the potential
-    npotential = len(potential)
+    npot = len(potential)
 
     # Build potentials string
-    potential_str = ''
-    for i, energy in enumerate(potential.values()):
-        if ((i+1) % 6) == 0 and (i+1) != npotential:
-            potential_str += '{0:<8.2f}\n'.format(energy)
+    coord_str, ene_str = '', ''
+    for i, (coord, energy) in enumerate(potential.items()):
+        if ((i+1) % 6) == 0 and (i+1) != npot:
+            coord_str += f'{coord[0]:<8.2f}\n'
+            ene_str += f'{energy:<8.2f}\n'
         else:
-            potential_str += '{0:<8.2f}'.format(energy)
+            coord_str += f'{coord[0]:<8.2f}'
+            ene_str += f'{energy:<8.2f}'
 
     # Indent the lines
-    potential_str = indent(potential_str, 4)
+    coord_str = indent(coord_str, 4)
+    ene_str = indent(ene_str, 4)
 
-    return npotential, potential_str
+    return npot, coord_str, ene_str
 
 
 def format_rovib_coups(rovib_coups):
@@ -240,7 +269,7 @@ def format_xmat(xmat):
     xmat_str = ''
     for i in range(xmat.shape[0]):
         xmat_str += ' '.join(
-            ['{0:>12.5f}'.format(val) for val in list(xmat[i, :i+1])
+            [f'{val:>12.5f}' for val in list(xmat[i, :i+1])
              if val != 0.0]
         )
         if (i+1) != xmat.shape[0]:
@@ -265,8 +294,8 @@ def molec_spec_format(geo):
 
     # Build geom string; converting the coordinates to angstrom
     atom_lst_str = ''
-    for (asymb, _) in geo:
-        atom_lst_str += '{:s} '.format(asymb)
+    for (symb, _) in geo:
+        atom_lst_str += f'{symb:s} '
 
     # Remove final newline character
     atom_lst_str = atom_lst_str.rstrip()
@@ -291,9 +320,40 @@ def format_flux_mode_indices(atom_idxs):
     # Build string containing the values of each keyword
     flux_mode_idx_str = ''
     for vals in atom_idxs:
-        flux_mode_idx_str += '{0:<4d}'.format(vals)
+        flux_mode_idx_str += f'{vals+1:<4d}'
 
     return flux_mode_idx_str
+
+
+def format_ped_species(ped_spc_lst):
+    """ Format the names of species to provided to the global
+        PEDSpecies keyword of the input file.
+
+        :param: ped_spc_lst: species to obtain PEDs for
+        :type: tuple(str)
+        :rtype: str
+    """
+    return '   '.join(ped_spc_lst)
+
+
+def format_hot_enes(hot_enes_dct):
+    """ Format the list hot energies for one or more species
+        into a string appropriate for the HotEnergies keyword
+        used at the top of the MESS keyword section
+
+        :param hot_enes_dct: hot energies for each species in kcal/mol
+        :type hot_enes_dct: dict[str: tuple(float)]
+        :rtype: (int, str)
+    """
+
+    ene_str = ''
+    n_enes = 0
+    for spc, ene_lst in hot_enes_dct.items():
+        _str = ' '.join((f'{ene:.1f}' for ene in ene_lst))
+        ene_str += f'{spc:5s}{_str}\n'
+        n_enes += 1
+
+    return n_enes, ene_str.rstrip()
 
 
 # Helpful checker to set MESS string writing

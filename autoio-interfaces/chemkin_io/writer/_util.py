@@ -1,7 +1,7 @@
 """ Format utilities
 """
 
-import numpy as np
+# import numpy as np
 import automol.geom
 
 
@@ -87,47 +87,3 @@ def format_shape_idx(geo):
             shape_idx = 2
 
     return shape_idx
-
-
-def merge_plog_dct(param_dct):
-    """ Merge 2 or more duplicate PLOG dictionaries
-
-        :param_dct: values of one rxn_param_dct
-        :type tuple(tuple)
-        :return param_dct
-        :rtype tuple(tuple)
-    """
-    # extract plog dictionaries
-
-    try:
-        plog = np.array(
-            [param_dct_vals[4] is not None for param_dct_vals in param_dct],
-            dtype=int)
-        mask_nonplog = np.where(plog == 0)[0]
-        mask_plog = np.where(plog == 1)[0]
-    except TypeError:
-        # if for any reason the dct does not have iterables
-        mask_plog = []
-
-    if len(mask_plog) > 1:  # more than 1 set of plog params
-        # merge dictionaries together or add entries
-        plog_param_dct = [list(param_dct[i]) for i in mask_plog]
-        merged_plog_dct = plog_param_dct[0]
-        # new dictionary
-        for plog_param_dct_i in plog_param_dct[1:]:
-            # extend the plog values with the other parameters
-            for key_i, plog_params in plog_param_dct_i[4].items():
-                try:
-                    merged_plog_dct[4][key_i].extend(plog_params)
-                except KeyError:
-                    merged_plog_dct[4][key_i] = plog_params
-
-        # build new dct
-        merged_plog_dct = [tuple(merged_plog_dct)]
-
-        if len(mask_nonplog) > 0:
-            nonplog_param_dct = [param_dct[i] for i in mask_nonplog]
-            merged_plog_dct.extend(nonplog_param_dct)
-        param_dct = tuple(merged_plog_dct)
-
-    return param_dct

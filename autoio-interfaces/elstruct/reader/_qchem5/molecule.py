@@ -83,12 +83,3 @@ def opt_zmatrix(output_str):
         zma = None
 
     return zma
-
-
-if __name__ == '__main__':
-    with open('opt.out') as fobj:
-        OUTSTR = fobj.read()
-    print(opt_geometry(OUTSTR))
-    with open('opt.out') as fobj:
-        OUTSTR = fobj.read()
-    print(opt_zmatrix(OUTSTR))

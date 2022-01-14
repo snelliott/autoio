@@ -1,4 +1,8 @@
 Well ${well_label} 
+## Well Extension Cap Section
+% if well_cap is not None:
+  WellExtensionCap[kcal/mol]    ${well_cap}
+% endif
   Species
 ${well_data}\
 ## Zero Energy Section

@@ -21,7 +21,7 @@ def partition_function(output_str):
 
     temps, logq, dq_dt, dq2_dt2 = tuple(), tuple(), tuple(), tuple()
     for i, line in enumerate(output_str.splitlines()):
-        if i not in (0, 1):
+        if i not in (0, 1, 2):
             tmp = line.strip().split()
             temps += (float(tmp[0]),)
             logq += (float(tmp[1]),)
@@ -47,7 +47,7 @@ def entropy(output_str):
 
     temps, s_t = tuple(), tuple()
     for i, line in enumerate(output_str.splitlines()):
-        if i not in (0, 1):
+        if i not in (0, 1, 2):
             tmp = line.strip().split()
             temps += (float(tmp[0]),)
             s_t += (float(tmp[4]),)
@@ -71,7 +71,7 @@ def heat_capacity(output_str):
 
     temps, cp_t = tuple(), tuple()
     for i, line in enumerate(output_str.splitlines()):
-        if i not in (0, 1):
+        if i not in (0, 1, 2):
             tmp = line.strip().split()
             temps += (float(tmp[0]),)
             cp_t += (float(tmp[5]),)

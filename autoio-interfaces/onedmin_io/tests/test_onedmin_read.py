@@ -3,13 +3,15 @@
 
 import os
 import numpy
-from ioformat import read_text_file
+from ioformat import pathtools
 import onedmin_io.reader
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
-LJ_OUT_STR = read_text_file(['data'], 'lj.out', PATH)
-ONEDMIN_OUT_STR = read_text_file(['data'], 'onedmin.out', PATH)
+DAT_PATH = os.path.join(PATH, 'data')
+
+LJ_OUT_STR = pathtools.read_file(DAT_PATH, 'lj.out')
+ONEDMIN_OUT_STR = pathtools.read_file(DAT_PATH, 'onedmin.out')
 
 
 def test__lennard_jones():
@@ -29,19 +31,12 @@ def test__program_version():
     """ test onedmin_io.reader.program_version
     """
 
-    ref_prog = '1.0'
-
-    prog = onedmin_io.reader.program_version(ONEDMIN_OUT_STR)
-
-    assert prog == ref_prog
+    assert onedmin_io.reader.program_version(ONEDMIN_OUT_STR) == '1.0'
 
 
 def test__ranseed():
     """ test onedmin_io.reader.random_seed_value
     """
 
-    ref_ranseed = 153214316
-
-    ranseed = onedmin_io.reader.random_seed_value(ONEDMIN_OUT_STR)
-
-    assert ranseed == ref_ranseed
+    assert onedmin_io.reader.random_seed_value(ONEDMIN_OUT_STR) == 153214316
+    assert onedmin_io.reader.random_seed_value('') is None

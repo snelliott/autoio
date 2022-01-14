@@ -5,10 +5,10 @@ import autoread as ar
 from autoparse import cast as _cast
 import autoparse.pattern as app
 import autoparse.find as apf
-import elstruct.par
+from elstruct.par import Program, Method, program_methods
 
 
-PROG = elstruct.par.Program.GAUSSIAN09
+PROG = Program.GAUSSIAN09
 
 DOUB_HYB_DFT = [
     'b2plypd3'
@@ -100,18 +100,22 @@ def _doub_hyb_dft_energy(output_str):
 
 # A dictionary of functions for reading the energy from the output, by method
 ENERGY_READER_DCT = {
-    elstruct.par.Method.HF[0]: _hf_energy,
-    elstruct.par.Method.Corr.MP2[0]: _mp2_energy,
+    (Method.HF[0], frozenset({})): _hf_energy,
+    (Method.Corr.MP2[0], frozenset({})): _mp2_energy,
 }
-METHODS = elstruct.par.program_methods(PROG)
-for METHOD in METHODS:
-    if elstruct.par.Method.is_standard_dft(METHOD):
-        if METHOD not in DOUB_HYB_DFT:
-            ENERGY_READER_DCT[METHOD] = _dft_energy
-        else:
-            ENERGY_READER_DCT[METHOD] = _doub_hyb_dft_energy
+METHODS = program_methods(PROG)
 
-assert all(method in ENERGY_READER_DCT for method in METHODS)
+# Add DFT methods to the reader dictionary
+for METHOD in METHODS:
+    if Method.is_standard_dft(METHOD):
+        if METHOD not in DOUB_HYB_DFT:
+            ENERGY_READER_DCT[(METHOD, frozenset({}))] = _dft_energy
+        else:
+            ENERGY_READER_DCT[(METHOD, frozenset({}))] = _doub_hyb_dft_energy
+
+# Check if we have added any unsupported methods to the energy reader
+READ_METHODS = set(method[0] for method in ENERGY_READER_DCT)
+assert READ_METHODS <= set(METHODS)
 
 
 def method_list():
@@ -130,16 +134,18 @@ def energy(method, output_str):
         :type output_str: str
         :rtype: float
     """
-
-    assert method in method_list()
+    # Parse the method and lists
+    core_method, pfxs = Method.evaluate_method_type(method)
+    full_method = (core_method, frozenset(pfxs))
+    assert full_method in method_list()
 
     # Get the appropriate reader and call it
-    if elstruct.par.Method.is_nonstandard_dft(method):
-        if method not in DOUB_HYB_DFT:
+    if Method.is_nonstandard_dft(core_method):
+        if core_method not in DOUB_HYB_DFT:
             energy_reader = _dft_energy
         else:
             energy_reader = _doub_hyb_dft_energy
     else:
-        energy_reader = ENERGY_READER_DCT[method]
+        energy_reader = ENERGY_READER_DCT[full_method]
 
     return energy_reader(output_str)

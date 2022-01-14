@@ -12,12 +12,19 @@ SCRIPT_DCT = {
     'gaussian09': None,
     'gaussian16': None,
     'molpro2015': None,
+    'molpro2021': None,
     'mrcc2018': None,
     'nwchem6': None,
     'orca4': None,
     'psi4': "#!/usr/bin/env bash\n"
             "psi4 -i run.inp -o run.out >> stdout.log &> stderr.log",
 }
+
+# Certain methods, though nominally supported, crash and cannot be tested
+BAD_METHODS = (
+    ('psi4', 'ccsd'),
+    ('psi4', 'ccsd(t)'),
+)
 
 
 def test__energy():
@@ -31,9 +38,9 @@ def test__energy():
     charge_vals = [0, 1]
 
     for prog in elstruct.writer.programs():
-        print(prog)
+        # print(prog)
         for method in elstruct.program_methods(prog):
-            print(method)
+            # print(method)
             for mult, charge in zip(mult_vals, charge_vals):
                 for orb_type in (
                         elstruct.program_method_orbital_types(
@@ -46,7 +53,7 @@ def test__energy():
                             elstruct.reader.energy,
                         ),
                         args=(prog, geo, charge, mult, method, basis),
-                        kwargs={'orb_type': orb_type},
+                        kwargs={'orb_type': orb_type, 'memory': 8},
                         error=elstruct.Error.SCF_NOCONV,
                         error_kwargs={'scf_options': [
                             elstruct.option.specify(
@@ -75,6 +82,8 @@ def test__gradient():
             methods.append(numpy.random.choice(dft_methods))
 
         for method in methods:
+            if (prog, method) in BAD_METHODS:
+                continue
             for mult, charge in zip(mult_vals, charge_vals):
                 for orb_type in (
                         elstruct.program_method_orbital_types(
@@ -88,7 +97,7 @@ def test__gradient():
                             elstruct.reader.gradient,
                         ),
                         args=(prog, geo, charge, mult, method, basis),
-                        kwargs={'orb_type': orb_type},
+                        kwargs={'orb_type': orb_type, 'memory': 8},
                     )
                     # Print the value for Psi4 since it was run and read
                     if prog == elstruct.par.Program.PSI4:
@@ -112,6 +121,9 @@ def test__hessian():
             methods.append(numpy.random.choice(dft_methods))
 
         for method in methods:
+            # Psi4 segfaults for ccsd
+            if (prog, method) in BAD_METHODS:
+                continue
             for mult, charge in zip(mult_vals, charge_vals):
                 for orb_type in (
                         elstruct.program_method_orbital_types(
@@ -125,7 +137,7 @@ def test__hessian():
                             elstruct.reader.hessian,
                         ),
                         args=(prog, geo, charge, mult, method, basis),
-                        kwargs={'orb_type': orb_type},
+                        kwargs={'orb_type': orb_type, 'memory': 8},
                     )
                     # Print the value for Psi4 since it was run and read
                     if prog == elstruct.par.Program.PSI4:
@@ -154,9 +166,10 @@ def test__optimization():
         # MRCC2018 does not support constrained optimizations
         if prog != 'mrcc2018':
             opt_kwargs = {'orb_type': orb_type,
-                          'frozen_coordinates':  frozen_coordinates}
+                          'memory': 8,
+                          'frozen_coordinates': frozen_coordinates}
         else:
-            opt_kwargs = {'orb_type': orb_type}
+            opt_kwargs = {'orb_type': orb_type, 'memory': 8}
 
         vals = _test_pipeline(
             script_str=script_str,
@@ -202,11 +215,9 @@ def _test_pipeline(script_str, writer, readers,
     if script_str is not None:
         script_str = SCRIPT_DCT[prog]
         run_dir = tempfile.mkdtemp()
-        print('run_dir\n', run_dir)
-        _, out_str = elstruct.run.direct(
+        inp_str, out_str = elstruct.run.direct(
             writer, script_str, run_dir, *args, **kwargs)
-
-        print('out str\n', out_str)
+        print(inp_str)
         assert elstruct.reader.has_normal_exit_message(prog, out_str)
 
         for i, reader in enumerate(readers):
@@ -235,7 +246,7 @@ def _test_pipeline(script_str, writer, readers,
 
 
 if __name__ == '__main__':
-    # test__energy()
-    # test__gradient()
+    test__energy()
+    test__gradient()
     test__hessian()
-    # test__optimization()
+    test__optimization()

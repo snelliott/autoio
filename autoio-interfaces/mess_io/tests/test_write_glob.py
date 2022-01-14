@@ -4,11 +4,15 @@
 import os
 import numpy
 import pandas
-from ioformat import read_text_file
+from ioformat import pathtools
 import mess_io.writer
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
+INP_PATH = os.path.join(PATH, 'data', 'inp')
+OUT_PATH = os.path.join(PATH, 'data', 'out')
+
+
 TEMPS = (100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0)
 PRESSURES = (0.01, 0.1, 1.0, 10.0, 100.0)
 TEMP_STEP = 50
@@ -17,6 +21,26 @@ REL_TEMP_INC = 0.002
 ATOM_DIST_MIN = 1.05
 EXCESS_ENE_TEMP = 10000.0
 WELL_EXTEND = 20000.0
+
+# For messhr input
+GEO = (
+    ('C', (0.0, 0.0, 0.0)),
+    ('C', (0.0, 0.0, 2.886481067591814)),
+    ('H', (0.0, 1.9289757370835872, -0.7491252306539922)),
+    ('H', (1.6705367921659746, -0.9644784199111662, -0.7491252306539922)),
+    ('H', (-1.6705367921659746, -0.9644784199111662, -0.7491252306539922)),
+    ('H', (1.6705367921659746, 0.9644784199111662, 3.6356062982458064)),
+    ('H', (-0.0, -1.9289757370835872, 3.6356062982458064)),
+    ('H', (-1.6705367921659746, 0.9644784199111662, 3.6356062982458064)))
+HR_STR = """Rotor  Hindered   # D5
+  Group                  3   4   5
+  Axis                   1   2
+  Symmetry               3
+  Potential[kcal/mol]    8
+    0.00    0.45    1.55    2.66    3.13    2.66
+    1.55    0.45
+End  ! HindRot\n"""
+
 
 # For messpf output
 FORMULA = 'CH4O'
@@ -73,12 +97,35 @@ def test__global_rates_input():
     glob1_str = mess_io.writer.global_rates_input(
         TEMPS, PRESSURES)
     glob2_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES, well_extension=None)
+    glob3_str = mess_io.writer.global_rates_input(
         TEMPS, PRESSURES,
         excess_ene_temp=EXCESS_ENE_TEMP,
-        well_extend=WELL_EXTEND)
+        well_extension=WELL_EXTEND)
+    glob4_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        calculation_method='direct')
+    glob5_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        float_type='quadruple')
+    glob6_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        ped_spc_lst=('RH_R1', 'RH_R2'))
+    glob7_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        hot_enes_dct={'W1': (10.0, 20.0, 30.0), 'W2': (40.0, 50.0, 60.0)})
+    glob8_str = mess_io.writer.global_rates_input(
+        TEMPS, PRESSURES,
+        micro_out_params=(0.0, 140.0, 0.1))
 
-    assert glob1_str == read_text_file(['data', 'inp'], 'glob_rxn1.inp', PATH)
-    assert glob2_str == read_text_file(['data', 'inp'], 'glob_rxn2.inp', PATH)
+    assert glob1_str == pathtools.read_file(INP_PATH, 'glob_rxn1.inp')
+    assert glob2_str == pathtools.read_file(INP_PATH, 'glob_rxn2.inp')
+    assert glob3_str == pathtools.read_file(INP_PATH, 'glob_rxn3.inp')
+    assert glob4_str == pathtools.read_file(INP_PATH, 'glob_rxn4.inp')
+    assert glob5_str == pathtools.read_file(INP_PATH, 'glob_rxn5.inp')
+    assert glob6_str == pathtools.read_file(INP_PATH, 'glob_rxn6.inp')
+    assert glob7_str == pathtools.read_file(INP_PATH, 'glob_rxn7.inp')
+    assert glob8_str == pathtools.read_file(INP_PATH, 'glob_rxn8.inp')
 
 
 def test__global_pf_input():
@@ -95,13 +142,26 @@ def test__global_pf_input():
         ntemps=NTEMPS,
         rel_temp_inc=REL_TEMP_INC,
         atom_dist_min=ATOM_DIST_MIN)
+    glob4_str = mess_io.writer.global_pf_input(
+        temperatures=TEMPS,
+        float_type='quadruple')
 
-    assert glob1_str == read_text_file(
-        ['data', 'inp'], 'glob_pf1.inp', PATH, strip=True)
-    assert glob2_str == read_text_file(
-        ['data', 'inp'], 'glob_pf2.inp', PATH, strip=True)
-    assert glob3_str == read_text_file(
-        ['data', 'inp'], 'glob_pf3.inp', PATH, strip=True)
+    assert glob1_str == pathtools.read_file(
+        INP_PATH, 'glob_pf1.inp').rstrip()
+    assert glob2_str == pathtools.read_file(
+        INP_PATH, 'glob_pf2.inp').rstrip()
+    assert glob3_str == pathtools.read_file(
+        INP_PATH, 'glob_pf3.inp').rstrip()
+    assert glob4_str == pathtools.read_file(
+        INP_PATH, 'glob_pf4.inp').rstrip()
+
+
+def test__messhr_inp_str():
+    """ test mess_io.writer.messhr_inp_str_str
+    """
+
+    messhr_str = mess_io.writer.messhr_inp_str(GEO, HR_STR)
+    assert messhr_str == pathtools.read_file(INP_PATH, 'full_hr.inp')
 
 
 def test__full_str():
@@ -119,8 +179,8 @@ def test__full_str():
     pf_str = mess_io.writer.messpf_inp_str(
         glob_keys_str, pf_str)
 
-    assert rates_str == read_text_file(['data', 'inp'], 'full_rates.inp', PATH)
-    assert pf_str == read_text_file(['data', 'inp'], 'full_pf.inp', PATH)
+    assert rates_str == pathtools.read_file(INP_PATH, 'full_rates.inp')
+    assert pf_str == pathtools.read_file(INP_PATH, 'full_pf.inp')
 
 
 def test__pf_output():
@@ -141,5 +201,5 @@ def test__pf_output():
         svals=THM_VALS['svals'].values,
         cpvals=THM_VALS['cpvals'].values)
 
-    assert pf1_str == read_text_file(['data', 'out'], 'pf.dat2', PATH)
-    assert pf2_str == read_text_file(['data', 'out'], 'pf.dat3', PATH)
+    assert pf1_str == pathtools.read_file(OUT_PATH, 'pf.dat2')
+    assert pf2_str == pathtools.read_file(OUT_PATH, 'pf.dat3')

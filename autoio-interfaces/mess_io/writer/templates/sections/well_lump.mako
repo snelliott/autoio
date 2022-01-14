@@ -1,2 +1,2 @@
-LumpingSheme   ${well_str}
+LumpingScheme   ${well_str}
 WellSeparator  ${separator}\

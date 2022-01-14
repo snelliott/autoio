@@ -1,16 +1,16 @@
 """ functions operating on the reactions block string
 """
 
+import sys
 import collections
 import itertools
-import math
-import copy
 import numpy as np
 import autoparse.pattern as app
 import autoparse.find as apf
 from autoparse import cast as ap_cast
 from ioformat import headlined_sections
 from phydat import phycon
+from autoreact.params import RxnParams
 
 
 # Various strings needed to parse the data sections of the Reaction block
@@ -42,134 +42,335 @@ COMMENTS_PATTERN = app.escape(
 BAD_STRS = ['inf', 'INF', 'nan']
 
 
-def param_dct(block_str, ea_units, a_units):
+def get_rxn_param_dct(block_str, ea_units, a_units):
     """ Parses all of the chemical equations and corresponding fitting
         parameters in the reactions block of the mechanism input file
         and subsequently pulls all of the species names and fitting
         parameters from the data string; this information is stored in a list.
 
-        :param block_str: string for reactions block
+        :param block_str: raw string for the entire reactions block
         :type block_str: str
-        :return rxn_param_dct: dict{(reacs,prods): param_list}
+        :param ea_units: units of activation energy
+        :type ea_units: str
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
+        :return rxn_param_dct: dct {rxn1: params1, rxn2: ...}
         :rtype: dict
     """
-    rxn_dstr_lst = data_strings(block_str)
 
-    # Create an iterator that repeats the units inputs
-    many_ea_units = list(itertools.repeat(ea_units, times=len(rxn_dstr_lst)))
-    many_a_units = list(itertools.repeat(a_units, times=len(rxn_dstr_lst)))
+    rxn_strs = get_rxn_strs(block_str)
 
-    reac_and_prods = list(zip(
-        map(reactant_names, rxn_dstr_lst),
-        map(product_names, rxn_dstr_lst),
-        map(third_body, rxn_dstr_lst)))
+    if rxn_strs is not None:
+        # Loop over each reaction string, creating a RxnParams object for each
+        rxns = []
+        params_lst = []
+        for rxn_str in rxn_strs:
+            rxn = get_rxn_name(rxn_str)
+            params = get_params(rxn_str, ea_units, a_units)
+            rxns.append(rxn)
+            params_lst.append(params)
 
-    params = list(
-        zip(
-            map(high_p_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
-            map(low_p_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
-            map(troe_parameters, rxn_dstr_lst),
-            map(chebyshev_parameters, rxn_dstr_lst, many_a_units),
-            map(plog_parameters, rxn_dstr_lst, many_ea_units, many_a_units),
-            map(collider_enhance_factors, rxn_dstr_lst),
-        )
-    )
+        # Fix any duplicates
+        rxns, params_lst = fix_duplicates(rxns, params_lst)
+        # Zip into a dictionary
+        rxn_param_dct = dict(zip(rxns, params_lst))
 
-    # Fix any duplicates in Arrhenius or PLOG reactions
-    reac_and_prods, params = fix_duplicates(reac_and_prods, params)
-    rxn_param_dct = dict(zip(reac_and_prods, params))
+    else:
+        rxn_param_dct = None
 
     return rxn_param_dct
 
 
-def data_strings(block_str, remove_bad_fits=False):
+def get_pes_dct(block_str):
+    """ Parses all of the chemical equations
+        and uses special comment line to parse them into PESs
+
+        ! pes.subpes.channel  7.3.35
+
+        :param block_str: raw string for the entire reactions block
+        :type block_str: str
+        :param ea_units: units of activation energy
+        :type ea_units: str
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
+        :return rxn_param_dct: dct {rxn1: params1, rxn2: ...}
+        :rtype: dict
+    """
+
+    rxn_strs = get_rxn_strs(block_str)
+
+    if rxn_strs is not None:
+        pes_dct = {}
+        for rxn_str in rxn_strs:
+            rxn = get_rxn_name(rxn_str)
+            idx_inf = get_pes_info(rxn_str)
+            if idx_inf is not None:
+                pes_idx, subpes_idx, chnl_idx = idx_inf
+                pes_inf = ('PES', pes_idx, subpes_idx)
+                chnl_inf = (chnl_idx, rxn)
+                if pes_inf in pes_dct:
+                    pes_dct[pes_inf] += (chnl_inf,)
+                else:
+                    pes_dct[pes_inf] = ((chnl_inf,))
+            else:
+                pes_dct = None
+                break
+    else:
+        pes_dct = None
+
+    return pes_dct
+
+
+def get_rxn_name(rxn_str):
+    """ Parses a rxn_str to get the reaction key
+
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :return rxn: tuple describing the reactants, products, and third body
+        :rtype: tuple ((rct1, rct2, ...), (prd1, prd2, ...), (third_bod1, ...))
+    """
+
+    rcts = rct_names(rxn_str)
+    prds = prd_names(rxn_str)
+    thd_bod = third_body(rxn_str)
+
+    rxn = (rcts, prds, thd_bod)
+
+    return rxn
+
+
+def get_params(rxn_str, ea_units, a_units):
+    """ Extracts a RxnParams object from a str describing a rxn
+
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :param ea_units: units of activation energies
+        :type ea_units: string
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
+        :return params: object describing the rate parameters
+        :rtype: autoreact.RxnParams object
+    """
+
+    rxn = get_rxn_name(rxn_str)
+    param_tuple = (
+        high_p(rxn_str, ea_units, a_units),
+        low_p(rxn_str, ea_units, a_units),
+        troe(rxn_str),
+        cheb(rxn_str),
+        plog(rxn_str, ea_units, a_units),
+        colliders(rxn_str))
+
+    if param_tuple[3] is not None:  # Chebyshev
+        cheb_dct = param_tuple[3]
+        cheb_dct['one_atm_arr'] = param_tuple[0]  # might be None
+        params = RxnParams(cheb_dct=cheb_dct)
+
+    elif param_tuple[4] is not None:  # PLOG
+        plog_dct = param_tuple[4]
+        params = RxnParams(plog_dct=plog_dct)
+
+    elif param_tuple[2] is not None:  # Troe
+        assert param_tuple[0] is not None, (
+            f'For {rxn}, Troe params included, highP params absent')
+        assert param_tuple[1] is not None, (
+            f'For {rxn}, Troe & highP params included, lowP params absent')
+        assert rxn[2][0] is not None, (
+            f'For {rxn}, Troe, highP, & lowP params included,' +
+            ' third body absent')
+        troe_dct = {}
+        troe_dct['highp_arr'] = param_tuple[0]
+        troe_dct['lowp_arr'] = param_tuple[1]
+        troe_dct['troe_params'] = param_tuple[2]
+        troe_dct['collid'] = param_tuple[5]
+        params = RxnParams(troe_dct=troe_dct)
+
+    elif param_tuple[1] is not None:  # Lindemann
+        assert param_tuple[0] is not None, (
+            f'For {rxn}, lowP params included, highP params absent')
+        assert rxn[2][0] is not None, (
+            f'For {rxn}, highP & lowP params included, third body absent')
+        lind_dct = {}
+        lind_dct['highp_arr'] = param_tuple[0]
+        lind_dct['lowp_arr'] = param_tuple[1]
+        lind_dct['collid'] = param_tuple[5]
+        params = RxnParams(lind_dct=lind_dct)
+
+    else:  # simple Arrhenius
+        assert param_tuple[0] is not None, (
+            f'For {rxn}, the highP params absent')
+        arr_dct = {}
+        arr_dct['arr_tuples'] = param_tuple[0]
+        arr_dct['arr_collid'] = param_tuple[5]
+        params = RxnParams(arr_dct=arr_dct)
+
+    return params
+
+
+def get_pes_info(rxn_str):
+    """ Get PES info
+    """
+
+    ptt = (
+        app.escape('#') +
+        app.SPACES +
+        'pes.subpes.channel' +
+        app.SPACES +
+        app.capturing(
+            app.INTEGER + app.escape('.') +
+            app.INTEGER + app.escape('.') +
+            app.INTEGER)
+    )
+
+    cap = apf.first_capture(ptt, rxn_str)
+    if cap is not None:
+        pes_inf = tuple(int(x)-1 for x in cap.strip().split('.'))
+    else:
+        pes_inf = None
+
+    return pes_inf
+
+
+def get_rxn_strs(block_str, remove_bad_fits=False):
     """ Parses all of the chemical equations and corresponding fitting
         parameters in the reactions block of the mechanism input file
         and stores them in a list.
 
-        :param block_str: string for reactions block
+        :param block_str: raw string for the entire reactions block
         :type block_str: str
         :param remove_bad_fits: remove reactions with bad fits
         :type remove_bad_fits: bool
-        :return rxn_dstrs: strings containing eqns and params for all reactions
+        :return rxn_strs: list of raw strings, one for each reaction
         :rtype: list(str)
     """
 
-    rxn_dstrs = headlined_sections(
-        string=block_str.strip(),
-        headline_pattern=CHEMKIN_ARROW
-    )
+    if block_str.strip():
+        rxn_strs = headlined_sections(
+            string=block_str.strip(),
+            headline_pattern=CHEMKIN_ARROW)
+        if remove_bad_fits:
+            rxn_strs = [dstr for dstr in rxn_strs
+                        if not any(string in dstr for string in BAD_STRS)]
+    else:
+        rxn_strs = None
 
-    if remove_bad_fits:
-        rxn_dstrs = [dstr for dstr in rxn_dstrs
-                     if not any(string in dstr for string in BAD_STRS)]
-    return rxn_dstrs
+    return rxn_strs
 
 
-def reactant_names(rxn_dstr):
+def fix_duplicates(rxns, params_lst):
+    """ This function finds any duplicates within the list of rxns. If any are
+        found, combines the corresponding RxnParams objects
+
+        :param rxns: all reaction keys
+        :type rxns: list
+        :param params: all reaction parameters
+        :type params: list
+        :return unique_rxns: unique reaction keys
+        :rtype: list
+        :return unique_params: combined reaction params to match unique_rxns
+        :rtype: list
+    """
+
+    # Get the unique rxns and number of occurrences
+    unique_rxns = list(set(rxns))
+    dup_counts = collections.Counter(rxns)
+    unique_params = []
+
+    # Loop through each unique item, looking for duplicates
+    for unique_rxn in unique_rxns:
+        # Get the index of the first occurrence in the original list
+        prev_match_idx = rxns.index(unique_rxn)
+        # Get the params for the first occurence
+        params = params_lst[prev_match_idx]
+        # Get the number of occurrences of the rxn
+        dup_count = dup_counts[unique_rxn]
+
+        # Loop over each duplicate of the reaction; the 1 in range skips the
+        # first loop and thus won't do any loops if dup_count == 1
+        for _ in range(1, dup_count):
+            # Get the current match index by looking just past the previous one
+            match_idx = rxns.index(unique_rxn, prev_match_idx + 1)
+            # Get the new params to be added to the existing ones
+            new_params = params_lst[match_idx]
+            # Combine the params with the existing ones
+            params.combine_objects(new_params)
+            # Update the search index
+            prev_match_idx = match_idx
+
+        # Append the combined params to the unique params
+        unique_params.append(params)
+
+    return unique_rxns, unique_params
+
+
+def rct_names(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for the line containing the chemical equation in order to
         read the names of the reactant species.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
         :return names: names of the reactants
         :rtype: tuple(str)
     """
+
     pattern = _first_line_pattern(
         rct_ptt=app.capturing(SPECIES_NAMES_PATTERN),
         prd_ptt=SPECIES_NAMES_PATTERN,
-        param_ptt=app.maybe(COEFF_PATTERN)
-    )
-    string = apf.first_capture(pattern, rxn_dstr)
+        param_ptt=COEFF_PATTERN)
+    string = apf.first_capture(pattern, rxn_str)
     try:
         names = _split_reagent_string(string)
     except TypeError:
-        print('Error with this reaction\n', rxn_dstr)
+        print('Reaction line not formatted correctly:\n', rxn_str)
+        print('Check that there are three numbers after the rxn equation')
+        sys.exit()
 
     return names
 
 
-def product_names(rxn_dstr):
+def prd_names(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for the line containing the chemical equation in order to
         read the names of the product species.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
         :return names: names of the products
         :rtype: tuple(str)
     """
+
     pattern = _first_line_pattern(
         rct_ptt=SPECIES_NAMES_PATTERN,
         prd_ptt=app.capturing(SPECIES_NAMES_PATTERN),
-        param_ptt=COEFF_PATTERN
-    )
-    string = apf.first_capture(pattern, rxn_dstr)
+        param_ptt=COEFF_PATTERN)
+    string = apf.first_capture(pattern, rxn_str)
     try:
         names = _split_reagent_string(string)
     except TypeError:
-        print('Error with this reaction\n', rxn_dstr)
+        print('Reaction line not formatted correctly:\n', rxn_str)
+        print('Check that there are three numbers after the rxn equation')
+        sys.exit()
 
     return names
 
 
-def third_body(rxn_dstr):
+def third_body(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for the line containing the chemical equation in order to
         read the names of the third body collider if present
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
         :return trd_body: names of the colliders and corresponding fraction
         :rtype: tuple(str)
     """
+
     pattern = _first_line_pattern(
         rct_ptt=app.capturing(SPECIES_NAMES_PATTERN),
         prd_ptt=SPECIES_NAMES_PATTERN,
-        param_ptt=app.maybe(COEFF_PATTERN)
-    )
-    rgt_str = apf.first_capture(pattern, rxn_dstr)
+        param_ptt=app.maybe(COEFF_PATTERN))
+    rgt_str = apf.first_capture(pattern, rxn_str)
     rgt_str = apf.remove(app.LINESPACES, rgt_str)
     rgt_split_paren = apf.split(CHEMKIN_PAREN_PLUS, rgt_str)
     rgt_split_plus = apf.split(app.PLUS, rgt_str)
@@ -189,23 +390,26 @@ def third_body(rxn_dstr):
     return trd_body
 
 
-def high_p_parameters(rxn_dstr, ea_units, a_units):
+def high_p(rxn_str, ea_units, a_units):
     """ Parses the data string for a reaction in the reactions block
         for the line containing the chemical equation in order to
         read the fitting parameters that are on the same line.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :param ea_units: units of activation energy
+        :type ea_units: str
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
         :return params: Arrhenius fitting parameters for high-P rates
-        :rtype: list(float)
+        :rtype: list(list(float))
     """
+
     pattern = _first_line_pattern(
         rct_ptt=SPECIES_NAMES_PATTERN,
         prd_ptt=SPECIES_NAMES_PATTERN,
-        param_ptt=app.capturing(COEFF_PATTERN)
-    )
-
-    string_lst = apf.all_captures(pattern, rxn_dstr)
+        param_ptt=app.capturing(COEFF_PATTERN))
+    string_lst = apf.all_captures(pattern, rxn_str)
     if string_lst:
         fake_params = []
         for string in string_lst:
@@ -214,43 +418,48 @@ def high_p_parameters(rxn_dstr, ea_units, a_units):
 
         # Convert the units of Ea and A
         ea_conv_factor = get_ea_conv_factor(ea_units)
-        a_conv_factor = get_a_conv_factor(rxn_dstr, a_units)
+        a_conv_factor = get_a_conv_factor(rxn_str, a_units)
         params[2] = params[2] * ea_conv_factor
         params[0] = params[0] * a_conv_factor
-
+        params = [params]  # convert to list inside a list
     else:
         params = None
 
     return params
 
 
-def low_p_parameters(rxn_dstr, ea_units, a_units):
+def low_p(rxn_str, ea_units, a_units):
     """ Parses the data string for a reaction in the reactions block
         for a line containing the low-pressure fitting parameters,
         then reads the parameters from this line.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :param ea_units: units of activation energies
+        :type ea_units: string
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
         :return params: Arrhenius fitting parameters for low-P rates
-        :rtype: list(float)
+        :rtype: list(list(float))
     """
+
     pattern = (
         'LOW' +
         app.zero_or_more(app.SPACE) + app.escape('/') +
         app.zero_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
-        app.zero_or_more(app.SPACE) + app.escape('/')
-    )
-    cap1 = apf.first_capture(pattern, rxn_dstr)
+        app.zero_or_more(app.SPACE) + app.escape('/'))
+    cap1 = apf.first_capture(pattern, rxn_str)
     if cap1 is not None:
         params = [float(val) for val in cap1]
 
         # Convert the units of Ea and A
         ea_conv_factor = get_ea_conv_factor(ea_units)
-        a_conv_factor = get_a_conv_factor(rxn_dstr, a_units)
+        a_conv_factor = get_a_conv_factor(rxn_str, a_units)
         params[2] = params[2] * ea_conv_factor
         params[0] = params[0] * a_conv_factor
+        params = [params]  # convert to list inside a list
 
     else:
         params = None
@@ -258,16 +467,19 @@ def low_p_parameters(rxn_dstr, ea_units, a_units):
     return params
 
 
-def troe_parameters(rxn_dstr):
+def troe(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for a line containing the Troe fitting parameters,
         then reads the parameters from this line.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        Only gets the 4 Troe-specific parameters: alpha, T***, T*, and T**
+
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
         :return params: Troe fitting parameters
         :rtype: list(float)
     """
+
     pattern = (
         'TROE' +
         app.zero_or_more(app.SPACE) + app.escape('/') +
@@ -275,9 +487,8 @@ def troe_parameters(rxn_dstr):
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.maybe(app.one_or_more(app.SPACE) + app.capturing(app.NUMBER)) +
-        app.zero_or_more(app.SPACE) + app.escape('/')
-    )
-    cap1 = apf.first_capture(pattern, rxn_dstr)
+        app.zero_or_more(app.SPACE) + app.escape('/'))
+    cap1 = apf.first_capture(pattern, rxn_str)
 
     if cap1 is not None:
         params = []
@@ -292,71 +503,66 @@ def troe_parameters(rxn_dstr):
     return params
 
 
-def chebyshev_parameters(rxn_dstr, a_units='moles'):
+def cheb(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for the lines containing the Chebyshevs fitting parameters,
         then reads the parameters from these lines.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
         :return params: Chebyshev fitting parameters
         :rtype: dict[param: value]
     """
-    original_rxn_dstr = rxn_dstr
-    rxn_dstr = apf.remove(COMMENTS_PATTERN, rxn_dstr)
+
+    original_rxn_str = rxn_str
+    rxn_str = apf.remove(COMMENTS_PATTERN, rxn_str)
 
     tcheb_pattern = (
         'TCHEB' + app.zero_or_more(app.SPACE) + app.escape('/') +
         app.zero_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
-        app.zero_or_more(app.SPACE) + app.escape('/')
-    )
+        app.zero_or_more(app.SPACE) + app.escape('/'))
     pcheb_pattern = (
         'PCHEB' + app.zero_or_more(app.SPACE) + app.escape('/') +
         app.zero_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
-        app.zero_or_more(app.SPACE) + app.escape('/')
-    )
+        app.zero_or_more(app.SPACE) + app.escape('/'))
     cheb_pattern = (
         app.not_preceded_by(app.one_of_these(['T', 'P'])) +
         'CHEB' + app.zero_or_more(app.SPACE) +
-        app.escape('/') + app.capturing(app.one_or_more(app.WILDCARD2)
-                                        ) + app.escape('/')
-    )
+        app.escape('/') + app.capturing(app.one_or_more(app.WILDCARD2)) +
+        app.escape('/'))
 
-    cheb_params_raw = apf.all_captures(cheb_pattern, rxn_dstr)
+    cheb_params_raw = apf.all_captures(cheb_pattern, rxn_str)
 
     if cheb_params_raw:
         params = {}
-        # Get the temp and pressure limits;
-        # add the Chemkin default values if they don't exist
-        cheb_temps = apf.first_capture(tcheb_pattern, rxn_dstr)
-        cheb_pressures = apf.first_capture(pcheb_pattern, rxn_dstr)
+        # Get temp and pressure limits or use Chemkin defaults if non-existent
+        cheb_temps = apf.first_capture(tcheb_pattern, rxn_str)
+        cheb_pressures = apf.first_capture(pcheb_pattern, rxn_str)
         if cheb_temps is None:
             cheb_temps = ('300.00', '2500.00')
             print(
                 'No Chebyshev temperature limits specified' +
                 ' for the below reaction.' +
-                f' Assuming 300 and 2500 K. \n \n {original_rxn_dstr}\n')
+                f' Assuming 300 and 2500 K. \n \n {original_rxn_str}\n')
         if cheb_pressures is None:
             cheb_pressures = ('0.001', '100.00')
             print(
                 'No Chebyshev pressure limits specified' +
                 ' for the below reaction.' +
-                f' Assuming 0.001 and 100 atm. \n \n {original_rxn_dstr}\n')
+                f' Assuming 0.001 and 100 atm. \n \n {original_rxn_str}\n')
 
         # Get all the numbers from the CHEB parameters
         cheb_params = []
         for cheb_line in cheb_params_raw:
             cheb_params.extend(cheb_line.split())
 
-        # Get the cheb array dimensions N and M, which are the first two
-        # entries of the CHEB params
-        cheb_n = int(math.floor(float(cheb_params[0])))
-        cheb_m = int(math.floor(float(cheb_params[1])))
+        # Get alpha dimensions N and M, which are the first two CHEB entries
+        cheb_n = int(float(cheb_params[0]))
+        cheb_m = int(float(cheb_params[1]))
 
-        # Start on the third value (after N and M)
-        #  and get all the polynomial coefficients
+        # Start on third value (after N and M) and get all polynomial coeffs
         coeffs = []
         for idx, coeff in enumerate(cheb_params[2:]):
             # extra coefficients are allowed but ignored
@@ -367,14 +573,12 @@ def chebyshev_parameters(rxn_dstr, a_units='moles'):
             f'For the below reaction, there should be {cheb_n*cheb_m}' +
             ' Chebyshev polynomial' +
             f' coefficients, but there are only {len(coeffs)}.' +
-            f' \n \n {original_rxn_dstr}\n'
-        )
+            f' \n \n {original_rxn_str}\n')
         alpha = np.array(list(map(float, coeffs)))
 
-        params['t_limits'] = [float(val) for val in cheb_temps]
-        params['p_limits'] = [float(val) for val in cheb_pressures]
-        params['alpha_elm'] = alpha.reshape([cheb_n, cheb_m])
-        params['a_units'] = a_units
+        params['tlim'] = tuple(float(val) for val in cheb_temps)
+        params['plim'] = tuple(float(val) for val in cheb_pressures)
+        params['alpha'] = alpha.reshape([cheb_n, cheb_m])
 
     else:
         params = None
@@ -382,16 +586,21 @@ def chebyshev_parameters(rxn_dstr, a_units='moles'):
     return params
 
 
-def plog_parameters(rxn_dstr, ea_units, a_units):
+def plog(rxn_str, ea_units, a_units):
     """ Parses the data string for a reaction in the reactions block
         for the lines containing the PLOG fitting parameters,
         then reads the parameters from these lines.
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :param ea_units: units of activation energies
+        :type ea_units: string
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
         :return params: PLOG fitting parameters
         :rtype: dict[pressure: params]
     """
+
     pattern = (
         'PLOG' +
         app.zero_or_more(app.SPACE) + app.escape('/') +
@@ -399,16 +608,15 @@ def plog_parameters(rxn_dstr, ea_units, a_units):
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
         app.one_or_more(app.SPACE) + app.capturing(app.NUMBER) +
-        app.zero_or_more(app.SPACE) + app.escape('/')
-    )
-    params_lst = apf.all_captures(pattern, rxn_dstr)
+        app.zero_or_more(app.SPACE) + app.escape('/'))
+    params_lst = apf.all_captures(pattern, rxn_str)
 
     # Build dictionary of parameters, indexed by parameter
     if params_lst:
 
         # Get the Ea and A conversion factors
         ea_conv_factor = get_ea_conv_factor(ea_units)
-        a_conv_factor = get_a_conv_factor(rxn_dstr, a_units)
+        a_conv_factor = get_a_conv_factor(rxn_str, a_units)
         params = {}
         for param in params_lst:
             pressure = float(param[0])
@@ -416,9 +624,9 @@ def plog_parameters(rxn_dstr, ea_units, a_units):
             vals[2] = vals[2] * ea_conv_factor
             vals[0] = vals[0] * a_conv_factor
             if pressure not in params:
-                params[pressure] = vals
+                params[pressure] = [vals]
             else:
-                params[pressure].extend(vals)  # add duplicate expressions
+                params[pressure].append(vals)  # add duplicate expressions
 
     else:
         params = None
@@ -426,16 +634,17 @@ def plog_parameters(rxn_dstr, ea_units, a_units):
     return params
 
 
-def collider_enhance_factors(rxn_dstr):
+def colliders(rxn_str):
     """ Parses the data string for a reaction in the reactions block
         for the line containing the names of several bath gases and
-        their corresponding collision enhancement factors.
+        their corresponding collider efficiencies
 
-        :param rxn_dstr: data string for species in reaction block
-        :type rxn_dstr: str
-        :return params: Collision enhanncement factors for each bath gas
-        :rtype: dict[bath name: enhancement factors]
+        :param rxn_str: raw Chemkin string for a single reaction
+        :type rxn_str: str
+        :return params: collider efficiencies for each bath gas
+        :rtype: dict {spc1: eff1, spc2: ...}
     """
+
     bad_strings = ('DUP', 'LOW', 'TROE', 'CHEB', 'PLOG', CHEMKIN_ARROW)
     species_char = app.one_of_these([
         app.LETTER, app.DIGIT,
@@ -444,17 +653,16 @@ def collider_enhance_factors(rxn_dstr):
     species_name = app.one_or_more(species_char)
 
     # Loop over the lines and search for string with collider facts
-    if ('LOW' in rxn_dstr or 'TROE' in rxn_dstr
-            or 'M=' in rxn_dstr or 'M =' in rxn_dstr):
+    if ('LOW' in rxn_str or 'TROE' in rxn_str
+            or 'M=' in rxn_str or 'M =' in rxn_str):
         params = {}
-        for line in rxn_dstr.splitlines():
+        for line in rxn_str.splitlines():
             if not any(apf.has_match(string, line) for string in bad_strings):
                 factor_pattern = (
                     app.capturing(species_name) + app.zero_or_more(app.SPACE) +
                     app.escape('/') + app.zero_or_more(app.SPACE) +
                     app.capturing(app.NUMBER) + app.zero_or_more(app.SPACE) +
-                    app.escape('/') + app.zero_or_more(app.SPACE)
-                )
+                    app.escape('/') + app.zero_or_more(app.SPACE))
                 baths = apf.all_captures(factor_pattern, line)
                 if baths:
                     for bath in baths:
@@ -531,93 +739,6 @@ def _split_reagent_string(rgt_str):
     return rgts
 
 
-def fix_duplicates(rcts_prds, params):
-    """ This function finds duplicates within the list of
-        reactants and products and converts the params
-        to a list of tuples of tuples.
-
-        :param rcts_prds: reaction keys (i.e., reactant/product sets)
-        :type rcts_prds: list of tuples
-            [((rct1, rct2,...),(prd1, prd2,...),(third body,)),]
-        :param params: reaction parameters
-        :type params: list [(params1),(params2)]
-        :return unique_list: unique list of reactants and products
-        :rtype: list of tuples
-        [((rct1, rct2,...),(prd1, prd2,...),(third body,)),]
-        :return unique_params: updated reaction parameters
-            with duplicates included
-        :rtype: list of tuples [((params1),(params1')),...]
-    """
-    # Get the unique entries and number of occurrences
-    unique_list = list(set(rcts_prds))
-    val = collections.Counter(rcts_prds)
-    unique_params = []
-    # Loop through each unique item, looking for duplicates
-    for idx, rxn in enumerate(unique_list):
-
-        # allocate first value in list
-        first = rcts_prds.index(unique_list[idx])
-        params_all = [params[first]]
-
-        for i in range(1, val[rxn]):
-            first_plus_i = rcts_prds.index(unique_list[idx], first+i)
-            params_all.append(params[first_plus_i])
-
-        # check for duplicate plogs
-        params_all = split_plog_dct(params_all)
-        # convert to tuple and overwrite the parameters
-        unique_params.append(tuple(params_all))
-
-    return unique_list, unique_params
-
-
-def split_plog_dct(param_dct_entry):
-    """ Splits 2 or more PLOG dictionaries if they share the same pressures
-
-        :param_dct_entry: values of one rxn_param_dct
-        :type tuple(tuple)
-        :return param_dct
-        :rtype tuple(tuple)
-    """
-    # convert param_dct [(tup)] to [[lst]]
-    param_dct_lst = [list(param_dct_i) for param_dct_i in param_dct_entry]
-    # extract plog dictionaries
-    plog = np.array(
-        [param_dct_vals[4] is not None for param_dct_vals in param_dct_lst],
-        dtype=int)
-    mask_plog = np.where(plog == 1)[0]
-
-    for plog_i in mask_plog:
-        param_dct_vals = param_dct_lst[plog_i]
-        keys, plog_params = zip(*list(param_dct_vals[4].items()))
-
-        if any((int(len(param_i)/3) > 1 for param_i in plog_params)):
-            new_sets = []
-
-            for idx in range(max([int(len(param_i)/3)
-                                  for param_i in plog_params])):
-                param_dct_vals_idx = copy.deepcopy(param_dct_vals)
-                param_dct_vals_idx[4] = {}
-                keys_idx = np.array(
-                    [int(len(par_i)/3/(idx+1)) >= 1 for par_i in plog_params],
-                    dtype=int)
-                mask_keys = np.where(keys_idx == 1)[0]
-                new_keys = [keys[i] for i in mask_keys]
-                for key_i in new_keys:
-                    param_dct_vals_idx[4][key_i] = (
-                        param_dct_vals[4][key_i][3 * idx:3*(idx+1)])
-                # append the new dictionary to param_dct_lst
-                new_sets.append(param_dct_vals_idx)
-            # replace the original dictionary
-            param_dct_lst[plog_i] = new_sets[0]
-            # add new sets
-            param_dct_lst.extend(new_sets[1:])
-
-    # convert back to tuples
-    param_dct_entry = [tuple(param_dct_i) for param_dct_i in param_dct_lst]
-    return param_dct_entry
-
-
 def get_ea_conv_factor(ea_units):
     """ Get the factor for converting Ea to the desired units of kcal/mole
 
@@ -626,6 +747,7 @@ def get_ea_conv_factor(ea_units):
         :return ea_conv_factor: conversion factor from ea_units to cal/mol
         :rtype: float
     """
+
     if ea_units == 'cal/mole':
         ea_conv_factor = 1
     elif ea_units == 'kcal/mole':
@@ -640,29 +762,30 @@ def get_ea_conv_factor(ea_units):
         raise NotImplementedError(
             f"Invalid ea_units: {ea_units}." +
             " Options: 'kcal/mole', 'cal/mole', 'joules/mole'," +
-            " 'kjoules/mole', 'kelvins'"
-        )
+            " 'kjoules/mole', 'kelvins'")
 
     return ea_conv_factor
 
 
-def get_a_conv_factor(rxn_dstr, a_units):
+def get_a_conv_factor(rxn_str, a_units):
     """ Get the factor for converting A to the desired basis of moles
 
-        :param rxn_dstr: data string for species in reaction block
-        :param a_units: units of pre-exponential factor
-        :type rxn_dstr, a_units: string
+        :param rxn_str: data string for species in reaction block
+        :type rxn_str: str
+        :param a_units: units of rate constants; either 'moles' or 'molecules'
+        :type a_units: str
         :return a_conv_factor: conversion factor from a_units to moles
         :rtype: float
     """
+
     # Get the molecularity
-    rcts = reactant_names(rxn_dstr)
+    rcts = rct_names(rxn_str)
     if not isinstance(rcts, tuple):  # convert to list to avoid mistake
         rcts = [rcts]
     molecularity = len(rcts)
 
     # Find out whether there is a third body
-    trd_body = third_body(rxn_dstr)[0]
+    trd_body = third_body(rxn_str)[0]
     # if 3rd body has '(', no effect on units
     if trd_body is not None and '(+' not in trd_body:
         molecularity += 1
@@ -670,17 +793,16 @@ def get_a_conv_factor(rxn_dstr, a_units):
     if a_units == 'moles':
         a_conv_factor = 1
     elif a_units == 'molecules':
-        a_conv_factor = phycon.NAVO**(molecularity-1)
+        a_conv_factor = phycon.NAVO ** (molecularity - 1)
     else:
         raise NotImplementedError(
-            f"Invalid a_units: {a_units}. Options: 'moles' or 'molecules'"
-        )
+            f"Invalid a_units: {a_units}. Options: 'moles' or 'molecules'")
 
     return a_conv_factor
 
 
 # Not used here, but called elsewhere
-def ratek_fit_info(rxn_dstr):
+def ratek_fit_info(rxn_str):
     """ Read the information describing features of the fits to the
         rate constants
     """
@@ -688,26 +810,22 @@ def ratek_fit_info(rxn_dstr):
     # Read the temperatures and the Errors from the lines
     pressure_ptt = (
         'Pressure:' + app.SPACES +
-        app.capturing(app.one_of_these([app.FLOAT, 'High']))
-    )
+        app.capturing(app.one_of_these([app.FLOAT, 'High'])))
     trange_ptt = (
         'Temps: ' + app.SPACES +
         app.capturing(app.INTEGER) + '-' + app.capturing(app.INTEGER) +
-        app.SPACES + 'K'
-    )
+        app.SPACES + 'K')
     mean_ptt = (
         'MeanAbsErr:' + app.SPACES +
         app.capturing(app.FLOAT) + app.escape('%') +
-        ','
-    )
+        ',')
     max_ptt = (
         'MaxErr:' + app.SPACES +
-        app.capturing(app.FLOAT) + app.escape('%')
-    )
-    pressure_caps = apf.all_captures(pressure_ptt, rxn_dstr)
-    trange_caps = apf.all_captures(trange_ptt, rxn_dstr)
-    mean_caps = apf.all_captures(mean_ptt, rxn_dstr)
-    max_caps = apf.all_captures(max_ptt, rxn_dstr)
+        app.capturing(app.FLOAT) + app.escape('%'))
+    pressure_caps = apf.all_captures(pressure_ptt, rxn_str)
+    trange_caps = apf.all_captures(trange_ptt, rxn_str)
+    mean_caps = apf.all_captures(mean_ptt, rxn_str)
+    max_caps = apf.all_captures(max_ptt, rxn_str)
 
     pressures = []
     for pressure in pressure_caps:

@@ -76,14 +76,20 @@ def opt_zmatrix(output_str):
     """
 
     # Reads the matrix from the beginning of the output
-    symbs, key_mat, name_mat = ar.vmat.read(
-        output_str,
-        start_ptt=app.maybe(app.SPACES).join([
-            'geometry', app.escape('='), app.escape('{'), '']),
-        entry_start_ptt=app.maybe(','),
-        entry_sep_ptt=',',
-        last=False,
-        case=False)
+    # If geom found at beginning, no opt zmat should exist
+    start_ptt = app.maybe(app.SPACES).join([
+        'geometry', app.escape('='), app.escape('{'), ''])
+
+    symbs, xyzs = ar.geom.read(output_str, start_ptt=start_ptt)
+    if all(x is None for x in (symbs, xyzs)):
+        symbs, key_mat, name_mat = ar.vmat.read(
+            output_str,
+            start_ptt=start_ptt,
+            entry_start_ptt=app.maybe(','),
+            last=False,
+            case=False)
+    else:
+        symbs, key_mat, name_mat = None, None, None
 
     # Read the initial z-matrix values from the beginning out the output
     if all(x is not None for x in (symbs, key_mat, name_mat)):
@@ -120,8 +126,8 @@ def opt_zmatrix(output_str):
             entry_end_ptt=app.one_of_these(['ANGSTROM', 'DEGREE']),
             last=True,
             case=False)
-        opt_val_dct = {name_dct[caps_name]: opt_val_dct[caps_name]
-                       for caps_name in opt_val_dct.keys()}
+        opt_val_dct = {name_dct[name]: val_dct
+                       for name, val_dct in opt_val_dct.items()}
         assert set(opt_val_dct) <= set(val_dct)
         val_dct.update(opt_val_dct)
 

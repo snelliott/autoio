@@ -5,8 +5,6 @@ Writes strings containing NASA-7 polynomials in the Chemkin format
 
 def thermo_entry(spc_name, nasa7_params):
     """ Writes a string for a single thermo entry
-
-
     """
     notes = nasa7_params[0]
     composition = nasa7_params[1]

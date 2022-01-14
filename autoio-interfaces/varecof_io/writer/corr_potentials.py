@@ -5,7 +5,7 @@ Writes the fortran files needed for the correction potential
 import os
 import subprocess
 from ioformat import build_mako_str
-from varecof_io.writer import util
+from varecof_io.writer import _format as vrcformat
 
 
 # OBTAIN THE PATH TO THE DIRECTORY CONTAINING THE TEMPLATES #
@@ -38,6 +38,10 @@ def species(rvalues, potentials, bnd_frm_idxs,
     [aidx, bidx] = bnd_frm_idxs
     asym, bsym = 'A', 'B'
 
+    print('potentials')
+    for x in potentials:
+        print(x)
+
     assert npot > 0
     assert all(len(potential) == npot_terms for potential in potentials)
 
@@ -45,8 +49,7 @@ def species(rvalues, potentials, bnd_frm_idxs,
     pot_labels_str = ''
     if pot_labels:
         for i, label in enumerate(pot_labels):
-            pot_labels_str += 'c     dv{0} = {1} correction\n'.format(
-                str(i+1), label)
+            pot_labels_str += f'c     dv{str(i+1)} = {label} correction\n'
     pot_labels_str = pot_labels_str.rstrip()
 
     # Strings to initialize the potential variables in the Fortran subroutine
@@ -54,14 +57,13 @@ def species(rvalues, potentials, bnd_frm_idxs,
     npot_terms = len(potentials[0])
     dv_defs = ''
     for i in range(npot):
-        dv_defs += 'dv{0}({1}),'.format(str(i+1), npot_terms)
+        dv_defs += f'dv{str(i+1)}({npot_terms}),'
     dv_defs = dv_defs[:-1]
 
     # Definitions of all of all the correction potential distances
     rvals = ''
     for i, rval in enumerate(rvalues):
-        rvals += '      data rinp({0}) / {1:.3f} /\n'.format(
-            str(i+1), rval)
+        rvals += f'      data rinp({str(i+1)}) / {rval:.3f} /\n'
     rvals = rvals.rstrip()
     rmin = min(rvalues)
     rmax = max(rvalues)
@@ -70,12 +72,11 @@ def species(rvalues, potentials, bnd_frm_idxs,
     dv_vals = ''
     for i, potential in enumerate(potentials):
         for j, term in enumerate(potential):
-            dv_vals += '      data dv{0}({1}) / {2:.3f} /\n'.format(
-                str(i+1), str(j+1), term)
+            dv_vals += f'      data dv{str(i+1)}({str(j+1)}) / {term:.3f} /\n'
     dv_vals = dv_vals.rstrip()
 
     # Build principal distance string
-    bond_distance_string = util.format_corrpot_dist_string(
+    bond_distance_string = vrcformat.format_corrpot_dist_string(
         aidx, bidx, asym, bsym)
 
     # Build distance restriction strings
@@ -83,18 +84,19 @@ def species(rvalues, potentials, bnd_frm_idxs,
     for i, idxs in enumerate(dist_restrict_idxs):
         [idx1, idx2] = idxs
         sym1, sym2 = chr(67+2*i), chr(68+2*i)
-        restrict_distance_strings += util.format_corrpot_dist_string(
+        restrict_distance_strings += vrcformat.format_corrpot_dist_string(
             idx1, idx2, sym1, sym2)
         restrict_distance_strings += '\n'
-        restrict_distance_strings += util.format_restrict_dist_string(
+        restrict_distance_strings += vrcformat.format_restrict_dist_string(
             sym1, sym2, species_name)
         restrict_distance_strings += '\n'
 
     # Build the delmlt string
-    delmlt_string = util.format_delmlt_string(asym, bsym)
+    delmlt_string = vrcformat.format_delmlt_string(asym, bsym)
 
     # Build the spline fitting strings
-    spline_strings = util.format_spline_strings(npot, asym, bsym, species_name)
+    spline_strings = vrcformat.format_spline_strings(
+        npot, asym, bsym, species_name)
 
     # Create dictionary to fill template
     corr_keys = {
@@ -158,7 +160,7 @@ def makefile(fortran_compiler, pot_file_names=()):
     corr_potential_names = ''
     if pot_file_names:
         for potential in pot_file_names:
-            corr_potential_names += '{0}_corr.f '.format(potential)
+            corr_potential_names += f'{potential}_corr.f '
 
     # Create dictionary to fill template
     make_keys = {
