@@ -114,10 +114,14 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
     # a2_idx and a3_idx are just some atom down a chain, preferably nonHs
     # Because of the align procedure we can assume the idxs in MEP and iso same
     # possible this will only work for H (with regard to 2nd set of frag idxs)
-    x_idx = len(mep_fgeos[0])
+    frag1_natoms = len(mep_fgeos[0])
+    x_idx = frag1_natoms
     a1_idx = bnd_keys[1]
     a2_idx = _get_chain_idx(iso_fgeos[0], a1_idx, excl_idxs=())
-    a3_idx = _get_chain_idx(iso_fgeos[0], a2_idx, excl_idxs=(a1_idx,))
+    if frag1_natoms > 2:
+        a3_idx = _get_chain_idx(iso_fgeos[0], a2_idx, excl_idxs=(a1_idx,))
+    else:
+        a3_idx = None
     frag_idxs = (
         (x_idx, a1_idx, a2_idx, a3_idx),
         (0, 1, 2, 3)
