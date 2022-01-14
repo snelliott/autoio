@@ -86,7 +86,7 @@ def test__constraint():
     assert ref_const_dct == const_dct  # add numpy check
 
 
-def __pivot():
+def test__pivot():
     """ test varecof_io.writer.fragment_geometries
         test varecof_io.writer.build_pivot_frames
         test varecof_io.writer.calc_pivot_angles
@@ -163,4 +163,4 @@ def test__face_symm():
 
 
 if __name__ == '__main__':
-    __pivot()
+    test__pivot()
