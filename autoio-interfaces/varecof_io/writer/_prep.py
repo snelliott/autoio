@@ -250,10 +250,10 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
             # Single pivot point centered on atom
             npivot = 1
             frame = (0, 0, 0, 0)
-        elif automol.geom.is_linear(geom):
+        elif automol.geom.is_diatomic(geom):
             # For linear species we place the pivot point on radical
             # with no displacment, so no need to find coordinates
-            npivot = 2
+            npivot = 1
             frame = (0, 0, 0, 0)
         else:
             # else we build an xy frame to easily place pivot point
@@ -293,7 +293,16 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
 
 
 def calc_pivot_angles(frag_geos_wdummy, frames):
-    """ get the angle for the three atoms definining the frame
+    """ Calculate the angle for three atoms which define the frame
+        of the dividing surface.
+    
+        :param frag_geos_wdummy: geometries of fragments at infinite
+            separation, including dummy atoms showing location of 
+            reactive atom from other fragment
+        :type frag_geos_wdummy: tuple(automol.geom object)
+        :param frames: 4-idx set for the atoms in each fragment that
+            define the orientational axes of the dividing surface frame.
+        :type frames: tuple(tuple(int))
     """
 
     angles = tuple()
@@ -311,22 +320,41 @@ def calc_pivot_angles(frag_geos_wdummy, frames):
     return angles
 
 
-def calc_pivot_xyzs(total_geom, frag_geos, bnd_keys):
-    """ figure out where pivot point will be centered
-        only linear speces need to have non-zero xyz, as they
-        will not have a frame set up for them like atoms and
-        polyatomics
+def calc_pivot_xyzs(total_geo, frag_geos, bnd_keys):
+    """ Determine the fragment xyz-coordinates that will be used
+        to set the position of the pivot points.
+   
+        We only need to determine the coord for diatomics, which
+        are set to the reactive radical site. Atoms and polyatomics
+        will be set using a special frame where the origin is
+        sufficient.
+    
+        :param total_geo: geom with both reactive fragments
+            where bond-formation is occuring
+        :type total_geo: automol.geom object
+        :param frag_geos: geom of each fragment at infinite separation
+        :type frag_geos: tuple(automol.geom object)
+        :param bnd_keys: keys of reactive atoms in total_geo
+        :type bnd_keys:
     """
 
     bnd_keys = sorted(list(bnd_keys))
 
     xyzs = tuple()
     for rxn_idx, geo in zip(bnd_keys, frag_geos):
-        if automol.geom.is_linear(geo):
-            xyz = total_geom[rxn_idx][1]
+        if automol.geom.is_diatomic(geo):
+            xyz = total_geo[rxn_idx][1]
         else:
             xyz = (0.0, 0.0, 0.0)
 
         xyzs += (xyz,)
 
     return xyzs
+
+
+def _radcal_site(geo):
+    """ Get the radical sites
+    """
+    gra = automol.geom.graph(geo)
+    rad_keys = automol.graph.radical_atom_keys(gra)
+    return rad_keys[0]
