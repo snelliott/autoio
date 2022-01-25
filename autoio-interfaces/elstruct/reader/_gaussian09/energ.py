@@ -42,14 +42,10 @@ def _mp2_energy(output_str):
         :type output_str: str
         :rtype: float
     """
-
-    ene_d_str = ar.energy.read(
+    return ar.energy.read(
         output_str,
         app.escape('EUMP2 = '),
         val_ptt=app.EXPONENTIAL_FLOAT_D)
-    ene = _cast(apf.replace('d', 'e', ene_d_str, case=False))
-
-    return ene
 
 
 def _dft_energy(output_str):
