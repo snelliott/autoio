@@ -48,8 +48,11 @@ def displacements(script_str, run_dir, geoms, grads, hessians,
     output_strs = direct(
         script_str, run_dir, geoms, grads, hessians,
         rotors_str=rotors_str, aux_dct=aux_dct)
+    disp_str = output_strs[2]
 
-    return output_strs[2]
+    disps = projrot_io.reader.normal_coordinates(disp_str)
+
+    return disp_str, disps
 
 
 def frequencies(script_str, run_dir, geoms, grads, hessians,
