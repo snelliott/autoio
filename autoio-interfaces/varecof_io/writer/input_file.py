@@ -50,7 +50,6 @@ def tst(nsamp_max, nsamp_min, flux_err, pes_size,
     amom_grid = vrcformat.format_grids_string(amom_grid, 'amom', 'Kelvin')
 
     # Set the faces
-    print(faces)
     faces = vrcformat.format_faces_string(faces)
 
     # Create dictionary to fill template
@@ -179,7 +178,10 @@ def divsur(rdists,
         dist_coords_string += 'r22 = r2-(d1+d2)/2'
     elif d1dists and not d2dists:
         dist_coords_string = 'r11 = r1-d1/2\n'
-        dist_coords_string += 'r21 = r1-d1/2'
+        if npivot1 == 2 and npivot2 == 1:
+            dist_coords_string += 'r21 = r1-d1/2'
+        elif npivot1 == 1 and npivot2 == 2:
+            dist_coords_string += 'r12 = r1-d1/2'
     else:
         dist_coords_string = 'r11 = r1'
 

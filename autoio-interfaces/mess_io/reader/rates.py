@@ -755,22 +755,28 @@ def filter_ktp_dct(_ktp_dct, bimol,
         # Set min temperature to user input, if none use either
         # min of input temperatures or
         # if negative kts are found, set min temp to be just above highest neg.
-        if tmin is None:
-            max_neg_idx = None
-            for kt_idx, sing_kt in enumerate(kts):
-                # find idx for max temperature for which kt is negative, if any
-                float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
-                if float_sing_kt < 0.0:
-                    max_neg_idx = kt_idx
-            # Set tmin to highest T where k(T) is non-negative
-            # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
-            if max_neg_idx is not None:
-                if max_neg_idx+1 < len(temps):
-                    tmin = temps[max_neg_idx+1]
+        max_neg_idx = None
+        for kt_idx, sing_kt in enumerate(kts):
+            # find idx for max temperature for which kt is negative, if any
+            float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
+            if float_sing_kt < 0.0:
+                max_neg_idx = kt_idx
+        
+        #   Otherwise, use requested tmin value or minimum of input temps 
+        # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
+        if max_neg_idx is not None:
+            # If negative values found:
+            #   Set tmin to highest T where k(T) is non-negative
+            if max_neg_idx+1 < len(temps):
+                tmin = temps[max_neg_idx+1]
             else:
-                tmin = min(temps)
+                tmin = None
         else:
-            assert tmin in temps, (f'{tmin} not in temps: {temps}')
+            # Otherwise, use requested tmin value or minimum of input temps 
+            if tmin is None:
+                tmin = min(temps)
+            else:
+                assert tmin in temps, (f'{tmin} not in temps: {temps}')
 
         # Grab the temperature, rate constant pairs which correspond to
         # temp > 0, temp within tmin and tmax, rate constant defined (not ***)

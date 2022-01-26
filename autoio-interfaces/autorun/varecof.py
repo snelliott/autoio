@@ -82,21 +82,20 @@ def flux_file(varecof_script_str, mcflux_script_str,
         mode=(os.stat(molpro_sh_script).st_mode |
               stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
 
-    # Make the scratch directory
+    # Make the scratch directory where samples are done
     os.mkdir(os.path.join(run_dir, 'scratch'))
 
     # Run VaReCoF
+    print('\nSampling at all the dividing surfaces...')
     run_script(varecof_script_str, run_dir,
                script_name=MULTI_SCRIPT_NAME)
 
-    print('Running', run_dir)
-
     # Generate and read the flux file for the return
-    # print('Generating flux file with TS N(E) '
-    #       'from VaReCoF output...')
-    # run_script(mcflux_script_str, run_dir, script_name=MCFLUX_SCRIPT_NAME)
+    print('\nGenerating flux file with TS N(E) '
+          'from VaReCoF output...')
+    run_script(mcflux_script_str, run_dir, script_name=MCFLUX_SCRIPT_NAME)
 
-    # flux_str = ioformat.pathtools.read_file(run_dir, 'flux.dat')
+    flux_str = ioformat.pathtools.read_file(run_dir, 'mc_flux.out')
 
     return flux_str
 
@@ -240,7 +239,7 @@ def write_input(run_dir,
         r2dists = vrc_dct['r2dists_sr']
     else:
         r2dists = []
-        print('no r2dist')
+        # print('no r2dist')
 
     srdivsur_inp_str = varecof_io.writer.input_file.divsur(
         vrc_dct['r1dists_sr'],

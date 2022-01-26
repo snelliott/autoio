@@ -92,9 +92,15 @@ def ted_assignments(output_str):
             idxs_lst += (idxs0,)
 
             # Get the percentages of coordinates comprising mode
-            pcts = apf.all_captures(pct_ptt, line)
-            pcts = tuple(float(val.strip()) for val in pcts)
-            pcts_lst += (pcts,)
+            # If TED %s are undefined (***) we replace with 1e10, ignoring it
+            init_pcts = apf.all_captures(pct_ptt, line)
+            conv_pcts = ()
+            for val in init_pcts:
+                if '***' not in val:
+                    conv_pcts += (float(val.strip()),)
+                else:
+                    conv_pcts += (1e10,)
+            pcts_lst += (conv_pcts,)
 
         # Build the TED list
         ted = ()
