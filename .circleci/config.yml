@@ -145,28 +145,28 @@ jobs:
                 command: |
                     source activate autoio-base-env
                     cd autoio-base/autoparse
-                    pytest . -v --disable-pytest-warnings --cov=autoparse  --pyargs autoparse --cov-report=html
+                    pytest . -v --disable-pytest-warnings --cov=autoparse --cov-report=html
                     coverage report
             - run:
                 name: Test autoread
                 command: |
                     cd autoio-base/autoread
                     source activate autoio-base-env
-                    pytest . -v --disable-pytest-warnings --cov=autoread --pyargs autoread --cov-report=html
+                    pytest . -v --disable-pytest-warnings --cov=autoread --cov-report=html
                     coverage report
             - run:
                 name: Test autowrite
                 command: |
                     cd autoio-base/autowrite
                     source activate autoio-base-env
-                    pytest . -v --disable-pytest-warnings --cov=autowrite --pyargs autowrite --cov-report=html
+                    pytest . -v --disable-pytest-warnings --cov=autowrite --cov-report=html
                     coverage report
             - run:
                 name: Test ioformat
                 command: |
                     cd autoio-base/ioformat
                     source activate autoio-base-env
-                    pytest . -v --disable-pytest-warnings --cov=ioformat --pyargs ioformat --cov-report=html
+                    pytest . -v --disable-pytest-warnings --cov=ioformat --cov-report=html
                     coverage report
             - run:
                 name: Test autoio-base format
