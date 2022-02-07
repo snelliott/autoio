@@ -24,7 +24,7 @@ def dipole_moment(output_str):
 
     vals = captures if captures is not None else []
     if vals:
-        vals = [float(val) for val in vals]
+        vals = tuple(float(val) for val in vals)
     else:
         vals = None
 
