@@ -131,6 +131,9 @@ def inp_zmatrix(inp_str):
         :rtype: automol molecular geometry data structure
     """
 
+    # Remove the constants line
+    inp_str = inp_str.replace('  Constants:\n', '')
+
     # Reads the matrix from the beginning of the input
     symbs, key_mat, name_mat = ar.vmat.read(
         inp_str,

@@ -3,6 +3,7 @@ Writes the energy transfer section of a MESS input file
 """
 
 import os
+from phydat import phycon
 from ioformat import build_mako_str
 
 
@@ -63,15 +64,15 @@ def collision_frequency(eps1, eps2, sig1, sig2, mass1, mass2):
         :rtype: string
     """
 
-    # Put the values into a string
-    epsilon_str = f'{eps1:<10.3f} {eps2:<10.3f}'
-    sigma_str = f'{sig1:<10.3f} {sig2:<10.3f}'
+    # Convert LJ units and format them into string
+    eps_str = f'{eps1*phycon.EH2WAVEN:<10.3f} {eps2*phycon.EH2WAVEN:<10.3f}'
+    sig_str = f'{sig1*phycon.BOHR2ANG:<10.3f} {sig2*phycon.BOHR2ANG:<10.3f}'
     mass_str = f'{mass1:<10.3f} {mass2:<10.3f}'
 
     # Create dictionary to fill template
     etrans_keys = {
-        'epsilons': epsilon_str,
-        'sigmas': sigma_str,
+        'epsilons': eps_str,
+        'sigmas': sig_str,
         'masses': mass_str
     }
 

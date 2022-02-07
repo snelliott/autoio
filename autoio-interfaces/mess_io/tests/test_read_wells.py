@@ -10,7 +10,7 @@ import mess_io.reader
 PATH = os.path.dirname(os.path.realpath(__file__))
 AUX_PATH = os.path.join(PATH, 'data', 'out')
 
-AUX_STR = pathtools.read_file(AUX_PATH, 'c3h3_rate.aux')
+AUX_STR = pathtools.read_file(AUX_PATH, 'c3h3_rate.auxf')
 LOG_STR = pathtools.read_file(AUX_PATH, 'c3h3_rate.logf')
 
 TEMP1 = 600
