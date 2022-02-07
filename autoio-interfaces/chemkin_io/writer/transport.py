@@ -14,9 +14,9 @@ def properties(spc_trans_dct):
         # below is output units, not input
         :type spc_trans_dict: {spc_name:
             {'geo: molecular geometry object (ang)
-             'epsilon': Lennard-Jones well depth epsilon/k_B (Kelvins),
+             'epsilon': Lennard-Jones well depth epsilon/k_B (Kelvin),
              'sigma': Lennard-Jones collision diameter (angstroms),
-             'dipole_moment': dipole moment (Debyes),
+             'dipole_moment': dipole moment (Debye),
              'polarizability': polarizability (angstroms^3),
              'zrot': rotational relaxation collision number at 298 K
             }
@@ -47,7 +47,7 @@ def properties(spc_trans_dct):
         geo = dct.get('geo')
         shape_idx = util.format_shape_idx(geo) if geo is not None else 2
 
-        eps = dct.get('epsilon', 0.00) * phycon.WAVEN2KEL
+        eps = dct.get('epsilon', 0.00) * phycon.EH2K
         sig = dct.get('sigma', 0.00) * phycon.BOHR2ANG
         dmom = dct.get('dipole_moment', 0.00)
         polar = dct.get('polarizability', 0.00) * phycon.BOHR2ANG**3
