@@ -203,5 +203,3 @@ def test__pf_output():
 
     assert pf1_str == pathtools.read_file(OUT_PATH, 'pf.dat2')
     assert pf2_str == pathtools.read_file(OUT_PATH, 'pf.dat3')
-
-test__pf_output()

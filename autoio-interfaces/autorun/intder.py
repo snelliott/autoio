@@ -155,7 +155,7 @@ def ted_zmatrix_coordinates(script_str, run_dir,
         #     zma, mode_idx, intl_coords, ted_assign)
         # Get the Z-Matrix names
         ted_mode_dct_zma = intder_io.ted_coordinate_indices(
-            zma, mode_idx, intl_coords, ted_assign)
+            mode_idx, intl_coords, ted_assign)
 
         # Get the frequency of the mode
         ted_mode_freq = ted_assign[mode_idx][0]

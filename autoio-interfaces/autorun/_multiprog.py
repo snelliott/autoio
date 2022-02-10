@@ -36,7 +36,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
     aux_dct1 = {'dist_rotpr.dat': rotor_dist1_str}
 
     print('running projrot the first time:')
-    run_dir_1 = os.path.join(run_dir,'1')
+    run_dir_1 = os.path.join(run_dir, '1')
     rt_freqs1, rth_freqs1, rt_imag1, _ = frequencies(
         projrot_script_str, run_dir_1, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct1)
@@ -49,7 +49,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
     aux_dct2 = {'dist_rotpr.dat': rotor_dist2_str}
 
     print('running projrot the second time:')
-    run_dir_2 = os.path.join(run_dir,'2')
+    run_dir_2 = os.path.join(run_dir, '2')
     _, rth_freqs2, rt_imag2, _ = frequencies(
         projrot_script_str, run_dir_2, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct2)
