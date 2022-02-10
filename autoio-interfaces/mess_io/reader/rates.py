@@ -761,8 +761,8 @@ def filter_ktp_dct(_ktp_dct, bimol,
             float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
             if float_sing_kt < 0.0:
                 max_neg_idx = kt_idx
-        
-        #   Otherwise, use requested tmin value or minimum of input temps 
+
+        #   Otherwise, use requested tmin value or minimum of input temps
         # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
         if max_neg_idx is not None:
             # If negative values found:
@@ -772,7 +772,7 @@ def filter_ktp_dct(_ktp_dct, bimol,
             else:
                 tmin = None
         else:
-            # Otherwise, use requested tmin value or minimum of input temps 
+            # Otherwise, use requested tmin value or minimum of input temps
             if tmin is None:
                 tmin = min(temps)
             else:

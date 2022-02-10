@@ -62,11 +62,12 @@ def elec_levels_format(elec_levels):
     return nlevels, elec_levels_str
 
 
-def geometry_format(geo):
+def geometry_format(geo, indent_lines=True):
     """ Formats the geometry of a species into a string that
         is appropriate for a MESS input file.
 
         :param geo: geometry of a species
+        :param indent_lines: indent the lines of the geometry
         :return natoms: number of atoms in the geometry
         :rtype int
         :return geo_str: MESS-format string containing geometry
@@ -83,7 +84,10 @@ def geometry_format(geo):
         gstr += f'{symb:<4s}{xyzc[0]:>14.5f}{xyzc[1]:>14.5f}{xyzc[2]:>14.5f}\n'
 
     # Remove final newline character and indent the lines
-    gstr = indent(gstr.rstrip(), 4)
+    if indent_lines:
+        gstr = indent(gstr.rstrip(), 4)
+    else:
+        gstr = gstr.rstrip()
 
     return natoms, gstr
 
@@ -98,7 +102,7 @@ def mc_geometry_format(geo):
         :return geo_str: MESS-format string containing geometry
         :rtype string
     """
-    natoms, gstr = geometry_format(geo)
+    natoms, gstr = geometry_format(geo, indent_lines=False)
     return f'{natoms}\n{gstr}'
 
 

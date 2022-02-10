@@ -90,9 +90,6 @@ def test__species():
         excluded_volume_factor=EXCLUDED_VOLUME_FACTOR,
         use_cm_shift=USE_CM_SHIFT)
 
-    print(repr(mc_spc2_str))
-    print(repr(pathtools.read_file(INP_PATH, 'mc_spc2.inp')))
-
     assert mc_spc1_str == pathtools.read_file(INP_PATH, 'mc_spc1.inp')
     assert mc_spc2_str == pathtools.read_file(INP_PATH, 'mc_spc2.inp')
 
@@ -110,7 +107,3 @@ def test__dat():
 
     assert mc_dat1_str == pathtools.read_file(INP_PATH, 'mc_dat1.inp')
     assert mc_dat2_str == pathtools.read_file(INP_PATH, 'mc_dat2.inp')
-
-
-if __name__ == '__main__':
-    test__species()
