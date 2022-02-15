@@ -98,7 +98,7 @@ def _get_well_reactions(mess_out_str):
     for well in wells:
         rxn_lst = ()
         for rxn in rxn_pairs:
-            rct, _ = rxn
+            rct = rxn[0]
             if well == rct:
                 rxn_lst += (rxn,)
         well_rxns[well] = rxn_lst

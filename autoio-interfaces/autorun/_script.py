@@ -16,8 +16,7 @@ MESSPF = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=10\n"
     "ulimit -c 0\n"
-    # "messpf pf.inp >& pf.out"
-    "~b49793/bin/messpf pf.inp >& pf.out"
+    "messpf pf.inp >& pf.out"
 )
 MESSRATE = (
     "#!/usr/bin/env bash\n"
@@ -69,12 +68,6 @@ PAC99 = (
     "pac99 << EOF >& pacc.out\n"
     "{}\n"
     "EOF"
-    # "EOF >& pac99.out"
-)
-DSARRFIT = (
-    "#!/usr/bin/env bash\n"
-    "ulimit -c 0\n"
-    "dsarrfit.x_cfg"
 )
 G09 = (
     "#!/usr/bin/env bash\n"
@@ -132,17 +125,22 @@ MOLPRO_MREF_MPPX = (
 )
 
 SCRIPT_DCT = {
-    'projrot': PROJROT,
+    # MESS
     'messpf': MESSPF,
     'messrate': MESSRATE,
+    # PAC99
+    'pac99': PAC99,
+    # ProjRot
+    'projrot': PROJROT,
+    # ThermP
+    'thermp': THERMP,
+    # VaReCoF
     'varecof': VARECOF,
     'varecof_conv_struct': VARECOF_CONV_STRUCT,
     'intder': INTDER,
     'mcflux': MCFLUX,
     'tstchk': TSTCHECK,
-    'thermp': THERMP,
-    'pac99': PAC99,
-    'dsarrfit': DSARRFIT,
+    # Electronic Structure
     'gaussian09': G09,
     'molpro2021': MOLPRO_2021,
     'molpro2021_mppx': MOLPRO_2021_MPPX,

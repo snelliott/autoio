@@ -23,10 +23,10 @@ def test__energy_trans_writer():
         INP_PATH, 'etrans_edown.inp')
 
     collid_str = mess_io.writer.collision_frequency(
-        eps1=100.0,
-        eps2=200.0,
-        sig1=10.0,
-        sig2=20.0,
+        eps1=0.0004556,
+        eps2=0.0009112,
+        sig1=4.72432,
+        sig2=9.44864,
         mass1=15.0,
         mass2=25.0)
     assert collid_str == pathtools.read_file(

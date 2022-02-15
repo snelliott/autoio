@@ -2,9 +2,7 @@
 """
 
 import autoread as ar
-from autoparse import cast as _cast
 import autoparse.pattern as app
-import autoparse.find as apf
 from elstruct.par import Program, Method, program_methods
 
 

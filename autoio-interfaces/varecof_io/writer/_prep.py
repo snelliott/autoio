@@ -212,7 +212,7 @@ def assess_face_symmetries(fgeo1, fgeo2):
                 fgeo, fgeo_reflect, rtol=5e-2)
 
     # Set the face and face_sym keywords based on the above tests
-    [symm1, symm2] = symms
+    # [symm1, symm2] = symms
     # if symm1 and symm2:
     #     faces = [0, 1]
     #     face_symm = 4
@@ -295,9 +295,9 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
 def calc_pivot_angles(frag_geos_wdummy, frames):
     """ Calculate the angle for three atoms which define the frame
         of the dividing surface.
-    
+
         :param frag_geos_wdummy: geometries of fragments at infinite
-            separation, including dummy atoms showing location of 
+            separation, including dummy atoms showing location of
             reactive atom from other fragment
         :type frag_geos_wdummy: tuple(automol.geom object)
         :param frames: 4-idx set for the atoms in each fragment that
@@ -323,12 +323,12 @@ def calc_pivot_angles(frag_geos_wdummy, frames):
 def calc_pivot_xyzs(total_geo, frag_geos, bnd_keys):
     """ Determine the fragment xyz-coordinates that will be used
         to set the position of the pivot points.
-   
+
         We only need to determine the coord for diatomics, which
         are set to the reactive radical site. Atoms and polyatomics
         will be set using a special frame where the origin is
         sufficient.
-    
+
         :param total_geo: geom with both reactive fragments
             where bond-formation is occuring
         :type total_geo: automol.geom object
@@ -350,11 +350,3 @@ def calc_pivot_xyzs(total_geo, frag_geos, bnd_keys):
         xyzs += (xyz,)
 
     return xyzs
-
-
-def _radcal_site(geo):
-    """ Get the radical sites
-    """
-    gra = automol.geom.graph(geo)
-    rad_keys = automol.graph.radical_atom_keys(gra)
-    return rad_keys[0]

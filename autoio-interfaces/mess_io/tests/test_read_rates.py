@@ -18,7 +18,7 @@ KTP_OUT_STR = pathtools.read_file(OUT_PATH, 'rate.out')
 KTP_OUT_BAR_STR = pathtools.read_file(OUT_PATH, 'rate.out_bar')
 KTP_OUT_TORR_STR = pathtools.read_file(OUT_PATH, 'rate.out_torr')
 KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
-KE_PED_OUT_DBL = pathtools.read_file(INP_PATH_DBL, 'ke_ped.out')
+KE_PED_OUT_DBL = pathtools.read_file(OUT_PATH, 'ke_ped_c3h8_h.out')
 
 # Set the REACTANT and PRODUCT
 REACTANT = 'W1'
@@ -305,8 +305,6 @@ def test__filter_ktp():
         100.0: (numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
                 numpy.array([1.0e7, 2.0e7, 3.0e7, 4.0e7, 5.0e7, 6.0e7]))}
     ref_dct2 = {
-        0.01: (numpy.array([400.]),
-               numpy.array([2.0e3])),
         0.1: (numpy.array([400., 600.]),
               numpy.array([2.0e4, 3.0e4])),
         1.0: (numpy.array([400., 600.]),
