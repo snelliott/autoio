@@ -261,8 +261,8 @@ def pf_output(fml_str, temps, logq, dq_dt, d2q_dt2, svals=None, cpvals=None):
         "Natural log of the partition function, "
         "its derivatives, entropy, and thermal capacity:\n"
         f"T, K          {fml_str}\n"
-        # "               Z_0          Z_1          Z_2 "
-        # "S, cal/mol/K C, cal/mol/K"
+        "               Z_0          Z_1          Z_2 "
+        "S, cal/mol/K C, cal/mol/K"
     )
     for idx, _ in enumerate(temps):
         mess_out_str += '\n'

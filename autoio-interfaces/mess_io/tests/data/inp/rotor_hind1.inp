@@ -2,7 +2,7 @@ Rotor  Hindered
   Group                        3   4   5
   Axis                         1   2
   Symmetry                     1.0
-  PotentialSpline[kcal/mol]    12   20
+  PotentialSpline[kcal/mol]    12   11
     0.00    30.00   60.00   90.00   120.00  150.00
     180.00  210.00  240.00  270.00  300.00  330.00
     0.00    2.91    9.06    12.63   9.97    3.51

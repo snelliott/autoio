@@ -62,7 +62,8 @@ def monte_carlo_species(geo, sym_factor, elec_levels,
     # Check if reference config name is present
     # if nfreqs > 0:
     #     assert ref_config_file_name, (
-    #         'Must provide a reference configuration file if no Hessians given'
+    #         'Must provide a reference configuration file'
+    #         'if no Hessians given'
     #     )
 
     # Indent various strings string if needed
@@ -120,7 +121,7 @@ def monte_carlo_data(geos, enes, grads=(), hessians=()):
 
     dat_str = ''
     for idx, _ in enumerate(geos):
-        dat_str += 'Sampling point'+ str(idx+1) + '\n'
+        dat_str += 'Sampling point' + str(idx+1) + '\n'
         dat_str += 'Energy' + '\n'
         dat_str += f'{enes[idx]:.8f}\n'
         dat_str += 'Geometry' + '\n'

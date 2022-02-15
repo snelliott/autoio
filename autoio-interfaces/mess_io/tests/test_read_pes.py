@@ -3,17 +3,17 @@
 
 import os
 import numpy
-import mess_io
 from ioformat import pathtools
 from ioformat import remove_comment_lines
 import autoparse.pattern as app
+import mess_io
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 INP_PATH = os.path.join(PATH, 'data', 'inp')
 INP_STR = pathtools.read_file(INP_PATH, 'mess.inp')
 
-PROMPT_INP_PATH = os.path.join(PATH, 'data', 'prompt', 'C3H8_H')
+PROMPT_INP_PATH = os.path.join(PATH, 'data', 'inp')
 PED_INP_STR = pathtools.read_file(PROMPT_INP_PATH, 'me_ktp_ped.inp')
 PED_INP_STR = remove_comment_lines(
     PED_INP_STR, delim_pattern=app.escape('!'))
