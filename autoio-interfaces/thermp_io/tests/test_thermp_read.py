@@ -53,4 +53,4 @@ def test_property_dct():
     assert out1 == ref_out
 
     out2 = thermp_io.reader.properties_temp_dct(OUT_STR2)
-    assert out2 == {}
+    assert not out2
