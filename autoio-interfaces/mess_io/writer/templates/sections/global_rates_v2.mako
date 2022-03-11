@@ -7,12 +7,13 @@ PressureList[atm]                      ${pressures}
 ReferenceTemperature[K]                ${ref_temperature}
 ReferencePressure[atm]                 ${ref_pressure}
 !
-EnergyStepOverTemperature              .2
+ModelEnergyLimit[kcal/mol]             ${model_ene_limit}
+EnergyStepOverTemperature              ${ene_stepover_temp}
 EnergyCutoffOverTemperature            ${ene_cutoff_temp}
 ExcessEnergyOverTemperature            ${excess_ene_temp}
-ModelEnergyLimit[kcal/mol]             800
 !
 ChemicalTolerance                      ${chem_tol}
+ChemicalThreshold                      ${chem_thresh}
 WellProjectionThreshold                ${well_projection_thresh}
 WellReductionThreshold                 ${well_reduction_thresh}
 !
@@ -22,7 +23,7 @@ TimePropagationStep                    ${time_propagation_step}
 WellExtension                          ${well_extension}
 % if ped_spc_str is not None:
 !
-PEDOutput                              ped.out
+PEDOutput                              ${ped_outname}
 PEDSpecies                             ${ped_spc_str}
 % endif
 % if hot_ene_str is not None:
@@ -32,14 +33,15 @@ ${hot_ene_str}
 % endif
 % if micro_out_params is not None:
 !
-MicroRateOutput                        ke.out
+MicroRateOutput                        ${ke_outname}
 MicroEnerMin[kcal/mol]                 ${micro_out_params[0]}
 MicroEnerMax[kcal/mol]                 ${micro_out_params[1]}
 MicroEnerStep[kcal/mol]                ${micro_out_params[2]}
 % endif
 !
-AtomDistanceMin[bohr]                  1.3
-RateOutput                             rate.out
+AtomDistanceMin[angstrom]              0.68793
+!
+RateOutput                             ${ktp_outname}
 % if float_type == 'quadruple':
 !
 FloatType                              dd

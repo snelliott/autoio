@@ -74,15 +74,20 @@ def messhr_inp_str(geo, hind_rot_str,
 
 
 # Write individual sections of the input file
-def global_rates_input_v1(temperatures, pressures,
-                          calculation_method='well-reduction',
-                          excess_ene_temp=None,
-                          well_extension='auto',
-                          well_reduction_thresh=10.0,
-                          ped_spc_lst=None,
-                          hot_enes_dct=None,
-                          micro_out_params=None,
-                          float_type='double'):
+def global_rates_input_v1(
+        temperatures, pressures,
+        calculation_method='well-reduction',
+        model_ene_limit=800.0,
+        ene_stepover_temp=0.2, excess_ene_temp=None,
+        well_extension='auto',
+        well_reduction_thresh=10.0,
+        ped_spc_lst=None,
+        hot_enes_dct=None,
+        micro_out_params=None,
+        float_type='double',
+        ktp_outname='rate.out',
+        ke_outname='ke.out',
+        ped_outname='ped.out'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -155,6 +160,9 @@ def global_rates_input_v1(temperatures, pressures,
     globrxn_keys = {
         'temperatures': temperature_list,
         'pressures': pressure_list,
+        'model_ene_limit': f'{model_ene_limit:.2f}',
+        'ene_stepover_temp': f'{ene_stepover_temp:.2f}',
+        'excess_ene_temp': excess_ene_temp_str,
         'calculation_method': calculation_method,
         'well_reduction_thresh': well_reduction_thresh_str,
         'well_extension': well_extension_str,
@@ -162,8 +170,10 @@ def global_rates_input_v1(temperatures, pressures,
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
         'micro_out_params': micro_out_params,
-        'excess_ene_temp': excess_ene_temp_str,
-        'float_type': float_type
+        'float_type': float_type,
+        'ktp_outname': ktp_outname,
+        'ke_outname': ke_outname,
+        'ped_outname': ped_outname
     }
 
     return build_mako_str(
@@ -175,14 +185,18 @@ def global_rates_input_v1(temperatures, pressures,
 def global_rates_input_v2(
         temperatures, pressures,
         ref_temperature=1000.0, ref_pressure=1.0,
-        ene_cutoff_temp=20.0, excess_ene_temp=10.0,
-        chem_tol=1.0e-10,
+        model_ene_limit=800.0,
+        ene_stepover_temp=0.2, ene_cutoff_temp=20.0, excess_ene_temp=10.0,
+        chem_tol=1.0e-10, chem_thresh=0.1,
         well_pojection_thresh=0.1, well_reduction_thresh=10.0,
         time_propagation_limit=50.0, time_propagation_step=0.02,
         well_extension=0.5,
         ped_spc_lst=None, hot_enes_dct=None,
         micro_out_params=None,
-        float_type='double'):
+        float_type='double',
+        ktp_outname='rate.out',
+        ke_outname='ke.out',
+        ped_outname='ped.out'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
 
@@ -224,9 +238,12 @@ def global_rates_input_v2(
         'pressures': pressure_list,
         'ref_temperature': f'{ref_temperature:.2f}',
         'ref_pressure': f'{ref_pressure:.2f}',
+        'model_ene_limit': f'{model_ene_limit:.2f}',
+        'ene_stepover_temp': f'{ene_stepover_temp:.2f}',
         'ene_cutoff_temp': f'{ene_cutoff_temp:.2f}',
         'excess_ene_temp': f'{excess_ene_temp:.2f}',
         'chem_tol': f'{chem_tol:.2e}',
+        'chem_thresh': f'{chem_thresh:.2f}',
         'well_projection_thresh': f'{well_pojection_thresh:.2f}',
         'well_reduction_thresh': f'{well_reduction_thresh:.2f}',
         'time_propagation_limit': f'{time_propagation_limit:.2f}',
@@ -236,7 +253,10 @@ def global_rates_input_v2(
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
         'micro_out_params': micro_out_params,
-        'float_type': float_type
+        'float_type': float_type,
+        'ktp_outname': ktp_outname,
+        'ke_outname': ke_outname,
+        'ped_outname': ped_outname
     }
 
     return build_mako_str(
