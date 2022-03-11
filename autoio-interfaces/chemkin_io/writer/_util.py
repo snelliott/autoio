@@ -48,23 +48,25 @@ def format_rxn_name(rxn):
         prds = [prds]
 
     # Write the strings
-    for idx, rct in enumerate(rcts):
-        if idx == 0:
-            rct_str = rct
-        else:
-            rct_str += '+' + rct
-    for idx, prd in enumerate(prds):
-        if idx == 0:
-            prd_str = prd
-        else:
-            prd_str += '+' + prd
+    rct_str = ' + '.join(rcts)
+    prd_str = ' + '.join(prds)
+    # for idx, rct in enumerate(rcts):
+    #     if idx == 0:
+    #         rct_str = rct
+    #     else:
+    #         rct_str += '+' + rct
+    # for idx, prd in enumerate(prds):
+    #     if idx == 0:
+    #         prd_str = prd
+    #     else:
+    #         prd_str += '+' + prd
 
     # Add the +M or (+M) text if it is applicable
     if thrbdy is not None:
         rct_str += thrbdy
         prd_str += thrbdy
 
-    rxn_name = rct_str + '=' + prd_str
+    rxn_name = f'{rct_str} = {prd_str}'
 
     return rxn_name
 
