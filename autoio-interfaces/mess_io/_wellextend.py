@@ -11,8 +11,8 @@ import mess_io.reader
 
 
 # Main calling function
-def new_well_lumped_input_file(inp_str, out_str, aux_str, log_str,
-                               lump_pressure, lump_temp):
+def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
+                           lump_pressure, lump_temp):
     """ Run MESS to get the wells and then parse the aux file for wells...
     """
 
@@ -48,7 +48,7 @@ def well_energies(mess_out_str, mess_log_str, pressure):
     """ Obtain the energies for each well at the given pressure.
     """
 
-    mess_temps, _ = mess_io.reader.new_rates.temperatures(mess_out_str)
+    mess_temps, _ = mess_io.reader.rates.temperatures(mess_out_str)
     max_run_temp = max(mess_temps)
 
     # Get the temps where each well exists
@@ -63,7 +63,7 @@ def well_energies(mess_out_str, mess_log_str, pressure):
             well, prd = rxn[0][0], rxn[1][0]
 
             # Read the rate constants out of the mess outputs
-            ktp_dct = mess_io.reader.new_rates.ktp_dct(mess_out_str, well, prd)
+            ktp_dct = mess_io.reader.rates.ktp_dct(mess_out_str, well, prd)
             rxn_temp = _max_temp_well_exists(ktp_dct, pressure, mess_temps)
 
             if rxn_temp > max_temp:
@@ -94,7 +94,7 @@ def _get_well_reactions(mess_out_str):
 
     # Get the well labels from the reactions
     # We assume wells are MESS labels missing a '+' or 'W'
-    rxns = mess_io.reader.new_rates.reactions(
+    rxns = mess_io.reader.rates.reactions(
         mess_out_str, read_rev=True, read_fake=False, read_self=False)
 
     wells = ()

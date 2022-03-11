@@ -22,13 +22,13 @@ MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    "mess mess.inp rate.out >> stdout.log &> stderr.log"
+    "mess mess.inp >> stdout.log &> stderr.log"
 )
 MESSRATEV2 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    "mess-v2 mess.inp rate.out >> stdout.log &> stderr.log"
+    "mess-v2 mess.inp >> stdout.log &> stderr.log"
 )
 VARECOF = (
     "#!/usr/bin/env bash\n"

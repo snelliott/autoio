@@ -9,13 +9,14 @@ import numpy
 import pandas as pd
 from phydat import phycon
 import autoparse.find as apf
+import autoparse.pattern as app
 
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str,
                     read_fake=False, read_self=False, read_rev=True,
                     filter_kts=True,
-                    relabel=True,
+                    relabel_reactions=True,
                     tmin=None, tmax=None,
                     pmin=None, pmax=None, convert=True):
     """ Read a ktp dictionary for each reaction listed in the MESS output
@@ -56,10 +57,20 @@ def get_rxn_ktp_dct(out_str,
                                    convert=convert)
 
     # Reformat the dictionary keys to follow the tuple of tuples format
-    if relabel:
+    if relabel_reactions:
         lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
+            print('ini dct\n')
+            for rxn, kts in rxn_ktp_dct.items():
+                print(rxn)
+                print(kts)
+                print('--')
             rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
+            print('ini dct\n', rxn_ktp_dct)
+            for rxn, kts in rxn_ktp_dct.items():
+                print(rxn)
+                print(kts)
+                print('--')
 
     return rxn_ktp_dct
 
@@ -168,7 +179,7 @@ def _pdep_kts(out_lines, reactant, product, pressure):
         :return rate_constants: k(T,P)s for the reaction at given pressure
         :rtype list(float)
     """
-    
+
     for i, line in enumerate(out_lines):
         if 'Temperature-Species Rate Tables:' in line:
             block_start = i
@@ -295,8 +306,10 @@ def dos_rovib(ke_ped_out):
     # apf.where data of interest are
     ke_lines = ke_ped_out.splitlines()
 
+    print(ke_ped_out)
+
     i_in = apf.where_in(
-        'Bimolecular fragments density of states:', ke_lines)[0]+2
+        'Bimolecular fragments density of states, mol/kcal', ke_lines)[0]+2
     _labels = ke_lines[i_in-1].strip().split()[2:]
     en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
@@ -700,8 +713,8 @@ def reactions(out_str,
     return fin_rxns
 
 
-def name_label_dct(output_str)
-    """ Build a dictionary that maps the names of wells, bimols, and 
+def name_label_dct(output_str):
+    """ Build a dictionary that maps the names of wells, bimols, and
         barriers provided in the MESS input to the labels that are used
         internally by MESS and printed in the rate output with rate constants.
 
@@ -715,22 +728,34 @@ def name_label_dct(output_str)
     """
 
     # Read the table with the name-labels
-    ptt = (
-        '' +
+    well_ptt = (
+       'Well Names Translation:' +
         app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
-        ''
+        'End'
     )
-    label_block = apf.first_capture(ptt, output_str)
+    bimol_ptt = (
+       'Bimolecular Names Translation:' +
+        app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
+        'End'
+    )
+
+    well_lbl_block = apf.first_capture(well_ptt, output_str)
+    bimol_lbl_block = apf.first_capture(bimol_ptt, output_str)
 
     # Parse the table for the names and labels to fill the dictionary
-    if label_block is not None:
-        _ = _
+    if well_lbl_block is not None and bimol_lbl_block is not None:
+        lbl_dct = {}
+        well_lines = well_lbl_block.strip().splitlines()
+        bimol_lines = bimol_lbl_block.strip().splitlines()
+        for line in well_lines+bimol_lines:
+            _line = line.strip().split()
+            lbl_dct.update({_line[0]: _line[1]})
     else:
-        label_dct = None
+        lbl_dct = None
         print('Warning no name-label table found in output to relabel labels '
               'for rate constants')
 
-    return label_dct
+    return lbl_dct
 
 
 def labels(file_str, read_fake=False, mess_file='out'):
