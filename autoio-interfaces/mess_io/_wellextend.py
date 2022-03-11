@@ -34,7 +34,11 @@ def well_lumping_scheme(mess_aux_str, pressure, temp):
     """
 
     well_lump_lst = mess_io.reader.merged_wells(mess_aux_str, pressure, temp)
-    well_lump_str = mess_io.writer.well_lump_scheme(well_lump_lst)
+    if well_lump_lst is not None:
+        well_lump_str = mess_io.writer.well_lump_scheme(well_lump_lst)
+    else:
+        print(f'No wells are merged at P = {pressure} atm and T = {temp} K')
+        well_lump_str = None
 
     return well_lump_str
 
@@ -54,17 +58,18 @@ def well_energies(mess_out_str, mess_log_str, pressure):
         print('\n***********************************************\n')
         print(f'Obtaining information for well {well} at P={pressure}')
         max_temp = -1.0
-        for (lab_i, lab_j) in rxn_lst:
+        for rxn in rxn_lst:
+
+            well, prd = rxn[0][0], rxn[1][0]
 
             # Read the rate constants out of the mess outputs
-            print('\n-----------------------------------------------\n')
-            print(f'Finding max T where k(T) exists for {lab_i}->{lab_j}...')
-            ktp_dct = mess_io.reader.rates.ktp_dct(mess_out_str, lab_i, lab_j)
+            ktp_dct = mess_io.reader.rates.ktp_dct(mess_out_str, well, prd)
             rxn_temp = _max_temp_well_exists(ktp_dct, pressure, mess_temps)
 
             if rxn_temp > max_temp:
                 max_temp = rxn_temp
                 print(f'- New max temperature for well: {rxn_temp} K')
+                print(f'- from reaction {well}->{prd}')
 
         # Determine if k(T) exist at highest T -> no Well cap exists
         if numpy.isclose(max_temp, max_run_temp):
@@ -83,23 +88,30 @@ def well_energies(mess_out_str, mess_log_str, pressure):
 
 
 def _get_well_reactions(mess_out_str):
-    """ Get the reactions for each wells
+    """ For each Well in the output file, Generate a list of all
+        reactions where that Well is the reactant
     """
 
-    rxn_pairs = mess_io.reader.rates.reactions(
+    # Get the well labels from the reactions
+    # We assume wells are MESS labels missing a '+' or 'W'
+    rxns = mess_io.reader.rates.reactions(
         mess_out_str, read_rev=True, read_fake=False, read_self=False)
 
-    # Get the well labels from the reactions
-    rgts = tuple(spc for spc in itertools.chain(*rxn_pairs) if 'W' in spc)
-    wells = tuple(n for i, n in enumerate(rgts) if n not in rgts[:i])
+    wells = ()
+    for rxn in rxns:
+        rcts, prds = rxn[0], rxn[1]
+        wells += tuple(rct for rct in rcts if '+' not in rct)
+        wells += tuple(prd for prd in prds if '+' not in prd)
+
+    # Remove duplicates from above loop
+    wells = tuple(n for i, n in enumerate(wells) if n not in wells[:i])
 
     # Grab reactions that contains the well as the reactant
     well_rxns = {}
     for well in wells:
         rxn_lst = ()
-        for rxn in rxn_pairs:
-            rct = rxn[0]
-            if well == rct:
+        for rxn in rxns:
+            if (well,) == rxn[0]:
                 rxn_lst += (rxn,)
         well_rxns[well] = rxn_lst
 
@@ -125,8 +137,6 @@ def _max_temp_well_exists(ktp_dct, pressure, mess_temps):
         max_temp = min(mess_temps)
         print(f'\nNo k(T) values found for P = {pressure} atm.')
         print(f'T={max_temp}: minimum of all temps in output')
-    else:
-        print(f'\nT={max_temp}: max T where k(T) found')
 
     return max_temp
 
@@ -154,12 +164,14 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
 
     # Write new strings with the lumped input
     well_extend_line = 'WellExtension\nExtensionCorrection    0.2'
-    well_lump_line = ioformat.indent(well_lump_str, 2)
     new_inp_str = ioformat.add_line(
         string=new_inp_str, addline=well_extend_line,
         searchline='Model', position='before')
-    new_inp_str = ioformat.add_line(
-        string=new_inp_str, addline=well_lump_line,
-        searchline='Model', position='after')
+   
+    if well_lump_str is not None:
+        well_lump_line = ioformat.indent(well_lump_str, 2)
+        new_inp_str = ioformat.add_line(
+            string=new_inp_str, addline=well_lump_line,
+            searchline='Model', position='after')
 
     return new_inp_str

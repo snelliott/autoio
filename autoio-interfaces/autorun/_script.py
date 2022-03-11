@@ -18,11 +18,17 @@ MESSPF = (
     "ulimit -c 0\n"
     "messpf pf.inp >& pf.out"
 )
-MESSRATE = (
+MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    "mess mess.inp rate.out >> stdout.log &> stderr.log"
+    "mess mess.inp >> stdout.log &> stderr.log"
+)
+MESSRATEV2 = (
+    "#!/usr/bin/env bash\n"
+    "export OMP_NUM_THREADS=8\n"
+    "ulimit -c 0\n"
+    "mess-v2 mess.inp >> stdout.log &> stderr.log"
 )
 VARECOF = (
     "#!/usr/bin/env bash\n"
@@ -127,7 +133,8 @@ MOLPRO_MREF_MPPX = (
 SCRIPT_DCT = {
     # MESS
     'messpf': MESSPF,
-    'messrate': MESSRATE,
+    'messrate-v1': MESSRATEV1,
+    'messrate-v2': MESSRATEV2,
     # PAC99
     'pac99': PAC99,
     # ProjRot

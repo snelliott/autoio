@@ -3,12 +3,21 @@
 
 import os
 import random
-# import math
 import errno
+import datetime
 import signal
 import multiprocessing
 from functools import wraps
 import numpy
+
+
+def utc_time():
+    """ get the current UTC time
+
+    :returns: the utc time
+    :rtype: datetime
+    """
+    return datetime.datetime.utcnow()
 
 
 def set_nprocs(nobjs, nprocs='auto'):

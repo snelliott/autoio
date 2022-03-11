@@ -135,8 +135,6 @@ def build_gen_lines(gen_lines, line1=None, line2=None, line3=None):
         present, then uses value provided by function
     """
 
-    print('elstruct gen_lines test\n', gen_lines)
-
     if gen_lines is not None:
         gen_lines_1 = '\n'.join(gen_lines[1]) if 1 in gen_lines else ''
         gen_lines_2 = '\n'.join(gen_lines[2]) if 2 in gen_lines else ''

@@ -3,25 +3,24 @@
 !===================================================
 TemperatureList[K]                     ${temperatures}
 PressureList[atm]                      ${pressures}
+! 
+ReferenceTemperature[K]                ${ref_temperature}
+ReferencePressure[atm]                 ${ref_pressure}
 !
 ModelEnergyLimit[kcal/mol]             ${model_ene_limit}
 EnergyStepOverTemperature              ${ene_stepover_temp}
-% if excess_ene_temp is not None:
+EnergyCutoffOverTemperature            ${ene_cutoff_temp}
 ExcessEnergyOverTemperature            ${excess_ene_temp}
-% endif
 !
-CalculationMethod                      ${calculation_method}
-% if calculation_method == 'well-reduction':
-WellReductionThreshold                 ${well_reduction_thresh} 
-% endif
+ChemicalTolerance                      ${chem_tol}
+ChemicalThreshold                      ${chem_thresh}
+WellProjectionThreshold                ${well_projection_thresh}
+WellReductionThreshold                 ${well_reduction_thresh}
 !
-WellCutoff                             10
-% if well_extension is not None:
+TimePropagationLimit                   ${time_propagation_limit}
+TimePropagationStep                    ${time_propagation_step}
+!
 WellExtension                          ${well_extension}
-% endif
-ChemicalEigenvalueMax                  0.2
-!
-ReductionMethod                        diagonalization 
 % if ped_spc_str is not None:
 !
 PEDOutput                              ${ped_outname}

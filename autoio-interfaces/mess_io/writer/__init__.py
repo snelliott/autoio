@@ -7,7 +7,8 @@
 from mess_io.writer._glob import messrates_inp_str
 from mess_io.writer._glob import messpf_inp_str
 from mess_io.writer._glob import messhr_inp_str
-from mess_io.writer._glob import global_rates_input
+from mess_io.writer._glob import global_rates_input_v1
+from mess_io.writer._glob import global_rates_input_v2
 from mess_io.writer._glob import global_pf_input
 from mess_io.writer._glob import global_energy_transfer_input
 from mess_io.writer._glob import pf_output
@@ -44,7 +45,8 @@ __all__ = [
     'messrates_inp_str',
     'messpf_inp_str',
     'messhr_inp_str',
-    'global_rates_input',
+    'global_rates_input_v1',
+    'global_rates_input_v2',
     'global_pf_input',
     'global_energy_transfer_input',
     'pf_output',
