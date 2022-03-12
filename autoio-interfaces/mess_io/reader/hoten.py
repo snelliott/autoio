@@ -5,36 +5,39 @@
 import numpy as np
 import pandas as pd
 import autoparse.find as apf
+from mess_io.reader._pes import pes
 
-
-def get_hot_names(input_str):
+def get_hot_species(input_str):
     """ Reads the HotSpecies from the MESS input file string
         that were used in the master-equation calculation.
+        returns dictionary with associated energies
         :param input_str: string of lines of MESS input file
         :type input_str: str
-        :return hotspecies: list of hotspecies
-        :rtype: list(str)
+        :return hotspecies: dictionary of hotspecies energies
+        :rtype: dct{hotspecies: en}
     """
 
     # Get the MESS input lines
+    energy_dct, _, _, _ = pes(input_str)
     mess_lines = input_str.splitlines()
     hotsp_i = apf.where_in('HotEnergies', mess_lines)[0]
     num_hotsp = int(mess_lines[hotsp_i].strip().split()[1])
-    hotspecies = [None]*num_hotsp
+    #hotspecies = [None]*num_hotsp
+    hotspecies_en = {}
+    for line in mess_lines[hotsp_i+1:hotsp_i+1+num_hotsp]:
+        hotname= line.strip().split()[0]
+        hotspecies_en[hotname] = energy_dct[hotname]
 
-    for i, line in enumerate(mess_lines[hotsp_i+1:hotsp_i+1+num_hotsp]):
-        hotspecies[i] = line.strip().split()[0]
-
-    return tuple(hotspecies)
+    return hotspecies_en
 
 
-def extract_hot_branching(hotenergies_str, hotspecies_lst, species_lst,
+def extract_hot_branching(hotenergies_str, hotspecies_en, species_lst,
                           temps, pressures):
     """ Extract hot branching fractions for a single species
         :param hotenergies_str: string of mess log file
         :type hotenergies_str: str
-        :param hotspecies_lst: list of hot species
-        :type hotspecies_lst: list
+        :param hotspecies_en: dct of hotspecies and corresponding energy
+        :type hotspecies_en: dct{hotspecies: en}
         :param species_lst: list of all species on the PES
         :type species_lst: list
         :return hoten_dct: hot branching fractions for hotspecies
@@ -44,6 +47,7 @@ def extract_hot_branching(hotenergies_str, hotspecies_lst, species_lst,
     # for each species: dataframe of dataframes BF[Ti][pi]
     # each of them has BF[energy][species]
     # preallocations
+    hotspecies_lst = list(hotspecies_en.keys())
     hoten_dct = {s: pd.DataFrame(index=temps, columns=pressures)
                  for s in hotspecies_lst}
 
@@ -66,31 +70,33 @@ def extract_hot_branching(hotenergies_str, hotspecies_lst, species_lst,
         species_bf_i = lines[hot_i+1].strip().split()[3:]
 
         # for each hotspecies: read BFs
+        # rescale energy by the hotspecies energy on the PES!!
+        # ref 0 energy is the ref for the PES, even for the hotspecies
         for hotspecies in hotspecies_lst:
             hot_e_lvl, branch_ratio = [], []
             sp_i = apf.where_in(hotspecies, species_bf_i)
+            ref_en = hotspecies_en[hotspecies]
 
             for line in lines_block:
                 line = line.strip()
                 if line.startswith(hotspecies):
-                    hot_e = float(line.split()[1])
-                    if hot_e not in hot_e_lvl:
+                    hot_e = float(line.split()[1]) - ref_en
+                    # pick only values above 0
+                    if hot_e not in hot_e_lvl and hot_e > 0:
                         branch_ratio_arr = np.array(
                             list(line.split()[2:]), dtype=float)
 
-                        # check that value of reactant branching not negative
+                        # check that value of reactant branching is between 0 and 1
                         # if > 1, keep it so you can account for that anyway
                         if sp_i.size > 0:
-                            if branch_ratio_arr[sp_i] < 0:
+                            if branch_ratio_arr[sp_i] < 0 or branch_ratio_arr[sp_i] > 1:
                                 continue
-                            if branch_ratio_arr[sp_i] > 1:
-                                branch_ratio_arr[sp_i] = 1
-                            # elif branch_ratio_arr[sp_i] > 1:
-                            #     branch_ratio_arr[sp_i] = 1
+
                         # remove negative values or values >1
                         _arr = [abs(x*int(1e-5 < x <= 1))
                                 for x in branch_ratio_arr]
                         br_filter = np.array(_arr, dtype=float)
+
                         # if all invalid: do not save
                         if all(br_filter == 0):
                             continue
