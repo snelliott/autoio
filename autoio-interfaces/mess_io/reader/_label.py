@@ -12,7 +12,8 @@ def relabel(rxn_ktp_dct, label_dct):
     """
 
     def _relabel(lbl, label_dct):
-        """ a
+        """ Use the label dictionary to change the names in
+            MESS output labeling to mech input labeling
         """
         if lbl in label_dct:
             relbl = tuple(label_dct[lbl].split('+'))
