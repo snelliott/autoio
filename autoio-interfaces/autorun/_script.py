@@ -22,12 +22,14 @@ MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
+    # "/home/ygeorgievski/build/crossrate/mess mess.inp >> stdout.log &> stderr.log"
     "mess mess.inp >> stdout.log &> stderr.log"
 )
 MESSRATEV2 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
+    # "/home/ygeorgievski/build/crossrate/mess_test mess.inp >> stdout.log &> stderr.log"
     "mess-v2 mess.inp >> stdout.log &> stderr.log"
 )
 VARECOF = (
@@ -84,6 +86,13 @@ PSI4 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "psi4 -i run.inp -o run.out -n 8 >> stdout.log &> stderr.log"
+)
+QCHEM5 = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "export QC=/soft/qchem/5.3.0_mpich3/\n"
+    "export QCSCRATCH=${scratch}\n"                                
+    "qchem -nt {} run.inp run.out"
 )
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
