@@ -50,23 +50,18 @@ def format_rxn_name(rxn):
     # Write the strings
     rct_str = ' + '.join(rcts)
     prd_str = ' + '.join(prds)
-    # for idx, rct in enumerate(rcts):
-    #     if idx == 0:
-    #         rct_str = rct
-    #     else:
-    #         rct_str += '+' + rct
-    # for idx, prd in enumerate(prds):
-    #     if idx == 0:
-    #         prd_str = prd
-    #     else:
-    #         prd_str += '+' + prd
 
     # Add the +M or (+M) text if it is applicable
     if thrbdy is not None:
         rct_str += thrbdy
         prd_str += thrbdy
 
-    rxn_name = f'{rct_str} = {prd_str}'
+    if len(prds) < 3:
+        join_sign = '='
+    else:
+        join_sign = '=>'
+
+    rxn_name = f'{rct_str} {join_sign} {prd_str}'
 
     return rxn_name
 

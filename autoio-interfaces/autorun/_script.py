@@ -91,7 +91,7 @@ QCHEM5 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "export QC=/soft/qchem/5.3.0_mpich3/\n"
-    "export QCSCRATCH=${scratch}\n"                                
+    "export QCSCRATCH=/scratch/$USER\n"
     "qchem -nt {} run.inp run.out"
 )
 MOLPRO_2021 = (
@@ -158,6 +158,7 @@ SCRIPT_DCT = {
     'tstchk': TSTCHECK,
     # Electronic Structure
     'gaussian09': G09,
+    'qchem5': QCHEM5,
     'molpro2021': MOLPRO_2021,
     'molpro2021_mppx': MOLPRO_2021_MPPX,
     'molpro2015': MOLPRO,
