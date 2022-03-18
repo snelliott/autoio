@@ -242,6 +242,8 @@ def _qc_script_str(prog, replace=True):
     if replace:
         script_str = script_str.replace('run.inp', 'qc.in')
         script_str = script_str.replace('run.out', 'qc.out')
+    if 'molpro' in prog:
+        script_str = script_str.format(4)
 
     return script_str
 
