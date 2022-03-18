@@ -17,13 +17,18 @@ CONSTRAINT
 ${zmat_const_vals}
 ENDCONSTRAINT
 $end
+% endif
 
 $rem
-    JOBTYPE        ${job_key}
-    ${method_str}
-    UNRESTRICTED   ${unrestricted}
-    BASIS          ${basis}
-    XC_GRID        ${dft_options}
-    GUESS(CHK)     ${scf_guess_options}
-    MEM_TOTAL      ${memory_mb}
+    JOBTYPE           ${job_key}
+% if job_key == 'optimization':
+    GEOM_OPT_COORDS   2
+% endif
+    METHOD            ${method} 
+    UNRESTRICTED      ${unrestricted}
+    BASIS             ${basis}
+% if xcgrid is not None:
+    XC_GRID           ${xcgrid}
+% endif
+    MEM_TOTAL         ${memory}
 $end

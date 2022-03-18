@@ -27,6 +27,7 @@ class TemplateKey():
     BASIS = 'basis'
     SCF_OPTIONS = 'scf_options'
     SCF_GUESS_OPTIONS = 'scf_guess_options'
+    XCGRID = 'xcgrid'
     # molecule / state
     MOL_OPTIONS = 'mol_options'
     CHARGE = 'charge'

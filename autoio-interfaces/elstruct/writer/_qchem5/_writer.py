@@ -14,15 +14,14 @@ TEMPLATE_DIR = os.path.join(THIS_DIR, 'templates')
 
 
 # Translate elstruct job key to QChem job key
-JOB_DCT = {}
-# JOB_DCT = {
-#     elstruct.writer.par.Job.ENERGY: 'sp',
-#     elstruct.writer.par.Job.GRADIENT: 'force',
-#     elstruct.writer.par.Job.HESSIAN: 'freq',
-#     elstruct.writer.par.Job.MOLPROP: 'polarizability',
-#     elstruct.writer.par.Job.IRC: 'rpath',
-#     elstruct.writer.par.Job.OPTIMIZATION: 'opt'
-# }
+JOB_DCT = {
+    elstruct.par.Job.ENERGY: 'sp',
+    elstruct.par.Job.GRADIENT: 'force',
+    elstruct.par.Job.HESSIAN: 'freq',
+    elstruct.par.Job.MOLPROP: 'polarizability',
+    # elstruct.par.Job.IRC: 'rpath',
+    elstruct.par.Job.OPTIMIZATION: 'opt'
+}
 
 
 def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
@@ -89,58 +88,30 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     prog_method, _, prog_basis = fill.program_method_names(
         PROG, method, basis, mult, orb_restricted)
 
-    if method == '':
-        '   METHOD       {}'.format(prog_method)
-    else:
-        method = (
-            'EXCHANGE  <>\n'
-            'CORRELATION <>'
-        )
-    # maybe just add grid here for now?
-    unres = 'false' if orb_restricted else 'true'
-
-    # set the guess options (look at gauss)
-
     # Set the geometry
-    geo_str, zmat_val_str, _ = fill.geometry_strings(geo, frozen_coordinates)
-
-    # Set coords for optimization (job options I guess?)
-    # opt_coords = {
-    #     'cart': 0,
-    #     'red-intl': 1,
-    #     'zma-intl': 2
-    # }
-    # LINE = 'GEOM_OPT_COORDS   ${opt_coords}'
-
-    # Set the memory; convert from GB to MB
-    memory_mb = int(memory * 1000.0)
+    geo_str, zmat_var_val_str, zmat_const_val_str = fill.geometry_strings(
+        geo, frozen_coordinates)
 
     # Evaluate options
     # scf_options = fill.evaluate_options(scf_options, OPTION_EVAL_DCT)
-    # casscf_options = fill.evaluate_options(casscf_options, OPTION_EVAL_DCT)
-    # corr_options = fill.evaluate_options(corr_options, OPTION_EVAL_DCT)
-    # job_options = fill.evaluate_options(job_options, OPTION_EVAL_DCT)
-    # mol_options = fill.evaluate_options(mol_options, OPTION_EVAL_DCT)
-    # machine_options = fill.evaluate_options(machine_options, OPTION_EVAL_DCT)
-    _ = scf_options
-    _ = casscf_options
-    _ = corr_options
-    _ = job_options
-    _ = mol_options
-    _ = machine_options
+    _, _, _ = scf_options, casscf_options, corr_options
+    _, _, _ = job_options, mol_options, machine_options
     _ = gen_lines
 
     # Create a dictionary to fille the template
     fill_dct = {
         fill.TemplateKey.COMMENT: comment,
         fill.TemplateKey.CHARGE: charge,
-        fill.TemplateKey.BASIS: prog_basis,
+        fill.TemplateKey.MULT: mult,
         fill.TemplateKey.GEOM: geo_str,
-        fill.TemplateKey.ZMAT_VALS: zmat_val_str,
+        fill.TemplateKey.ZMAT_VAR_VALS: zmat_var_val_str,
+        fill.TemplateKey.ZMAT_CONST_VALS: zmat_const_val_str,
         fill.TemplateKey.JOB_KEY: job_typ,
         'method': method,
-        'unrestricted': unres,
-        fill.TemplateKey.MEMORY: memory_mb,
+        'unrestricted': 'false' if orb_restricted else 'true',
+        fill.TemplateKey.BASIS: prog_basis,
+        fill.TemplateKey.XCGRID: '000099000590',
+        fill.TemplateKey.MEMORY: int(memory * 1000.0)
     }
 
     return build_mako_str(
