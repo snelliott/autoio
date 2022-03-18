@@ -11,7 +11,7 @@ from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
-
+from automol.util.dict_ import invert
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
@@ -285,7 +285,7 @@ def ke_dct(output_str, reactant, product):
     return _ke_dct
 
 
-def dos_rovib(ke_ped_out):
+def dos_rovib(ke_ped_out, sp_labels='inp'):
     """ Read the microcanonical pedoutput file and extracts rovibrational density
         of states of each fragment as a function of the energy
 
@@ -293,21 +293,41 @@ def dos_rovib(ke_ped_out):
 
         :param ke_ped_out: string of lines of microcanonical rates output file
         :type ke_ped_out: str
-
+        :param sp_labels: type of pedspecies labels: 'inp' is how you find them
+                in mess input, 'out' is how they are labeled in the output
+        :type sp_labels: str
         :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol])
                         with the density of states
         :rtype dos_df: dataframe(float)
     """
-
+    # get label dictionary
+    lbl_dct = name_label_dct(ke_ped_out)
+    inv_lbl_dct = invert(lbl_dct)
+    
     ke_lines = ke_ped_out.splitlines()
 
     i_in = apf.where_in(
         'Bimolecular fragments density of states, mol/kcal', ke_lines)[0]+2
-    _labels = ke_lines[i_in-1].strip().split()[2:]
+    mess_labels = ke_lines[i_in-1].strip().split()[2:]
     en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
+
+    
+    # relabel if necessary
+    _labels = []
+    if sp_labels == 'inp':
+        for sp in mess_labels:
+            bim, frag_n = sp.split('_')
+            _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
+
+    elif sp_labels == 'out':
+        _labels = mess_labels
+    else:
+        print('*Error: sp_labels must be "inp" (as in mess input) \
+            or "out" (as in mess output)')
+        sys.exit()
 
     dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
     # drop potentially duplicate columns
