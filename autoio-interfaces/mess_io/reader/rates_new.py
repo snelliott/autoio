@@ -11,16 +11,12 @@ from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
-from automol.util.dict_ import invert
-
-# Global lists
-UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
 
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str,
+                    read_fake=False, read_self=False, read_rev=True,
                     filter_kts=True,
-                    filter_reaction_types=UNWANTED_RXN_TYPS,
                     relabel_reactions=True,
                     tmin=None, tmax=None,
                     pmin=None, pmax=None, convert=True):
@@ -34,6 +30,12 @@ def get_rxn_ktp_dct(out_str,
         :type output_str: str
         :param label_dct: dictionary to map name from MESS name to alternative
         :type label_dct: dict[str: str]
+        :param read_fake: read reactions involving "fake" wells named "Fn"
+        :type read_fake: bool
+        :param read_self: read reactions where reactant and prod are the same
+        :type read_self: bool
+        :param read_rev: read reactions in reverse direction
+        :type read_ref: bool
         :param filter_kts: filter unphysical, insignificant rate constants
         :type filter_kts: bool
 
@@ -41,31 +43,35 @@ def get_rxn_ktp_dct(out_str,
     """
 
     # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
+    rxns = reactions(out_str,
+                     read_fake=read_fake,
+                     read_self=read_self,
+                     read_rev=read_rev)
+
     # For each rxn pair, get rate constants, with filtering as indicated
     rxn_ktp_dct = {}
-    for rxn in reactions(out_str):
-        rxn_ktp_dct[rxn] = ktp_dct(out_str, rxn[0][0], rxn[1][0],
+    for rxn in rxns:
+        rct, prd = rxn[0][0], rxn[1][0]
+        rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd,
                                    filter_kts=filter_kts, tmin=tmin,
                                    tmax=tmax, pmin=pmin, pmax=pmax,
                                    convert=convert)
 
     # Reformat the dictionary keys to follow the tuple of tuples format
-    # print('dct 1', rxn_ktp_dct.keys())
     if relabel_reactions:
         lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
+            # print('ini dct\n', rxn_ktp_dct)
+            # for rxn, kts in rxn_ktp_dct.items():
+            #     print(rxn)
+            #     print(kts)
+            #     print('--')
             rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
-
-    # Remove any unwanted reactions from the dictionary
-    if filter_reaction_types:
-        rxn_ktp_dct = filter_reactions(
-            rxn_ktp_dct,
-            filter_fake=('fake' in filter_reaction_types),
-            filter_self=('self' in filter_reaction_types),
-            filter_loss=('loss' in filter_reaction_types),
-            filter_capture=('capture' in filter_reaction_types),
-            filter_reverse=('reverse' in filter_reaction_types)
-        )
+            # print('ini dct\n', rxn_ktp_dct)
+            # for rxn, kts in rxn_ktp_dct.items():
+            #     print(rxn)
+            #     print(kts)
+            #     print('--')
 
     return rxn_ktp_dct
 
@@ -285,7 +291,7 @@ def ke_dct(output_str, reactant, product):
     return _ke_dct
 
 
-def dos_rovib(ke_ped_out, sp_labels='inp'):
+def dos_rovib(ke_ped_out):
     """ Read the microcanonical pedoutput file and extracts rovibrational density
         of states of each fragment as a function of the energy
 
@@ -293,41 +299,21 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
 
         :param ke_ped_out: string of lines of microcanonical rates output file
         :type ke_ped_out: str
-        :param sp_labels: type of pedspecies labels: 'inp' is how you find them
-                in mess input, 'out' is how they are labeled in the output
-        :type sp_labels: str
+
         :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol])
                         with the density of states
         :rtype dos_df: dataframe(float)
     """
-    # get label dictionary
-    lbl_dct = name_label_dct(ke_ped_out)
-    inv_lbl_dct = invert(lbl_dct)
-    
+
     ke_lines = ke_ped_out.splitlines()
 
     i_in = apf.where_in(
         'Bimolecular fragments density of states, mol/kcal', ke_lines)[0]+2
-    mess_labels = ke_lines[i_in-1].strip().split()[2:]
+    _labels = ke_lines[i_in-1].strip().split()[2:]
     en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
-
-    
-    # relabel if necessary
-    _labels = []
-    if sp_labels == 'inp':
-        for sp in mess_labels:
-            bim, frag_n = sp.split('_')
-            _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
-
-    elif sp_labels == 'out':
-        _labels = mess_labels
-    else:
-        print('*Error: sp_labels must be "inp" (as in mess input) \
-            or "out" (as in mess output)')
-        sys.exit()
 
     dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
     # drop potentially duplicate columns
@@ -645,7 +631,9 @@ def _convert_pressure(pressure, pressure_unit):
 
 
 # Read the reactions
-def reactions(out_str, third_body=(None,)):
+def reactions(out_str,
+              third_body=(None,),
+              read_fake=False, read_self=False, read_rev=True):
     """ Read the reactions from the output file.
 
         Currently, we assume we don't care about the third body
@@ -674,65 +662,54 @@ def reactions(out_str, third_body=(None,)):
     # Reactant = <reactant>
     #
     # T(K) <prod1> <prod2> ... Loss Capture
-    rxns = ()
+    init_rxns = ()
     for i, line in enumerate(reac_lines):
         if 'Reactant = ' in line and 'Pressure =' in line:
             _reac = line.strip().split()[2]
             _prods = reac_lines[i+2].strip().split()[1:]
-            for _prod in _prods:
-                rxns += (
-                    ((_reac,), (_prod,), third_body),
-                )
+            init_rxns += tuple((_reac, _prod) for _prod in _prods)
 
     # Remove duplcates while preserving order
-    rxns = tuple(n for i, n in enumerate(rxns)
-                 if n not in rxns[:i])
+    init_rxns = tuple(n for i, n in enumerate(init_rxns)
+                      if n not in init_rxns[:i])
 
-    return rxns
+    # Remove Loss and Capture reactions
+    init_rxns = tuple(rxn for rxn in init_rxns
+                      if rxn[1] not in ('Loss', 'Capture'))
 
-
-def filter_reactions(rxn_ktp_dct,
-                     filter_fake=True,
-                     filter_self=True,
-                     filter_loss=True,
-                     filter_capture=True,
-                     filter_reverse=True):
-    """ Filter the reactions from a ktp dictionary
-    """
-
-    filt_rxn_ktp_dct = {}
-    for rxn, _ktp in rxn_ktp_dct.items():
-
-        # Move on from reaction if find any indication it should be filtered
-        rct, prd, tbody = rxn[0], rxn[1], rxn[2]
-
-        if prd == ('Loss',):
-            if filter_loss:
+    # Build list of reaction pairs: rct->prd = (rct, prd)
+    # Filter out reaction as necessary
+    rxn_pairs = ()
+    for rxn in init_rxns:
+        rct, prd = rxn
+        if not read_fake:
+            if 'F' in rxn or 'B' in rxn:
                 continue
-
-        if prd == ('Capture',):
-            if filter_capture:
+        if not read_self:
+            if rct == prd:
                 continue
+        rxn_pairs += (rxn,)
 
-        if (
-            any('F' in rgt for rgt in rct+prd) or
-            any('FW' in rgt for rgt in rct+prd)
-        ):
-            if filter_fake:
+    # Remove reverse reactions, if requested
+    if read_rev:
+        sort_rxn_pairs = rxn_pairs
+    else:
+        sort_rxn_pairs = ()
+        for pair in rxn_pairs:
+            rct, prd = pair
+            if (rct, prd) in sort_rxn_pairs or (prd, rct) in sort_rxn_pairs:
                 continue
+            sort_rxn_pairs += ((rct, prd),)
 
-        if rct == prd:
-            if filter_self:
-                continue
+    # Add the third body to the sorted pairs
+    fin_rxns = ()
+    for rxn in sort_rxn_pairs:
+        rct, prd = rxn
+        fin_rxns += (
+            ((rct,), (prd,), third_body),
+        )
 
-        if filter_reverse:
-            if (prd, rct, tbody) in filt_rxn_ktp_dct:
-                continue
-
-        # If continues not hit, reaction good to be added to new dct
-        filt_rxn_ktp_dct[(rct, prd, tbody)] = _ktp
-
-    return filt_rxn_ktp_dct
+    return fin_rxns
 
 
 # Helper functions

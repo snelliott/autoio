@@ -105,7 +105,7 @@ def _labels_input_string(inp_str):
     """
 
     def _read_label(line, header):
-        """ Get a labe from a line
+        """ Get a label from a line
         """
         lbl = None
         idx = 2 if header != 'Barrier' else 4
