@@ -123,11 +123,11 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
                         if sp_i.size > 0:
                             if any(branch_ratio_arr > 1):
                                 continue
-                            elif branch_ratio_arr[sp_i] <= 1e-5:
+                            elif branch_ratio_arr[sp_i] <= 1e-10:
                                 continue
 
                         # remove negative values or values >1
-                        _arr = [abs(x*int(1e-5 < x <= 1))
+                        _arr = [abs(x*int(1e-8 < x <= 1))
                                 for x in branch_ratio_arr]
                         br_filter = np.array(_arr, dtype=float)
 
