@@ -641,6 +641,15 @@ class Basis():
                                 Program.NWCHEM6: None,
                                 Program.ORCA4: None,
                                 Program.PSI4: None})
+        P6311PSS = ('6-311+g**', {Program.CFOUR2: None,
+                                Program.GAUSSIAN09: None,
+                                Program.GAUSSIAN16: None,
+                                Program.MOLPRO2015: None,
+                                Program.MOLPRO2021: None,
+                                Program.MRCC2018: None,
+                                Program.NWCHEM6: None,
+                                Program.ORCA4: None,
+                                Program.PSI4: None})
         P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN16: None,

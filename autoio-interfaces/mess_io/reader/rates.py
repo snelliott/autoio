@@ -11,7 +11,6 @@ from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
-from automol.util.dict_ import invert
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
@@ -104,8 +103,8 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     # Update the dictionary with the pressure-dependent rate constants
     for pressure in (_press for _press in _pressures if _press != 'high'):
         _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
-
-    bimol = bool('+' in reactant)
+    
+    bimol = bool(reactant[0] == 'P')
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     if filter_kts:
         _ktp_dct = filter_ktp_dct(_ktp_dct, bimol, tmin=tmin, tmax=tmax,
