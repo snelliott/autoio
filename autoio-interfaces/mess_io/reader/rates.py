@@ -11,7 +11,6 @@ from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
-from automol.util.dict_ import invert
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
@@ -104,8 +103,8 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     # Update the dictionary with the pressure-dependent rate constants
     for pressure in (_press for _press in _pressures if _press != 'high'):
         _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
-
-    bimol = bool('+' in reactant)
+    
+    bimol = bool(reactant[0] == 'P')
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     if filter_kts:
         _ktp_dct = filter_ktp_dct(_ktp_dct, bimol, tmin=tmin, tmax=tmax,
@@ -302,7 +301,6 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
     """
     # get label dictionary
     lbl_dct = name_label_dct(ke_ped_out)
-    inv_lbl_dct = invert(lbl_dct)
     
     ke_lines = ke_ped_out.splitlines()
 
@@ -320,8 +318,12 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
     if sp_labels == 'inp':
         for sp in mess_labels:
             bim, frag_n = sp.split('_')
-            _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
-
+            try:
+                _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
+            except IndexError:
+                print('*Error: bimol species should be named as P1+P2 \
+                    with P1, P2 being the fragment names')
+                sys.exit()
     elif sp_labels == 'out':
         _labels = mess_labels
     else:
