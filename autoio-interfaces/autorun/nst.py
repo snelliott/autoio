@@ -19,12 +19,12 @@ OUTPUT_NAMES = ('output.dat',
 
 # Specialized runner
 def isc_flux(run_dir, prog, geo, charge, mults,
-             method, basis, orb_label, ini_kwargs):
+             method, basis, orb_label, ini_kwargs, zero_ene=None):
     """ Calculate the intersystem crossing flux via a series of calculation
     """
 
-    # Calculate zero energies?
-    zero_ene = 0.0
+    # If zero energy not given, makes printing harder to read 
+    zero_ene = zero_ene or 0.0
 
     # Locate geometry at the minimum of the crossing seam
     print('Finding the MSX geometry...')
@@ -179,7 +179,7 @@ def _qc_input_str(job, prog, geo, charge, mult,
     """
 
     prog = prog.replace('_mppx', '')
-    if prog == 'molpro2015':
+    if 'molpro' in prog:
         if 'f12' in method:
             ene_line = 'molpro_energy=energy(2)\nshow[1,e25.15],molpro_energy'
         else:
@@ -212,7 +212,7 @@ def _qc_input_str(job, prog, geo, charge, mult,
         })
         _writer = (elstruct.writer.energy
                    if job == 'grad' else elstruct.writer.hessian)
-    else:
+    else:  # if Gaussian
         _nst_gen_lines = ini_kwargs.get('gen_lines', {})
         _nst_gen_lines_1 = _nst_gen_lines.get(1, ())
         _nst_gen_lines_1 += ('# fchk NoSym guess=mix',)
@@ -242,8 +242,11 @@ def _qc_script_str(prog, replace=True):
     if replace:
         script_str = script_str.replace('run.inp', 'qc.in')
         script_str = script_str.replace('run.out', 'qc.out')
-    if 'molpro' in prog:
-        script_str = script_str.format(4)
+    if 'molpro' in prog:  # catch case when # of processors is missing
+        script_str = script_str.format(8)
+
+    # Hacky way to use 2021.3 instead of 2021.2
+    script_str = script_str.replace('2021.2', '2021.3')
 
     return script_str
 
@@ -253,13 +256,13 @@ def _nst_script_str(prog):
     """
 
     if 'gaussian' in prog:
-        exe = "/lcrc/project/CMRP/amech/NST/build/nst-gaussian.x"
+        exe = "nst-gaussian.x"
     else:
-        exe = "/lcrc/project/CMRP/amech/NST/build/nst-molpro.x"
+        exe = "nst-molpro.x"
     nst_script_str = (
         "#!/usr/bin/env bash\n"
         "ulimit -c 0\n"
-        f"{exe} < input.dat >& output.dat"
+        f"{exe} < input.dat >& output.dat" 
     )
 
     return nst_script_str
