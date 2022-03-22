@@ -21,6 +21,9 @@ TimePropagationLimit                   ${time_propagation_limit}
 TimePropagationStep                    ${time_propagation_step}
 !
 WellExtension                          ${well_extension}
+% if ground_ene_shift_max is not None:
+GroundEnergyShiftMax[kcal/mol]         ${ground_ene_shift_max}
+% endif
 % if ped_spc_str is not None:
 !
 PEDOutput                              ${ped_outname}

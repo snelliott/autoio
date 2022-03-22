@@ -19,6 +19,9 @@ WellCutoff                             10
 % if well_extension is not None:
 WellExtension                          ${well_extension}
 % endif
+% if ground_ene_shift_max is not None:
+GroundEnergyShiftMax[kcal/mol]         ${ground_ene_shift_max}
+% endif
 ChemicalEigenvalueMax                  0.2
 !
 ReductionMethod                        diagonalization 
