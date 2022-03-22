@@ -277,7 +277,7 @@ def get_coeffs(entry):
     # Make sure three lines were read
     assert line_counter == 3, (
         'Less than three lines of coefficients were read' +
-        ' for the following entry:\n{formatted_entry}'
+        f' for the following entry:\n{formatted_entry}'
     )
     coeffs = tuple((high_coeffs, low_coeffs))
 
