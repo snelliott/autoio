@@ -81,6 +81,7 @@ def global_rates_input_v1(
         ene_stepover_temp=0.2, excess_ene_temp=None,
         well_extension='auto',
         well_reduction_thresh=10.0,
+        ground_ene_shift_max=None,
         ped_spc_lst=None,
         hot_enes_dct=None,
         micro_out_params=None,
@@ -151,6 +152,9 @@ def global_rates_input_v1(
 
     well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
 
+    if ground_ene_shift_max is not None:
+        ground_ene_shift_max = f'{ground_ene_shift_max*phycon.EH2KCAL:.2f}'
+
     if micro_out_params is not None:
         assert (len(micro_out_params) == 3 and
                 all(isinstance(x, float) for x in micro_out_params)), (
@@ -166,6 +170,7 @@ def global_rates_input_v1(
         'calculation_method': calculation_method,
         'well_reduction_thresh': well_reduction_thresh_str,
         'well_extension': well_extension_str,
+        'ground_ene_shift_max': ground_ene_shift_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
@@ -191,6 +196,7 @@ def global_rates_input_v2(
         well_pojection_thresh=0.1, well_reduction_thresh=10.0,
         time_propagation_limit=50.0, time_propagation_step=0.02,
         well_extension=0.5,
+        ground_ene_shift_max=None,
         ped_spc_lst=None, hot_enes_dct=None,
         micro_out_params=None,
         float_type='double',
@@ -227,6 +233,9 @@ def global_rates_input_v2(
     else:
         nhot, hot_ene_str = 0, None
 
+    if ground_ene_shift_max is not None:
+        ground_ene_shift_max = f'{ground_ene_shift_max*phycon.EH2KCAL:.2f}'
+
     if micro_out_params is not None:
         assert (len(micro_out_params) == 3 and
                 all(isinstance(x, float) for x in micro_out_params)), (
@@ -249,6 +258,7 @@ def global_rates_input_v2(
         'time_propagation_limit': f'{time_propagation_limit:.2f}',
         'time_propagation_step': f'{time_propagation_step:.2f}',
         'well_extension': f'{well_extension:.2f}',
+        'ground_ene_shift_max': ground_ene_shift_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
@@ -263,9 +273,6 @@ def global_rates_input_v2(
         template_file_name='global_rates_v2.mako',
         template_src_path=SECTION_PATH,
         template_keys=globrxn_keys)
-
-
-
 
 
 def global_pf_input(temperatures=(),
