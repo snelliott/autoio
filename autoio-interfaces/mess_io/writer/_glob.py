@@ -80,6 +80,7 @@ def global_rates_input_v1(
         model_ene_limit=800.0,
         ene_stepover_temp=0.2, excess_ene_temp=None,
         well_extension='auto',
+        chem_eig_max=None,
         well_reduction_thresh=10.0,
         ground_ene_shift_max=None,
         ped_spc_lst=None,
@@ -139,7 +140,10 @@ def global_rates_input_v1(
             well_extension_str = ''
     else:
         well_extension_str = None
-
+        
+    if chem_eig_max is not None:
+        chem_eig_max = f'{chem_eig_max:.2f}'
+        
     if ped_spc_lst is not None:
         ped_spc_str = messformat.format_ped_species(ped_spc_lst)
     else:
@@ -171,6 +175,7 @@ def global_rates_input_v1(
         'well_reduction_thresh': well_reduction_thresh_str,
         'well_extension': well_extension_str,
         'ground_ene_shift_max': ground_ene_shift_max,
+        'chem_eig_max': chem_eig_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
