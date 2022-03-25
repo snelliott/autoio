@@ -233,6 +233,13 @@ class Method():
                     Program.MOLPRO2021: (
                        'mrci', 'mrci',
                        ('R',), ('R', 'R'))})
+        MRCIF12 = ('mrcisd_q-f12',
+                   {Program.MOLPRO2015: (
+                       'mrci-f12', 'mrci-f12',
+                       ('R',), ('R', 'R')),
+                    Program.MOLPRO2021: (
+                       'mrci-f12', 'mrci-f12',
+                       ('R',), ('R', 'R'))})
 
     class Dft():
         """ Density functional theory method names """

@@ -40,12 +40,16 @@ def pac2ckin_poly(name, atom_dict, pac99_poly_str):
         num_o = atom_dict['O']
     else:
         num_o = 0
+    if 'F' in atom_dict:
+        num_f = atom_dict['F']
+    else:
+        num_f = 0
 
     # Build a string for the NASA polynomial in ChemKin format
-    line1 = "%s        H%3d C%3d O%3d N%3d G%9.1F%10.1F%9.1F      1\n" % (
+    line1 = "%s        H %3dC %3dO %3dN %3dG%10.1F%10.1F%8.1FF %3d 1\n" % (
         name.ljust(16)[0:16],
-        num_h, num_c, num_o, num_n,
-        200.0, 3000.0, 1000.0)
+        num_h, num_c, num_o, num_n, 
+        200.0, 3000.0, 1000.0, num_f)
     line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n" % (
         has[0], has[1], has[2], has[3], has[4])
     line3 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    3\n" % (
