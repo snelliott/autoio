@@ -23,7 +23,7 @@ def isc_flux(run_dir, prog, geo, charge, mults,
     """ Calculate the intersystem crossing flux via a series of calculation
     """
 
-    # If zero energy not given, makes printing harder to read 
+    # If zero energy not given, makes printing harder to read
     zero_ene = zero_ene or 0.0
 
     # Locate geometry at the minimum of the crossing seam
@@ -180,8 +180,10 @@ def _qc_input_str(job, prog, geo, charge, mult,
 
     prog = prog.replace('_mppx', '')
     if 'molpro' in prog:
-        if 'f12' in method:
-            ene_line = 'molpro_energy=energy(2)\nshow[1,e25.15],molpro_energy'
+        if 'f12' in method and 'mrci' not in method:
+            ene_line = 'molpro_energy=energy(1)\nshow[1,e25.15],molpro_energy'
+        elif 'mrci' in method:
+            ene_line = 'molpro_energy=energd\nshow[1,e25.15],molpro_energy'
         else:
             ene_line = 'molpro_energy=energy\nshow[1,e25.15],molpro_energy'
         _req_gen_lines = {
@@ -262,7 +264,7 @@ def _nst_script_str(prog):
     nst_script_str = (
         "#!/usr/bin/env bash\n"
         "ulimit -c 0\n"
-        f"{exe} < input.dat >& output.dat" 
+        f"{exe} < input.dat >& output.dat"
     )
 
     return nst_script_str

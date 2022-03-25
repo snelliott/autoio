@@ -46,4 +46,5 @@ def test__polynomial():
     name = 'H2'
     atom_dct = {'H': 2}
     ckin_poly = pac99_io.pac2ckin_poly(name, atom_dct, pac99_poly)
+    print(ckin_poly)
     assert ckin_poly == pathtools.read_file(DAT_PATH, 'H2.ckinpoly')
