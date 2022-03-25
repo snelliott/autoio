@@ -48,7 +48,7 @@ def pac2ckin_poly(name, atom_dict, pac99_poly_str):
     # Build a string for the NASA polynomial in ChemKin format
     line1 = "%s        H %3dC %3dO %3dN %3dG%10.1F%10.1F%8.1FF %3d 1\n" % (
         name.ljust(16)[0:16],
-        num_h, num_c, num_o, num_n, 
+        num_h, num_c, num_o, num_n,
         200.0, 3000.0, 1000.0, num_f)
     line2 = "% 15.8E% 15.8E% 15.8E% 15.8E% 15.8E    2\n" % (
         has[0], has[1], has[2], has[3], has[4])

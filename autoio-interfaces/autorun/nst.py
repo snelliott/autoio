@@ -23,7 +23,7 @@ def isc_flux(run_dir, prog, geo, charge, mults,
     """ Calculate the intersystem crossing flux via a series of calculation
     """
 
-    # If zero energy not given, makes printing harder to read 
+    # If zero energy not given, makes printing harder to read
     zero_ene = zero_ene or 0.0
 
     # Locate geometry at the minimum of the crossing seam
@@ -264,7 +264,7 @@ def _nst_script_str(prog):
     nst_script_str = (
         "#!/usr/bin/env bash\n"
         "ulimit -c 0\n"
-        f"{exe} < input.dat >& output.dat" 
+        f"{exe} < input.dat >& output.dat"
     )
 
     return nst_script_str
