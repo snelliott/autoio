@@ -132,12 +132,16 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='inp'):
             # removing negative probs and renormalizing
             # integrate with the trapezoidal rule
             prob_en = pd.Series(probability, index=energy, dtype=float)
+            prob_en = prob_en.sort_index()
 
+            # if there are still negative energies (might happen for multiple ped prods)
+            # remove them
+            prob_en = prob_en[prob_en.index > 0] 
+           
             if len(prob_en[prob_en < 0]) > 0:
                 # if there are negative values of the probability: remove them
-                prob_en = prob_en[:prob_en[prob_en < 0].index[0]]
+                prob_en = prob_en[prob_en[prob_en < 0].index[-1]+1:]
 
-            prob_en = prob_en.sort_index()
             # integrate with trapz
             norm_factor = np.trapz(prob_en.values, x=prob_en.index)
             ped_df.loc[temp][pressure] = prob_en/norm_factor

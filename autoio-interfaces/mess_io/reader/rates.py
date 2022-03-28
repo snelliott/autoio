@@ -332,7 +332,7 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
         sys.exit()
 
     dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
-    # drop potentially duplicate columns
+    # drop potentially duplicate columns WARNING CHECK THE EFFECT OF THIS
     dos_rovib_df = dos_rovib_df.T.drop_duplicates().T
 
     return dos_rovib_df
