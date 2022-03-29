@@ -118,8 +118,11 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
     x_idx = frag1_natoms
     a1_idx = bnd_keys[1]
     a2_idx = _get_chain_idx(iso_fgeos[0], a1_idx, excl_idxs=())
-    if frag1_natoms > 2:
+    if frag1_natoms > 3:
         a3_idx = _get_chain_idx(iso_fgeos[0], a2_idx, excl_idxs=(a1_idx,))
+    elif frag1_natoms == 3:
+        # has to be 0,1,2; for example: if a1=1, a2=0 then a3=2
+        a3_idx = next(iter({0, 1, 2} - {a1_idx, a2_idx}))
     else:
         a3_idx = None
     frag_idxs = (
