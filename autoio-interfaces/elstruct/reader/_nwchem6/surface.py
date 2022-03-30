@@ -55,8 +55,5 @@ def gradient(output_str):
 #         val_ptt=app.EXPONENTIAL_FLOAT_D,
 #         tril=True)
 #
-#     mat = [[_cast(apf.replace('d', 'e', dst, case=False)) for dst in row]
-#             for row in mat]
-#
 #     mat = tuple(map(tuple, mat))
 #     return mat

@@ -75,8 +75,5 @@ def gradient(output_str):
 #             line_start_ptt=comp_ptt,
 #             tril=True)
 #
-#         mat = [[_cast(apf.replace('d', 'e', dst, case=False)) for dst in row]
-#                for row in mat]
-#
 #     mat = tuple(map(tuple, mat))
 #     return mat
