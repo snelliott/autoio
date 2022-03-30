@@ -28,12 +28,14 @@ def _is_sequence(obj):
 def _cast_string(string):
     """ cast an individual string to int or float, if possible
     """
+
     ret = string
     try:
-        ret = int(string)
+        ret = int(string.replace('D+', 'E+').replace('D-', 'E-'))
     except ValueError:
         try:
-            ret = float(string)
+            ret = float(string.replace('D+', 'E+').replace('D-', 'E-'))
         except ValueError:
             pass
+
     return ret

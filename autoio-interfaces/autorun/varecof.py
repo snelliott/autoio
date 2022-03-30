@@ -2,6 +2,7 @@
 """
 
 import os
+import shutil
 import stat
 import ioformat
 import automol
@@ -83,7 +84,11 @@ def flux_file(varecof_script_str, mcflux_script_str,
               stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
 
     # Make the scratch directory where samples are done
-    os.mkdir(os.path.join(run_dir, 'scratch'))
+    scratch_path = os.path.join(run_dir, 'scratch')
+    if os.path.exists(scratch_path):
+        shutil.rmtree(scratch_path)
+    else:
+        os.mkdir(scratch_path)
 
     # Run VaReCoF
     print('\nSampling at all the dividing surfaces...')
