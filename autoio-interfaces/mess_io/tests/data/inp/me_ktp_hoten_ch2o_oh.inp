@@ -6,7 +6,7 @@ ExcessEnergyOverTemperature		30
 ModelEnergyLimit[kcal/mol]		400
 CalculationMethod			direct #low-eigenvalue #direct
   WellCutoff				10
-  ChemicalEigenvalueMax			0.2 
+!  ChemicalEigenvalueMax			0.2 
 !  GlobalCutoff[kcal/mol]			-45.0
  RateOutput                            me_ktp_hoten.out
  LogOutput                             me_ktp_hoten.log
@@ -40,7 +40,6 @@ Model
 
   Well     W1	# HCO
     Species
-      ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/hco/cc/hco_cc_tz.out
       RRHO
         Geometry[angstrom]	3
@@ -73,10 +72,8 @@ Model
 !-----------------------------------------------
 !Bimolecular:  H + CO
 !-----------------------------------------------
-  Bimolecular		P1
+  Bimolecular		CO+H
     Fragment CO
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/co/cc/co_cc_tz.out
       RRHO
         Geometry[angstrom]	2
 	 C          0.0000000000        0.0000000000       -0.6487312067
@@ -118,9 +115,7 @@ Model
 !TS 1: HCO --> H + CO
 !-----------------------------------------------
 
-  Barrier     B1   W1   P1    
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/hco/cc/ts_cc_tz.out
+  Barrier     B1   W1   CO+H
       RRHO
         Geometry[angstrom]	3
 	 O          0.0000000000        0.0830487195       -0.5377017800

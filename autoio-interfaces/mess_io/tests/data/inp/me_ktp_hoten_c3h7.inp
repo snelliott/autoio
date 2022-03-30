@@ -32,8 +32,6 @@ Model
 
   Well     CH3CH2CH2
     Species
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h7/ch3ch2ch2/cc/ch3ch2ch2_cc_tz.out
       RRHO
         Geometry[angstrom]	10
 	 C          0.2919588137        0.0208982138        1.2779641817
@@ -151,7 +149,7 @@ Model
 !-----------------------------------------------
 !Bimolecular:  C2H4 + CH3
 !-----------------------------------------------
-  Bimolecular		P1	# C2H4+CH3
+  Bimolecular	C2H4+CH3
     Fragment	C2H4
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c2/c2h4/ch2ch2/cc/ch2ch2_cc_tz.out
@@ -207,7 +205,7 @@ Model
 !Bimolecular:  CH3CHCH2 + H
 !-----------------------------------------------
 
-  Bimolecular		P2	# C3H6 + H
+  Bimolecular	CH3CHCH2+H
     Fragment	CH3CHCH2
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h6/ch3chch2/cc/ch3chch2_tz_v2.out
@@ -275,7 +273,7 @@ Model
 !TS 1: ch3ch2ch2 --> ch2ch2+ch3
 !-----------------------------------------------
 
-  Barrier     B1   CH3CH2CH2   P1    # CH3CH2CH2 --> C2H4+CH3
+  Barrier     B1   CH3CH2CH2   C2H4+CH3
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h7/transition_states/ch3ch2ch2_to_ch2ch2_+_ch3/cc/ch3ch2ch2_to_ch2ch2_ch3_cc_tz.out
       RRHO
@@ -329,7 +327,7 @@ Model
 !TS 2: ch3ch2ch2 --> ch3chch2 + h
 !-----------------------------------------------
 
-  Barrier     B2   CH3CH2CH2   P2    # CH3CH2CH2 --> CH3CHCH2+H
+  Barrier     B2   CH3CH2CH2   CH3CHCH2+H
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h7/transition_states/ch3ch2ch2_to_ch3chch2_+_h/cc/ch3ch2ch2_to_ch3chch2_h_cc_tz.out
       RRHO
@@ -383,7 +381,7 @@ Model
 !-----------------------------------------------
 !TS 3: ch3ch2ch2 --> ch3chch3
 !-----------------------------------------------
-  Barrier     B3   CH3CH2CH2   CH3CHCH3   # CH3CH2CH2 --> CH3CHCH3
+  Barrier     B3   CH3CH2CH2   CH3CHCH3  
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h7/transition_states/ch3ch2ch2_to_ch3chch3/cc/ch3ch2ch2_to_ch3chch3_cc_tz.out
       RRHO
@@ -437,7 +435,7 @@ Model
 !-----------------------------------------------
 !TS 4: ch3chch3 --> ch3chch2+h
 !-----------------------------------------------
-  Barrier     B4   CH3CHCH3   P2    # CH3CHCH3 --> CH3CHCH2+H
+  Barrier     B4   CH3CHCH3   CH3CHCH2+H
       ! Current data taken from:
       !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/ch/c3/c3h7/transition_states/ch3chch3_to_ch3chch2_+_h/cc/ch3chch3_to_ch3chch2_h_cc_tz.out
       RRHO
