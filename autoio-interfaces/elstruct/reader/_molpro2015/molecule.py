@@ -103,8 +103,7 @@ def opt_zmatrix(output_str):
                 name_ptt=(
                     app.one_of_these(['R', 'A', 'D']) +
                     app.one_or_more(app.INTEGER)),
-                val_ptt=(
-                    app.one_of_these([app.EXPONENTIAL_FLOAT_D, app.NUMBER])),
+                val_ptt=app.NUMBER,
                 last=True,
                 case=False)
 

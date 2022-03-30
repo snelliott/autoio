@@ -5,7 +5,6 @@ import numpy
 from phydat import phycon, ptab
 import automol
 import autoread as ar
-from autoparse import cast as _cast
 import autoparse.pattern as app
 import autoparse.find as apf
 
@@ -51,10 +50,6 @@ def hessian(output_str):
                          app.padded(app.NEWLINE)),
         line_start_ptt=comp_ptt,
         tril=True)
-
-    if mat is not None:
-        mat = [[_cast(apf.replace('d', 'e', dst, case=False)) for dst in row]
-               for row in mat]
 
     if mat is None:
         comp_ptt = app.one_of_these(['X', 'Y', 'Z']) + app.UNSIGNED_INTEGER
