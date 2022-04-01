@@ -58,7 +58,7 @@ VARECOF_CONV_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/lcrc/project/CMRP/amech/VaReCoF/build/convert_multi "
-    "tst.inp >& varecof_multi_conv.out"
+    "convert.inp >& varecof_multi_conv.out"
 )
 VARECOF_TSTCHECK = (
     "#!/usr/bin/env bash\n"
