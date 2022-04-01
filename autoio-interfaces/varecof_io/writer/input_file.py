@@ -43,7 +43,7 @@ def tst(nsamp_max, nsamp_min, flux_err, pes_size,
     else:
         assert len(ener_grid) == 4
     if not amom_grid:
-        amom_grid = [0, 4, 1.10, 40]
+        amom_grid = [0, 1, 1.10, 40]
     else:
         assert len(amom_grid) == 4
     ener_grid = vrcformat.format_grids_string(ener_grid, 'ener', 'Kelvin')
@@ -296,19 +296,31 @@ def molpro_template(ts_info, mod_var_scn_thy_info, inf_sep_ene, cas_kwargs):
     method_dct = {
         'caspt2': 'rs2',
         'caspt2c': 'rs2c',
+        'mrcisd_q': 'mrci'
     }
     method = method_dct[mod_var_scn_thy_info[1]]
 
     # Set the lines for methods
-    method_lines = (
-        "if (iterations.ge.0) then",
-        f"  {{{method},shift=0.25}}",
-        f"  molpro_energy = energy + {-1.0*inf_sep_ene}",
-        "else",
-        "  molpro_energy = 10.0",
-        "endif\n"
-        # "show[1,e25.15],molpro_energy"
-    )
+    if 'rs2' in method:
+        method_lines = (
+            "if (iterations.ge.0) then",
+            f"  {{{method},shift=0.25}}",
+            f"  molpro_energy = energy + {-1.0*inf_sep_ene}",
+            "else",
+            "  molpro_energy = 10.0",
+            "endif\n"
+            # "show[1,e25.15],molpro_energy"
+        )
+    else:
+        method_lines = (
+            "if (iterations.ge.0) then",
+            "  {mrci}",
+            f"  molpro_energy = energd + {-1.0*inf_sep_ene}",
+            "else",
+            "  molpro_energy = 10.0",
+            "endif\n"
+            # "show[1,e25.15],molpro_energy"
+        )
 
     # Hacky nonsense to get the correct elstruct string
 
@@ -360,7 +372,7 @@ def convert():
 
         :rtype: string
     """
-    return 'MultiInputFile    tst.inp'
+    return 'MultiInputFile    tst.inp\n\n'
 
 
 def machinefile(machine_dct):

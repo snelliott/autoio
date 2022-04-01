@@ -32,23 +32,17 @@ MESSRATEV2 = (
     # "/home/ygeorgievski/build/crossrate/mess_test mess.inp >> stdout.log &> stderr.log"
     "mess-v2 mess.inp >> stdout.log &> stderr.log"
 )
-VARECOF = (
+VARECOF_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "MPI=`which mpirun`\n"
     # 'MPI_OPTIONS="-machinefile machines"'
     # 'MPI_OPTIONS="-host b460"'
-    # 'MPI_OPTIONS="-n {}"\n'
-    'MPI_OPTIONS="-n 5"\n'
+    'MPI_OPTIONS="-n {}"\n'
     "VARECOFEXE=/lcrc/project/CMRP/amech/VaReCoF/build/multi\n\n"
     "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
-INTDER = (
-    "#!/usr/bin/env bash\n"
-    "ulimit -c 0\n"
-    f"{EXTERN_PATH}/INTDER < intder.inp >& intder.out"
-)
-MCFLUX = (
+VARECOF_MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
@@ -58,12 +52,23 @@ VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct "
-    "tst.inp >& varecof_conv.out"
+    "tst.inp >& varecof_struct_conv.out"
 )
-TSTCHECK = (
+VARECOF_CONV_MULTI = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_multi "
+    "tst.inp >& varecof_multi_conv.out"
+)
+VARECOF_TSTCHECK = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/home/ygeorgi/build/rotd/tst_check >& tst_check.out"
+)
+INTDER = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    f"{EXTERN_PATH}/INTDER < intder.inp >& intder.out"
 )
 THERMP = (
     "#!/usr/bin/env bash\n"
@@ -150,12 +155,14 @@ SCRIPT_DCT = {
     'projrot': PROJROT,
     # ThermP
     'thermp': THERMP,
-    # VaReCoF
-    'varecof': VARECOF,
-    'varecof_conv_struct': VARECOF_CONV_STRUCT,
+    # INTDER
     'intder': INTDER,
-    'mcflux': MCFLUX,
-    'tstchk': TSTCHECK,
+    # VaReCoF
+    'varecof_multi': VARECOF_MULTI,
+    'varecof_conv_struct': VARECOF_CONV_STRUCT,
+    'varecof_conv_multi':  VARECOF_CONV_MULTI,
+    'varecof_mcflux': VARECOF_MCFLUX,
+    'varecof_tstchk': VARECOF_TSTCHECK,
     # Electronic Structure
     'gaussian09': G09,
     'qchem5': QCHEM5,
