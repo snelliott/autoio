@@ -354,7 +354,7 @@ def format_hot_enes(hot_enes_dct):
     n_enes = 0
     for spc, ene_lst in hot_enes_dct.items():
         _str = ' '.join((f'{ene:.1f}' for ene in ene_lst))
-        ene_str += f'{spc:5s}{_str}\n'
+        ene_str += f'{spc:5s} {_str}\n'
         n_enes += 1
 
     return n_enes, ene_str.rstrip()
