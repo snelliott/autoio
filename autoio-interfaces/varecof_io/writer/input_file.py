@@ -47,7 +47,7 @@ def tst(nsamp_max, nsamp_min, flux_err, pes_size,
     else:
         assert len(amom_grid) == 4
     ener_grid = vrcformat.format_grids_string(ener_grid, 'ener', 'Kelvin')
-    amom_grid = vrcformat.format_grids_string(amom_grid, 'amom', 'Kelvin')
+    amom_grid = vrcformat.format_grids_string(amom_grid, 'amom', 'au')
 
     # Set the faces
     faces = vrcformat.format_faces_string(faces)

@@ -62,7 +62,7 @@ class TemplateKey():
 
 
 # Format strings
-def geometry_strings(geo, frozen_coordinates, zma_sign='='):
+def geometry_strings(geo, frozen_coordinates, zma_sign='=', offset=False):
     """ Build the string for the input geometry
 
         :param geo: cartesian or z-matrix geometry
@@ -72,6 +72,24 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='='):
         :type fozen_coordinates: tuple[str]
         :rtype: (str, str)
     """
+
+    def _offset_planar_vals(val):
+        """ Change 180.0 to 179.9 and 0.0 to 0.1 to deal with
+            breaking symmetry.
+        """
+        
+        offset_val_dct = {}
+        for key, val in val_dct.items():
+            _val = round(val, 1)
+            if _val == 180.0:
+                _val = 179.9
+            elif _val == 0.0:
+                _val = 0.1
+            else:
+                _val = val
+            offset_val_dct[key] = _val
+
+        return offset_val_dct
 
     if automol.geom.is_valid(geo):
         geo_str = automol.geom.string(geo)
@@ -90,6 +108,10 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='='):
                     if key not in frozen_coordinates}
         cval_dct = {key: val for key, val in val_dct.items()
                     if key in frozen_coordinates}
+    
+        if offset:
+            vval_dct = _offset_planar_vals(vval_dct)
+            cval_dct = _offset_planar_vals(cval_dct)
 
         zmat_vval_str = aw.zmat.setval_block(
             vval_dct, setval_sign=zma_sign).strip()
