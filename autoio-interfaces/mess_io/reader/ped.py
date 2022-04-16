@@ -43,9 +43,8 @@ def ped_names(input_str):
             break
 
     if not ped_species or not ped_output:
-        print('Error: PEDSpecies and PEDOutput options incomplete. '
-              'Exiting now')
-        sys.exit()
+        print('*Warning: PEDSpecies and PEDOutput options incomplete. \n'
+              'Why did you call this function then? \n')
 
     return ped_species, ped_output
 

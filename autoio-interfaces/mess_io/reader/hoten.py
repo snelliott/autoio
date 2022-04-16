@@ -24,14 +24,19 @@ def get_hot_species(input_str):
     # Get the MESS input lines
     energy_dct, _, _, _ = pes(input_str)
     mess_lines = input_str.splitlines()
-    hotsp_i = apf.where_in('HotEnergies', mess_lines)[0]
-    num_hotsp = int(mess_lines[hotsp_i].strip().split()[1])
-    #hotspecies = [None]*num_hotsp
-    hotspecies_en = {}
-    for line in mess_lines[hotsp_i+1:hotsp_i+1+num_hotsp]:
-        hotname = line.strip().split()[0]
-        hotspecies_en[hotname] = energy_dct[hotname]
-
+    try:
+        hotsp_i = apf.where_in('HotEnergies', mess_lines)[0]
+        num_hotsp = int(mess_lines[hotsp_i].strip().split()[1])
+        #hotspecies = [None]*num_hotsp
+        hotspecies_en = {}
+        for line in mess_lines[hotsp_i+1:hotsp_i+1+num_hotsp]:
+            hotname = line.strip().split()[0]
+            hotspecies_en[hotname] = energy_dct[hotname]
+    except IndexError:
+        print('*Error: no hotspecies - why did you call this function?')
+        print('returning empty dictionary \n')
+        hotspecies_en = {}
+        
     return hotspecies_en
 
 
