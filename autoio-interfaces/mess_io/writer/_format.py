@@ -203,10 +203,10 @@ def format_rotor_potential(potential):
     for i, (coord, energy) in enumerate(potential.items()):
         if ((i+1) % 6) == 0 and (i+1) != npot:
             coord_str += f'{coord[0]:<8.2f}\n'
-            ene_str += f'{energy:<8.2f}\n'
+            ene_str += f'{energy:<10.4f}\n'
         else:
             coord_str += f'{coord[0]:<8.2f}'
-            ene_str += f'{energy:<8.2f}'
+            ene_str += f'{energy:<10.4f}'
 
     # Indent the lines
     coord_str = indent(coord_str, 4)
