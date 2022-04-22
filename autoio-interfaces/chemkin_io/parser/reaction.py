@@ -212,22 +212,20 @@ def get_pes_info(rxn_str):
     """
 
     ptt = (
-        app.escape('#') +
-        app.SPACES +
-        'pes.subpes.channel' +
-        app.SPACES +
         app.capturing(
             app.INTEGER + app.escape('.') +
             app.INTEGER + app.escape('.') +
             app.INTEGER)
     )
-
-    cap = apf.first_capture(ptt, rxn_str)
-    if cap is not None:
-        pes_inf = tuple(int(x)-1 for x in cap.strip().split('.'))
-    else:
-        pes_inf = None
-
+    
+    pes_inf = None
+    for line in rxn_str.splitlines():
+        if '#' in line and 'pes.subpes.channel' in line:
+            cap = apf.first_capture(ptt, rxn_str)
+            if cap is not None:
+                pes_inf = tuple(int(x)-1 for x in cap.strip().split('.'))
+            break
+            
     return pes_inf
 
 
