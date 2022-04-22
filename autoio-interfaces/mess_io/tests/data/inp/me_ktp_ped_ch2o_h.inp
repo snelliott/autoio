@@ -21,7 +21,7 @@ CalculationMethod                       direct #low-eigenvalue #direct
 
 RateOutput                              rate_ped.out                        ! output file name for rate coefficients                         
 PEDOutput       thf_pyro_ped.out
-PEDSpecies      CH2O+H_HCO+H2
+PEDSpecies      CH2O+H=HCO+H2
 
 MicroRateOutput                         ke_ped.out
 MicroEnerMin[kcal/mol]                  0.
