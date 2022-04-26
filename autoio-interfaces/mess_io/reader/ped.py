@@ -34,7 +34,7 @@ def ped_names(input_str):
             check += 1
             ped_species_all = line.strip().split()[1:]
             for coupled_species in ped_species_all:
-                ped_species += (tuple(coupled_species.split('_')),)
+                ped_species += (tuple(coupled_species.split('=')),)
         if 'PEDOutput' in line:
             check += 1
             ped_output = line.strip().split()[1]
@@ -43,9 +43,8 @@ def ped_names(input_str):
             break
 
     if not ped_species or not ped_output:
-        print('Error: PEDSpecies and PEDOutput options incomplete. '
-              'Exiting now')
-        sys.exit()
+        print('*Warning: PEDSpecies and PEDOutput options incomplete. \n'
+              'Why did you call this function then? \n')
 
     return ped_species, ped_output
 

@@ -22,7 +22,6 @@ WellExtension                          ${well_extension}
 % if ground_ene_shift_max is not None:
 GroundEnergyShiftMax[kcal/mol]         ${ground_ene_shift_max}
 % endif
-ChemicalEigenvalueMax                  0.2
 !
 % if chem_eig_max is not None:
 ChemicalEigenvalueMax                  ${chem_eig_max}

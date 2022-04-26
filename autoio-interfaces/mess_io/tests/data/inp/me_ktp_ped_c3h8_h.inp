@@ -28,7 +28,7 @@ CalculationMethod                       direct #low-eigenvalue #direct
 
 RateOutput                              rate_ped.out                        ! output file name for rate coefficients                         
 PEDOutput       thf_pyro_ped.out
-PEDSpecies      C3H8+H_CH3CH2CH2+H2 C3H8+H_CH3CHCH3+H2
+PEDSpecies      C3H8+H=CH3CH2CH2+H2 C3H8+H=CH3CHCH3+H2
 
 MicroRateOutput                         ke_ped.out
 MicroEnerMin[kcal/mol]                  0.
