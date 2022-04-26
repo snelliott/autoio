@@ -720,10 +720,11 @@ def filter_reactions(rxn_ktp_dct,
             if filter_capture:
                 continue
 
-        if (
-            any('F' in rgt for rgt in rct+prd) or
-            any('FW' in rgt for rgt in rct+prd)
-        ):
+        # if (
+        #     any('F' in rgt for rgt in rct+prd)  or
+        #     any('FW' in rgt for rgt in rct+prd)
+        # ):
+        if any('Fake' in rgt for rgt in rct+prd):
             if filter_fake:
                 continue
 
