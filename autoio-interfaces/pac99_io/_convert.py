@@ -27,9 +27,9 @@ def pac2ckin_poly(name, atom_dct, pac99_poly_str):
         lowt, breakt, hight = _parse_temperatures(pac99_poly_str)
 
         line1 = (
-            f'{name.strip():<16s}' +    # name string
-            '  ' +                      # 3-char buffer
-            '      ' +                  # unused 6-char comment
+            f'{name.strip():<24s}' +      # name string (assume 9-char buffer)
+            # '  ' +                      # 2-char buffer
+            # '      ' +                  # unused 6-char comment
             f'{elem_str:<20s}' +
             'G'
             f'{lowt:>10.1f}{breakt:>10.1f}{hight:>8.1f}'
