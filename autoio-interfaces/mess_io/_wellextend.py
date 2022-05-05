@@ -94,8 +94,9 @@ def _get_well_reactions(mess_out_str):
 
     # Get the well labels from the reactions
     # We assume wells are MESS labels missing a '+' or 'W'
-    rxns = mess_io.reader.rates.reactions(
-        mess_out_str, read_rev=True, read_fake=False, read_self=False)
+    rxns = mess_io.reader.rates.reactions(mess_out_str)
+    rxns = mess_io.reader.rates.filter_reactions(
+        rxns, filter_reverse=False)
 
     wells = ()
     for rxn in rxns:
