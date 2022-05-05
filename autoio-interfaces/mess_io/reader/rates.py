@@ -39,10 +39,22 @@ def get_rxn_ktp_dct(out_str,
         :rtype dict[float: (float, float)]
     """
 
+    # Read the reactions; filter them if requested
+    rxns = reactions(out_str)
+    if filter_reaction_types:
+        rxns = filter_reactions(
+            rxns,
+            filter_fake=('fake' in filter_reaction_types),
+            filter_self=('self' in filter_reaction_types),
+            filter_loss=('loss' in filter_reaction_types),
+            filter_capture=('capture' in filter_reaction_types),
+            filter_reverse=('reverse' in filter_reaction_types)
+        )
+
     # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
     # For each rxn pair, get rate constants, with filtering as indicated
     rxn_ktp_dct = {}
-    for rxn in reactions(out_str):
+    for rxn in rxns:
         rxn_ktp_dct[rxn] = ktp_dct(out_str, rxn[0][0], rxn[1][0],
                                    filter_kts=filter_kts, tmin=tmin,
                                    tmax=tmax, pmin=pmin, pmax=pmax,
@@ -54,17 +66,6 @@ def get_rxn_ktp_dct(out_str,
         lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
             rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
-
-    # Remove any unwanted reactions from the dictionary
-    if filter_reaction_types:
-        rxn_ktp_dct = filter_reactions(
-            rxn_ktp_dct,
-            filter_fake=('fake' in filter_reaction_types),
-            filter_self=('self' in filter_reaction_types),
-            filter_loss=('loss' in filter_reaction_types),
-            filter_capture=('capture' in filter_reaction_types),
-            filter_reverse=('reverse' in filter_reaction_types)
-        )
 
     return rxn_ktp_dct
 
@@ -693,7 +694,7 @@ def reactions(out_str, third_body=(None,)):
     return rxns
 
 
-def filter_reactions(rxn_ktp_dct,
+def filter_reactions(rxns,
                      filter_fake=True,
                      filter_self=True,
                      filter_loss=True,
@@ -702,8 +703,8 @@ def filter_reactions(rxn_ktp_dct,
     """ Filter the reactions from a ktp dictionary
     """
 
-    filt_rxn_ktp_dct = {}
-    for rxn, _ktp in rxn_ktp_dct.items():
+    filt_rxns = ()
+    for rxn in rxns:
 
         # Move on from reaction if find any indication it should be filtered
         rct, prd, tbody = rxn[0], rxn[1], rxn[2]
@@ -729,13 +730,13 @@ def filter_reactions(rxn_ktp_dct,
                 continue
 
         if filter_reverse:
-            if (prd, rct, tbody) in filt_rxn_ktp_dct:
+            if (prd, rct, tbody) in filt_rxns:
                 continue
 
         # If continues not hit, reaction good to be added to new dct
-        filt_rxn_ktp_dct[(rct, prd, tbody)] = _ktp
+        filt_rxns += (rxn,) 
 
-    return filt_rxn_ktp_dct
+    return filt_rxns
 
 
 # Helper functions
