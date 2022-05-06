@@ -41,7 +41,7 @@ def get_hot_species(input_str):
 
 
 def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
-                          sp_labels='inp'):
+                          sp_labels='auto'):
     """ Extract hot branching fractions for a single species
         :param hot_log_str: string of mess log file
         :type hot_log_str: str
@@ -50,15 +50,20 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
         :param species_lst: list of all species on the PES
         :type species_lst: list
         :param sp_labels: type of species labels: 'inp' is how you find them
-                in mess input, 'out' is how they are labeled in the output
+                in mess input, 'out' is how they are labeled in the output;
+                'auto' decides 'inp' if it finds the lbl dct
         :type sp_labels: str
         :return hoten_dct: hot branching fractions for hotspecies
         :rtype hoten_dct: dct{hotspecies: df[P][T]:df[allspecies][energies]}
     """
     # get label dictionary
     lbl_dct = name_label_dct(hot_log_str)
-    inv_lbl_dct = invert(lbl_dct)
-
+    if lbl_dct:
+        inv_lbl_dct = invert(lbl_dct)
+        
+    if sp_labels == 'auto':
+        sp_labels = 'inp'*(not not lbl_dct) + 'out'*(not lbl_dct)
+        
     lines = hot_log_str.splitlines()
     # for each species: dataframe of dataframes BF[Ti][pi]
     # each of them has BF[energy][species]
@@ -159,12 +164,13 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
     return hoten_dct
 
 
-def extract_fne(log_str, sp_labels='inp'):
+def extract_fne(log_str, sp_labels='auto'):
     """ Extract fne from log file
         :param log_str: string of mess log file
         :type log_str: str
         :param sp_labels: type of species labels: 'inp' is how you find them
-                in mess input, 'out' is how they are labeled in the output
+                in mess input, 'out' is how they are labeled in the output;
+                'auto' sets to inp if it finds the lbl dct, otherwise 'out'
         :type sp_labels: str
         :return dct_bf_tp_df: branching fractions at T,P
             for each product for the selected species
@@ -173,21 +179,29 @@ def extract_fne(log_str, sp_labels='inp'):
                 made so that you can extract bf_tp_df from here to
                 use it with bf_tp_df_todct
     """
+    lines = log_str.splitlines()
     # get label dictionary and count N of wells
     lbl_dct = name_label_dct(log_str)
-    n_wells = sum(np.array(['W' in key for key in lbl_dct.keys()], dtype=int))
-    if sp_labels == 'inp':
+    if sp_labels == 'auto':
+        sp_labels = 'inp'*(not not lbl_dct) + 'out'*(not lbl_dct)
+        
+    if sp_labels == 'inp' and lbl_dct:
         species = list(lbl_dct.values())
-    elif sp_labels == 'out':
+    elif sp_labels == 'out' and lbl_dct:
         species = list(lbl_dct.keys())
+    elif sp_labels == 'out' and not lbl_dct:
+        wells = [line.split('WELL: ')[1].strip() for line in lines if 'WELL' in line ]
+        n_wells = len(wells)
+        bimol = [line.split('BIMOLECULAR: ')[1].strip() for line in lines if 'BIMOLECULAR' in line ]
+        species = wells+bimol
     else:
         print('*Error: sp_labels must be "inp" (as in mess input) \
             or "out" (as in mess output)')
         sys.exit()
-
-    wells = species[:n_wells]
-
-    lines = log_str.splitlines()
+    
+    if lbl_dct:
+        n_wells = sum(np.array(['W' in key for key in lbl_dct.keys()], dtype=int))
+        wells = species[:n_wells]    
 
     # 1. extract P, T and preallocate dictionary
     pt_i_array = apf.where_in(['Pressure', 'Temperature'], lines)
