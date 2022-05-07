@@ -317,17 +317,19 @@ def dos_rovib(ke_ped_out, sp_labels='auto'):
 
     # relabel if necessary
     _labels = []
-    if sp_labels == 'inp':
+    if sp_labels == 'inp' or sp_labels == 'out':
         for sp in mess_labels:
             bim, frag_n = sp.split('_')
+            if sp_labels == 'inp':
+                sp_tosplit = lbl_dct[bim]
+            elif sp_labels == 'out':
+                sp_tosplit = bim
             try:
-                _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
+                _labels.append(sp_tosplit.split('+')[int(frag_n)])
             except IndexError:
                 print('*Error: bimol species should be named as P1+P2 \
                     with P1, P2 being the fragment names')
                 sys.exit()
-    elif sp_labels == 'out':
-        _labels = mess_labels
     else:
         print('*Error: sp_labels must be "inp" (as in mess input) \
             or "out" (as in mess output)')
