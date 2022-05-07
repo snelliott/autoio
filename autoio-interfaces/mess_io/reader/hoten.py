@@ -119,7 +119,7 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
                     or "out" (as in mess output)')
                 sys.exit()
 
-            sp_i = apf.where_in(hotspecies_messout, species_bf_i_messout)
+            sp_i = apf.where_is(hotspecies_messout, species_bf_i_messout)
 
             for line in lines_block:
                 line = line.strip()
