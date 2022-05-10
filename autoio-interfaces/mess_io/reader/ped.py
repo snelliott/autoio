@@ -49,7 +49,7 @@ def ped_names(input_str):
     return ped_species, ped_output
 
 
-def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='inp'):
+def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
     """ Read `PEDOutput` file and extract product energy distribution at T,P.
         Energy in output set with respect to the ground energy of the products
 
@@ -60,7 +60,8 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='inp'):
         :param energy_dct: energies of ped PES
         :type energy_dct: {label: energy} (str)
         :param sp_labels: type of pedspecies labels: 'inp' is how you find them
-                in mess input, 'out' is how they are labeled in the output
+                in mess input, 'out' is how they are labeled in the output,
+                'auto' sets inp if it finds the labels
         :type sp_labels: str
         :return ped_df_dct: dct(dataframe(columns:P, rows:T))
                             with the Series of energy distrib
@@ -80,8 +81,11 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='inp'):
                                 for T in temperature_i], dtype=float)
     # get label dictionary
     lbl_dct = name_label_dct(pedoutput_str)
-    inv_lbl_dct = invert(lbl_dct)
-
+    if lbl_dct:
+        inv_lbl_dct = invert(lbl_dct)
+    if sp_labels == 'auto':
+        sp_labels = 'out'*(not lbl_dct) + 'inp'*(not not lbl_dct)
+        
     ped_df_dct = dict.fromkeys(energy_dct.keys())
     # find the energy for the scaling: everything refers to the products
     for spc in ped_spc:

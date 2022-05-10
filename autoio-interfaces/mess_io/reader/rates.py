@@ -104,7 +104,7 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     # Update the dictionary with the pressure-dependent rate constants
     for pressure in (_press for _press in _pressures if _press != 'high'):
         _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
-    
+
     bimol = bool(reactant[0] == 'P')
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     if filter_kts:
@@ -285,7 +285,7 @@ def ke_dct(output_str, reactant, product):
     return _ke_dct
 
 
-def dos_rovib(ke_ped_out, sp_labels='inp'):
+def dos_rovib(ke_ped_out, sp_labels='auto'):
     """ Read the microcanonical pedoutput file and extracts rovibrational density
         of states of each fragment as a function of the energy
 
@@ -295,6 +295,7 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
         :type ke_ped_out: str
         :param sp_labels: type of pedspecies labels: 'inp' is how you find them
                 in mess input, 'out' is how they are labeled in the output
+                'auto' sets 'inp' if it finds lbl dct
         :type sp_labels: str
         :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol])
                         with the density of states
@@ -302,7 +303,9 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
     """
     # get label dictionary
     lbl_dct = name_label_dct(ke_ped_out)
-    
+    if sp_labels == 'auto':
+        sp_labels = 'out'*(not lbl_dct) + 'inp'*(not not lbl_dct)
+
     ke_lines = ke_ped_out.splitlines()
 
     i_in = apf.where_in(
@@ -313,20 +316,21 @@ def dos_rovib(ke_ped_out, sp_labels='inp'):
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
 
-    
     # relabel if necessary
     _labels = []
-    if sp_labels == 'inp':
+    if sp_labels == 'inp' or sp_labels == 'out':
         for sp in mess_labels:
             bim, frag_n = sp.split('_')
+            if sp_labels == 'inp':
+                sp_tosplit = lbl_dct[bim]
+            elif sp_labels == 'out':
+                sp_tosplit = bim
             try:
-                _labels.append(lbl_dct[bim].split('+')[int(frag_n)])
+                _labels.append(sp_tosplit.split('+')[int(frag_n)])
             except IndexError:
                 print('*Error: bimol species should be named as P1+P2 \
                     with P1, P2 being the fragment names')
                 sys.exit()
-    elif sp_labels == 'out':
-        _labels = mess_labels
     else:
         print('*Error: sp_labels must be "inp" (as in mess input) \
             or "out" (as in mess output)')
@@ -416,7 +420,7 @@ def barriers(barriers_ene_s, species_ene_s, reac, prod):
     elif (
         any(findreac) or any(findreac_rev) and
         any(findprod) or any(findprod_rev)
-         ):
+    ):
         # check if you have reac->wr->wp->prod like in habs
         connect_reac = numpy.array(list(barriers_ene_s.keys()))[findreac]
         fromreac = [p[1] for p in connect_reac]
