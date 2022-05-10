@@ -53,8 +53,8 @@ def merged_wells(mess_aux_str, pressure, temp):
     return merged_well_lst
 
 
-def well_average_energy(log_str, well, temp):
-    """ Obtain the average energy of each well from the output
+def well_thermal_energy(log_str, well, temp):
+    """ Obtain the thermal energy of each well from the output
         of MESS rate calculations.
 
         Returns the energies in hartrees.
@@ -93,7 +93,7 @@ def well_average_energy(log_str, well, temp):
         ptt = (
             app.escape(well) + app.SPACES +
             app.escape('Well:') + app.SPACES +
-            'average energy =' + app.SPACES +
+            'thermal energy =' + app.SPACES +
             app.capturing(app.NUMBER) + app.SPACES +
             app.escape('kcal/mol')
         )

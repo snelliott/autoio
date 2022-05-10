@@ -79,10 +79,16 @@ def well_energies(mess_out_str, mess_log_str, pressure):
         else:
             print(f'\nMax temperature for energies is {max_temp} K')
 
-        # Read the average energy at the max temperature
-        well_enes[well] = (
-            mess_io.reader.well_average_energy(mess_log_str, well, max_temp)
-            if max_temp is not None else None)
+        # Read the thermal energy at the max temperature
+        # Only put enes if they are positive to be written later
+        if max_temp is not None:
+            ene = mess_io.reader.well_thermal_energy(mess_log_str, well, max_temp)
+            if ene > 0.0:
+                well_enes[well] = ene
+            else:
+                well_enes[well] = None
+        else:
+            well_enes[well] = None
 
     return well_enes
 
