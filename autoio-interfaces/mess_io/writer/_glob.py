@@ -79,7 +79,7 @@ def global_rates_input_v1(
         calculation_method='well-reduction',
         model_ene_limit=800.0,
         ene_stepover_temp=0.2, excess_ene_temp=None,
-        well_extension='auto',
+        well_extension=0.001,
         chem_eig_max=None,
         well_reduction_thresh=10.0,
         ground_ene_shift_max=None,
@@ -135,7 +135,7 @@ def global_rates_input_v1(
             assert isinstance(well_extension, float), (
                 'WellExtension value must be a float'
             )
-            well_extension_str = f'{well_extension:.2f}'
+            well_extension_str = f'{well_extension:.4f}'
         else:
             well_extension_str = ''
     else:
@@ -200,7 +200,7 @@ def global_rates_input_v2(
         chem_tol=1.0e-10, chem_thresh=0.1,
         well_pojection_thresh=0.1, well_reduction_thresh=10.0,
         time_propagation_limit=50.0, time_propagation_step=0.02,
-        well_extension=0.5,
+        well_extension=0.001,
         ground_ene_shift_max=None,
         ped_spc_lst=None, hot_enes_dct=None,
         micro_out_params=None,
@@ -262,7 +262,7 @@ def global_rates_input_v2(
         'well_reduction_thresh': f'{well_reduction_thresh:.2f}',
         'time_propagation_limit': f'{time_propagation_limit:.2f}',
         'time_propagation_step': f'{time_propagation_step:.2f}',
-        'well_extension': f'{well_extension:.2f}',
+        'well_extension': f'{well_extension:.4f}',
         'ground_ene_shift_max': ground_ene_shift_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
