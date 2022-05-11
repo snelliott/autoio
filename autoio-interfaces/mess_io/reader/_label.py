@@ -38,9 +38,12 @@ def relabel(rxn_ktp_dct, label_dct):
 
 
 def name_label_dct(output_str):
-    """ Build a dictionary that maps the names of wells, bimols, and
+    """ Build a dictionary that maps the names of wells and bimols
         barriers provided in the MESS input to the labels that are used
         internally by MESS and printed in the rate output with rate constants.
+
+        Ignores inner and oute barriers, hard to get the block for all of the
+        types of output.
 
         Dictionary is built by parsing the name-label conversion table provided
         in the MESS rate output file and then placing the elements of that
@@ -51,29 +54,29 @@ def name_label_dct(output_str):
         :rtype: dict[str: str]
     """
 
-    # Read the table with the name-labels
-    well_ptt = (
-       'Well Names Translation:' +
-       app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
-       'End'
-    )
-    bimol_ptt = (
-       'Bimolecular Names Translation:' +
-       app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
-       'End'
-    )
+    start_table_ptt = 'Names Translation Tables'
+    end_table_ptt = 'Inner Barriers:'
+    if apf.has_match(start_table_ptt, output_str):
+        start_idx, end_idx = None, None
+        out_lines = output_str.splitlines()
+        for i, line in enumerate(out_lines):
+            if start_table_ptt in line:
+                start_idx = i
+            if end_table_ptt in line:
+                end_idx = i
+                break
 
-    well_lbl_block = apf.first_capture(well_ptt, output_str)
-    bimol_lbl_block = apf.first_capture(bimol_ptt, output_str)
+        table_block = '\n'.join(out_lines[start_idx+1: end_idx+1])
+        name_ptt = (
+            app.capturing(app.one_or_more(app.NONNEWLINE)) +
+            app.SPACES +
+            '-' +
+            app.SPACES +
+            app.capturing(app.one_or_more(app.NONNEWLINE))
+        )
 
-    # Parse the table for the names and labels to fill the dictionary
-    if well_lbl_block is not None and bimol_lbl_block is not None:
-        lbl_dct = {}
-        well_lines = well_lbl_block.strip().splitlines()
-        bimol_lines = bimol_lbl_block.strip().splitlines()
-        for line in well_lines+bimol_lines:
-            _line = line.strip().split()
-            lbl_dct.update({_line[0]: _line[1]})
+        name_caps = apf.all_captures(name_ptt, table_block)
+        lbl_dct = {lbl.strip(): name.strip() for lbl, name in name_caps}
     else:
         lbl_dct = None
         print('Warning no name-label table found in output to relabel labels '

@@ -21,7 +21,8 @@ SECTION_PATH = os.path.join(TEMPLATE_PATH, 'sections')
 
 # Write the full input file strings
 def messrates_inp_str(globkey_str, rxn_chan_str,
-                      energy_trans_str=None, well_lump_str=None):
+                      energy_trans_str=None, well_lump_str=None,
+                      use_short_names=False):
     """ Combine various MESS strings together to combined MESS rates
     """
 
@@ -30,7 +31,8 @@ def messrates_inp_str(globkey_str, rxn_chan_str,
         'globkey_str': globkey_str,
         'energy_trans_str': energy_trans_str,
         'well_lump_str': well_lump_str,
-        'rxn_chan_str': rxn_chan_str
+        'rxn_chan_str': rxn_chan_str,
+        'use_short_names': use_short_names
     }
 
     mess_inp_str = build_mako_str(
@@ -79,7 +81,7 @@ def global_rates_input_v1(
         calculation_method='well-reduction',
         model_ene_limit=800.0,
         ene_stepover_temp=0.2, excess_ene_temp=None,
-        well_extension='auto',
+        well_extension=0.001,
         chem_eig_max=None,
         well_reduction_thresh=10.0,
         ground_ene_shift_max=None,
@@ -135,15 +137,15 @@ def global_rates_input_v1(
             assert isinstance(well_extension, float), (
                 'WellExtension value must be a float'
             )
-            well_extension_str = f'{well_extension:.2f}'
+            well_extension_str = f'{well_extension:.4f}'
         else:
             well_extension_str = ''
     else:
         well_extension_str = None
-        
+
     if chem_eig_max is not None:
         chem_eig_max = f'{chem_eig_max:.2f}'
-        
+
     if ped_spc_lst is not None:
         ped_spc_str = messformat.format_ped_species(ped_spc_lst)
     else:
@@ -183,7 +185,7 @@ def global_rates_input_v1(
         'float_type': float_type,
         'ktp_outname': ktp_outname,
         'ke_outname': ke_outname,
-        'ped_outname': ped_outname
+        'ped_outname': ped_outname,
     }
 
     return build_mako_str(
@@ -200,7 +202,7 @@ def global_rates_input_v2(
         chem_tol=1.0e-10, chem_thresh=0.1,
         well_pojection_thresh=0.1, well_reduction_thresh=10.0,
         time_propagation_limit=50.0, time_propagation_step=0.02,
-        well_extension=0.5,
+        well_extension=0.001,
         ground_ene_shift_max=None,
         ped_spc_lst=None, hot_enes_dct=None,
         micro_out_params=None,
@@ -262,7 +264,7 @@ def global_rates_input_v2(
         'well_reduction_thresh': f'{well_reduction_thresh:.2f}',
         'time_propagation_limit': f'{time_propagation_limit:.2f}',
         'time_propagation_step': f'{time_propagation_step:.2f}',
-        'well_extension': f'{well_extension:.2f}',
+        'well_extension': f'{well_extension:.4f}',
         'ground_ene_shift_max': ground_ene_shift_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
