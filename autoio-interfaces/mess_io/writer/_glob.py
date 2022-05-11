@@ -21,7 +21,8 @@ SECTION_PATH = os.path.join(TEMPLATE_PATH, 'sections')
 
 # Write the full input file strings
 def messrates_inp_str(globkey_str, rxn_chan_str,
-                      energy_trans_str=None, well_lump_str=None):
+                      energy_trans_str=None, well_lump_str=None,
+                      use_short_names=False):
     """ Combine various MESS strings together to combined MESS rates
     """
 
@@ -30,7 +31,8 @@ def messrates_inp_str(globkey_str, rxn_chan_str,
         'globkey_str': globkey_str,
         'energy_trans_str': energy_trans_str,
         'well_lump_str': well_lump_str,
-        'rxn_chan_str': rxn_chan_str
+        'rxn_chan_str': rxn_chan_str,
+        'use_short_names': use_short_names
     }
 
     mess_inp_str = build_mako_str(
@@ -140,10 +142,10 @@ def global_rates_input_v1(
             well_extension_str = ''
     else:
         well_extension_str = None
-        
+
     if chem_eig_max is not None:
         chem_eig_max = f'{chem_eig_max:.2f}'
-        
+
     if ped_spc_lst is not None:
         ped_spc_str = messformat.format_ped_species(ped_spc_lst)
     else:
@@ -183,7 +185,7 @@ def global_rates_input_v1(
         'float_type': float_type,
         'ktp_outname': ktp_outname,
         'ke_outname': ke_outname,
-        'ped_outname': ped_outname
+        'ped_outname': ped_outname,
     }
 
     return build_mako_str(

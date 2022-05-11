@@ -14,6 +14,8 @@ from mess_io.reader._pes import find_barrier
 from mess_io.reader._pes import dct_species_fragments
 from mess_io.reader._wells import merged_wells
 from mess_io.reader._wells import well_thermal_energy
+from mess_io.reader._label import relabel
+from mess_io.reader._label import name_label_dct
 
 
 __all__ = [
@@ -27,5 +29,7 @@ __all__ = [
     'find_barrier',
     'dct_species_fragments',
     'merged_wells',
-    'well_thermal_energy'
+    'well_thermal_energy',
+    'relabel',
+    'name_label_dct'
 ]

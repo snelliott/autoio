@@ -170,11 +170,11 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
                 searchline=_search, position='after')
 
     # Write new strings with the lumped input
-    well_extend_line = 'WellExtension\nExtensionCorrection    0.2'
+    well_extend_line = 'ExtensionCorrection    0.2'
     new_inp_str = ioformat.add_line(
         string=new_inp_str, addline=well_extend_line,
         searchline='Model', position='before')
-   
+
     if well_lump_str is not None:
         well_lump_line = ioformat.indent(well_lump_str, 2)
         new_inp_str = ioformat.add_line(

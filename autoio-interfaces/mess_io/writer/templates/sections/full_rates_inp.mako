@@ -7,6 +7,10 @@ ${globkey_str}
 !
 Model
 !
+% if use_short_names:
+UseShortNames
+!
+% endif
 % if energy_trans_str is not None:
 !---------------------------------------------------
 !  ENERGY TRANSFER SECTION
