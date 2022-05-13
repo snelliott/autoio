@@ -79,10 +79,16 @@ def well_energies(mess_out_str, mess_log_str, pressure):
         else:
             print(f'\nMax temperature for energies is {max_temp} K')
 
-        # Read the average energy at the max temperature
-        well_enes[well] = (
-            mess_io.reader.well_average_energy(mess_log_str, well, max_temp)
-            if max_temp is not None else None)
+        # Read the thermal energy at the max temperature
+        # Only put enes if they are positive to be written later
+        if max_temp is not None:
+            ene = mess_io.reader.well_thermal_energy(mess_log_str, well, max_temp)
+            if ene > 0.0:
+                well_enes[well] = ene
+            else:
+                well_enes[well] = None
+        else:
+            well_enes[well] = None
 
     return well_enes
 
@@ -94,8 +100,9 @@ def _get_well_reactions(mess_out_str):
 
     # Get the well labels from the reactions
     # We assume wells are MESS labels missing a '+' or 'W'
-    rxns = mess_io.reader.rates.reactions(
-        mess_out_str, read_rev=True, read_fake=False, read_self=False)
+    rxns = mess_io.reader.rates.reactions(mess_out_str)
+    rxns = mess_io.reader.rates.filter_reactions(
+        rxns, filter_reverse=False)
 
     wells = ()
     for rxn in rxns:
@@ -163,11 +170,11 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
                 searchline=_search, position='after')
 
     # Write new strings with the lumped input
-    well_extend_line = 'WellExtension\nExtensionCorrection    0.2'
+    well_extend_line = 'ExtensionCorrection    0.2'
     new_inp_str = ioformat.add_line(
         string=new_inp_str, addline=well_extend_line,
         searchline='Model', position='before')
-   
+
     if well_lump_str is not None:
         well_lump_line = ioformat.indent(well_lump_str, 2)
         new_inp_str = ioformat.add_line(
