@@ -20,7 +20,7 @@ CalculationMethod                       direct #low-eigenvalue #direct
 !  GlobalCutoff[kcal/mol]			-45.0
 
 RateOutput                              rate_ped.out                        ! output file name for rate coefficients                         
-PEDOutput       thf_pyro_ped.out
+PEDOutput       thf_pyro_ped_ch2o_h.out
 PEDSpecies      CH2O+H=HCO+H2
 
 MicroRateOutput                         ke_ped.out

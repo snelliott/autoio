@@ -1,17 +1,10 @@
-Well Names Translation:
- W0  W0
-End
-Bimolecular Names Translation:
- P0  CH2O+H
- P1  HCO+H2
-End
 pressure[atm]        = 1
 temperature[K]       = 300
 energy step[1/cm]    = 20.8512
 maximum energy[1/cm] = 10159
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       29.0457  3.04794e-13
       28.9861  3.31793e-13
       28.9264  3.61174e-13
@@ -36,7 +29,7 @@ Bimolecular-to-bimolecular product energy distributions:
       27.7937  1.80103e-12
       27.7341  1.95939e-12
       27.6745  2.13162e-12
-      27.6149  2.31891e-12
+      27.6149  2.31892e-12
       27.5553  2.52259e-12
       27.4957  2.74408e-12
        27.436  2.98492e-12
@@ -52,7 +45,7 @@ Bimolecular-to-bimolecular product energy distributions:
       26.8399  6.91135e-12
       26.7803  7.51539e-12
       26.7207  8.17197e-12
-       26.661  8.88563e-12
+       26.661  8.88562e-12
       26.6014   9.6613e-12
       26.5418  1.05043e-11
       26.4822  1.14206e-11
@@ -507,7 +500,7 @@ energy step[1/cm]    = 27.8016
 maximum energy[1/cm] = 12939
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
        36.994   2.6141e-12
       36.9145  2.84244e-12
        36.835  3.09062e-12
@@ -981,7 +974,7 @@ energy step[1/cm]    = 34.752
 maximum energy[1/cm] = 15720
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       44.9452  9.90579e-12
       44.8458  1.07629e-11
       44.7464  1.16938e-11
@@ -1442,7 +1435,7 @@ energy step[1/cm]    = 41.7024
 maximum energy[1/cm] = 18500
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       52.8935  2.60598e-11
       52.7742  2.82997e-11
        52.655  3.07309e-11
@@ -1894,7 +1887,7 @@ energy step[1/cm]    = 48.6528
 maximum energy[1/cm] = 21280
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       60.8418  5.45899e-11
       60.7027  5.92591e-11
       60.5636  6.43252e-11
@@ -2340,7 +2333,7 @@ energy step[1/cm]    = 55.6032
 maximum energy[1/cm] = 24060
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       68.7901  9.71108e-11
       68.6311  1.05387e-10
       68.4722  1.14363e-10
@@ -2781,7 +2774,7 @@ energy step[1/cm]    = 62.5535
 maximum energy[1/cm] = 26840
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       76.7384  1.54212e-10
       76.5596  1.67317e-10
       76.3807  1.81529e-10
@@ -3219,7 +3212,7 @@ energy step[1/cm]    = 69.5039
 maximum energy[1/cm] = 29620
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       84.6867  2.25315e-10
        84.488  2.44421e-10
       84.2893  2.65136e-10
@@ -3654,7 +3647,7 @@ energy step[1/cm]    = 76.4543
 maximum energy[1/cm] = 32400
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       92.6351  3.08484e-10
       92.4165  3.34596e-10
       92.1979  3.62903e-10
@@ -4086,7 +4079,7 @@ energy step[1/cm]    = 83.4047
 maximum energy[1/cm] = 35181
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       100.586  4.01315e-10
       100.348  4.35237e-10
       100.109  4.72004e-10
@@ -4516,7 +4509,7 @@ energy step[1/cm]    = 90.3551
 maximum energy[1/cm] = 37961
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       108.535  5.02188e-10
       108.276  5.44585e-10
       108.018  5.90535e-10
@@ -4945,7 +4938,7 @@ energy step[1/cm]    = 97.3055
 maximum energy[1/cm] = 40741
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       116.483  6.08497e-10
       116.205  6.59817e-10
       115.926  7.15433e-10
@@ -5372,7 +5365,7 @@ energy step[1/cm]    = 104.256
 maximum energy[1/cm] = 43521
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       124.431  7.18336e-10
       124.133  7.78868e-10
       123.835  8.44462e-10
@@ -5798,7 +5791,7 @@ energy step[1/cm]    = 111.206
 maximum energy[1/cm] = 46301
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
        132.38   8.2988e-10
       132.062  8.99758e-10
       131.744  9.75476e-10
@@ -6223,7 +6216,7 @@ energy step[1/cm]    = 118.157
 maximum energy[1/cm] = 49081
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       140.328  9.41828e-10
        139.99  1.02108e-09
       139.652  1.10695e-09
@@ -6647,7 +6640,7 @@ energy step[1/cm]    = 125.107
 maximum energy[1/cm] = 51862
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       148.279  1.05209e-09
       147.921  1.14057e-09
       147.564  1.23643e-09
@@ -7070,7 +7063,7 @@ energy step[1/cm]    = 132.057
 maximum energy[1/cm] = 54642
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       156.227  1.16143e-09
        155.85  1.25905e-09
       155.472  1.36481e-09
@@ -7492,7 +7485,7 @@ energy step[1/cm]    = 139.008
 maximum energy[1/cm] = 57422
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       164.176  1.26824e-09
       163.778  1.37479e-09
       163.381  1.49022e-09
@@ -7914,7 +7907,7 @@ energy step[1/cm]    = 145.958
 maximum energy[1/cm] = 60202
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       172.124   1.3721e-09
       171.707  1.48733e-09
       171.289  1.61216e-09
@@ -8335,7 +8328,7 @@ energy step[1/cm]    = 152.909
 maximum energy[1/cm] = 62982
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       180.072  1.47276e-09
       179.635  1.59639e-09
       179.198  1.73031e-09
@@ -8755,7 +8748,7 @@ energy step[1/cm]    = 159.859
 maximum energy[1/cm] = 65762
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       188.021  1.57003e-09
       187.564  1.70177e-09
       187.106  1.84448e-09
@@ -9175,7 +9168,7 @@ energy step[1/cm]    = 166.809
 maximum energy[1/cm] = 68543
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
       195.972  1.66294e-09
       195.495  1.80243e-09
       195.018  1.95354e-09
@@ -9594,7 +9587,7 @@ energy step[1/cm]    = 173.76
 maximum energy[1/cm] = 71323
 
 Bimolecular-to-bimolecular product energy distributions:
-  E, kcal/mol       P0->P1
+  E, kcal/mol CH2O+H->HCO+H2
        203.92  1.75278e-09
       203.423  1.89976e-09
       202.926  2.05897e-09
