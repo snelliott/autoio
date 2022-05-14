@@ -24,16 +24,16 @@ def test_ped_names():
 
     pedspecies, pedoutput = mess_io.reader.ped.ped_names(PED_INP_SGL)
     assert pedspecies == (('CH2O+H', 'HCO+H2'),)
-    assert pedoutput == 'thf_pyro_ped.out'
+    assert pedoutput == 'thf_pyro_ped_ch2o_h.out'
 
     pedspecies, pedoutput = mess_io.reader.ped.ped_names(PED_INP_DBL)
     assert pedspecies == (('C3H8+H', 'CH3CH2CH2+H2'),
                           ('C3H8+H', 'CH3CHCH3+H2'))
-    assert pedoutput == 'thf_pyro_ped.out'
+    assert pedoutput == 'thf_pyro_ped_c3h8_h.out'
 
     pedspecies, pedoutput = mess_io.reader.ped.ped_names(PED_INP_HOT)
     assert pedspecies == (('C6H6+H', 'FULVENE+H'),)
-    assert pedoutput == 'ped_C6H7.out'
+    assert pedoutput == 'ped_c6h7.out'
 
 
 def test_ped_get_ped():
@@ -45,9 +45,10 @@ def test_ped_get_ped():
                    'C5H5CH2-2': 6.78, 'W5': 15.85, 'W6': -2.95, 'FULVENE+H': 50.0, 'C6H6+H': 18.46}
     energy_dct3, _, _, _ = mess_io.reader.pes(PED_INP_HOT)
     ped_dct3 = mess_io.reader.ped.get_ped(
-        PED_OUT_HOT, pedspecies3, energy_dct3, hotwells=['C5H4CH3', 'C5H5CH2', 'C5H5CH2-1', 'C5H5CH2-2'])
+        PED_OUT_HOT, pedspecies3, energy_dct3, hotwells=['C5H4CH3'])
+    #print(ped_dct3[(('C5H4CH3',), ('C6H6+H',), (None,))][1.][500.].iloc[0])
     assert np.isclose((ped_dct3[(('C5H4CH3',), ('C6H6+H',), (None,))]
-                       [1.][500.].iloc[0].iloc[-1]), 0.3, atol=1e-2)
+                       [1.][500.].iloc[0].iloc[-1]), 0.04, atol=1e-2)
     
     # PES1
     pedspecies1 = (('CH2O+H', 'HCO+H2'),)
