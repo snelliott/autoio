@@ -49,7 +49,7 @@ def ped_names(input_str):
     return ped_species, ped_output
 
 
-def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto', hotwells=[]):
+def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
     """ Read `PEDOutput` file and extract product energy distribution at T,P.
         Energy in output set with respect to the ground energy of the products
 
@@ -67,7 +67,9 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto', hotwells=[]):
         :type hotwells: list(str)
         :return ped_df_dct: dct(dataframe(columns:P, rows:T))
                             with the Series of energy distrib
+                            for hotwells: Series of energies containing series of energy distrib for each
         :rtype ped_df_dct: {((reacs,),(prods,),(None,)): dataframe(series(float))}
+        for hotwells is ((reacs,),(prods,),(None,)): dataframe(series(series((float)))
     """
     def prob_en_single(probability, energy):
         # build the series and put in dataframe after
@@ -131,6 +133,13 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto', hotwells=[]):
     if sp_labels == 'auto':
         sp_labels = 'out'*(not lbl_dct) + 'inp'*(not not lbl_dct)
 
+    lines_wells, _ = indexes('Initial well', ped_lines)
+    hotwells = []
+    if len(lines_wells) > 0:
+        hotwells = list(set([ped_lines[well_idx-1].split()[2] for well_idx in lines_wells]))
+        if sp_labels == 'inp':
+            hotwells = [lbl_dct[well] for well in hotwells]
+
     ped_df_dct = {}
     # ped_df_dct = dict.fromkeys(energy_dct.keys())
     # find the energy for the scaling: everything refers to the products
@@ -178,7 +187,7 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto', hotwells=[]):
             ped_df[pressure][temp] = prob_en_single(probability, energy)
 
         ped_df_dct[label] = ped_df
-
+        
     for hotwell in hotwells:
 
         # relabel if necessary
@@ -231,9 +240,10 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto', hotwells=[]):
                 finally:
                     energy = en_prob_all[:][0] + ene0_all[prods]
                     probability = en_prob_all[:][pi+1]
-
+                    # print(probability)
                     ped_df_dct[label][pressure][temp][init_energy] = prob_en_single(
                         probability, energy)
+                    # print(label, prods , pressure, temp , ped_df_dct[label][pressure][temp][init_energy])
                     ped_df_dct[label][pressure][temp] = ped_df_dct[label][pressure][temp].dropna()
 
     return ped_df_dct

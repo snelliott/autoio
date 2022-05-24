@@ -36,6 +36,7 @@ MicroEnerMax[kcal/mol]                  240.
 MicroEnerStep[kcal/mol]                 0.2
 
 Model
+UseShortNames
   EnergyRelaxation
     Exponential
       Factor[1/cm]			400
