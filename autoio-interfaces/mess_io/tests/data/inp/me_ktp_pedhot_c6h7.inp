@@ -11,7 +11,7 @@ PressureList[atm]                        1.0
 EnergyStepOverTemperature               .2         ! [Discretization energy step (global relax matrix)] / T                   
 ModelEnergyLimit[kcal/mol]              800        ! Highest reference energy used in the calculation ( or ReferenceEnergy[kcal/mol])
 !
-CalculationMethod                       direct     ! direct or low-eigenvalue                     
+CalculationMethod                      direct      ! direct or low-eigenvalue                     
 !
 WellExtension 0.001
 WellCutoff                              10         ! well truncation parameter : Max { dissociation limit (min barrier rel. to bottom of the well) / T }
@@ -29,12 +29,12 @@ PEDSpecies C6H6+H=FULVENE+H
 PEDOutput ped_c6h7.out
 RateOutput                              rate.out                        ! output file name for rate coefficients 
 HotEnergies[kcal/mol]                1
-C5H4CH3 0.0 5.0 10.0  15.0 20.0 25.0 30.0 35.0 40.0 45.0 50.0 55.0 60.0 65.0 70.0  75.0 80.0 85.0 90.0  95.0 100.0 105.0 110.0 115.0 120.0 125.0 130.0 135.0 140.0 145.0 150.0 155.0 160.0 165.0 170.0 175.0 180.0 185.0 190.0 195.0 200.0                         
+C5H4CH3 0:5:200
 !
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !***************************************************
-!               MODEL SECTION
+ !               MODEL SECTION
 !***************************************************
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !

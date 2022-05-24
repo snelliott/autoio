@@ -86,6 +86,9 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
 
     # variables limiting the blocks
     hot_i_array = apf.where_in(['Hot distribution branching ratios'], lines)
+    if len(hot_i_array) == 0:
+        # different output
+        hot_i_array = apf.where_in(['hot energies branching fractions'], lines)
     end_hot_i_array = apf.where_in(
         ['prompt', 'isomerization', 'dissociation'], lines)
 
@@ -98,7 +101,16 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
             float(var)
             for var in lines[pt_i_array[i]].strip().split()[2:7:4]]
 
-        species_bf_i_messout = lines[hot_i+1].strip().split()[3:]
+        # options for different outputs:
+        if 'WellE' in lines[hot_i+1]:
+            species_bf_i_messout = lines[hot_i+1].strip().split()[2:-1]
+            outtype = 2
+        elif 'kcal ' in lines[hot_i+1]:
+            species_bf_i_messout = lines[hot_i+1].strip().split()[3:]
+            outtype = 1
+        else:
+            print('*Error in reading hoten blocks - Yuri changed output again. exiting')
+            sys.exit()
 
         # for each hotspecies: read BFs
         # rescale energy by the hotspecies energy on the PES!!
@@ -127,8 +139,12 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
                     hot_e = float(line.split()[1]) - ref_en
                     # pick only values above 0
                     if hot_e not in hot_e_lvl and hot_e > 0:
-                        branch_ratio_arr = np.array(
-                            list(line.split()[2:]), dtype=float)
+                        if outtype == 1:
+                            branch_ratio_arr = np.array(
+                                list(line.split()[2:]), dtype=float)
+                        elif outtype == 2:
+                            branch_ratio_arr = np.array(
+                                list(line.split()[2:-1]), dtype=float)         
 
                         # check that value of reactant branching is between 0 and 1
                         # if any bf > 1: skip the line

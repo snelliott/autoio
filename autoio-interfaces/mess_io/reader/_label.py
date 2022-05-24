@@ -55,7 +55,7 @@ def name_label_dct(output_str):
     """
 
     start_table_ptt = 'Names Translation Tables'
-    end_table_ptt = 'Inner Barriers:'
+    end_table_ptt = 'Barriers:'
     if apf.has_match(start_table_ptt, output_str):
         start_idx, end_idx = None, None
         out_lines = output_str.splitlines()

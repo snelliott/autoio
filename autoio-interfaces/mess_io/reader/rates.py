@@ -7,6 +7,7 @@
 import sys
 import numpy
 import pandas as pd
+import copy
 from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
@@ -66,6 +67,13 @@ def get_rxn_ktp_dct(out_str,
         lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
             rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
+        else:
+            rxn_ktp_dct_relabeled = {}
+            for key, val in rxn_ktp_dct.items():
+                new_key = (tuple(key[0][0].split('+')),
+                           tuple(key[1][0].split('+')), key[2])
+                rxn_ktp_dct_relabeled[new_key] = val
+            rxn_ktp_dct = copy.deepcopy(rxn_ktp_dct_relabeled)
 
     return rxn_ktp_dct
 
@@ -105,7 +113,8 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     for pressure in (_press for _press in _pressures if _press != 'high'):
         _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
 
-    bimol = bool(reactant[0] == 'P')
+    bimol = (reactant[0] == 'P') or ('+' in reactant)
+
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     if filter_kts:
         _ktp_dct = filter_ktp_dct(_ktp_dct, bimol, tmin=tmin, tmax=tmax,
@@ -738,7 +747,7 @@ def filter_reactions(rxns,
                 continue
 
         # If continues not hit, reaction good to be added to new dct
-        filt_rxns += (rxn,) 
+        filt_rxns += (rxn,)
 
     return filt_rxns
 
