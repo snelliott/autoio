@@ -153,6 +153,8 @@ def global_rates_input_v1(
 
     if hot_enes_dct is not None:
         nhot, hot_ene_str = messformat.format_hot_enes(hot_enes_dct)
+        if ped_spc_lst is not None:
+            calculation_method = 'well-reduction'
     else:
         nhot, hot_ene_str = 0, None
 

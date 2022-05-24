@@ -2,7 +2,7 @@
 """
 # default values
 
-MODEL = ['equip_phi']
+MODEL = 'equip_phi'
 BF_THRESH = 0.1
 
 def write_pes_groups(grp_dct_list, modeltype=MODEL, bf_thresh=BF_THRESH):
