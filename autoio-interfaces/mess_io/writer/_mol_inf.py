@@ -379,20 +379,22 @@ def mdhr_data(pots, freqs=None, nrot=0):
     dat_str = num_str + freq_str + head_str
     for idxs, val in pots_byidx.items():
 
-        # Add the idxs for the rotors
-        for idx in idxs:
-            dat_str += f'{idx+1:>6d}'
+        if val is not None:
 
-        # Add the potential value
-        dat_str += f'{val:>15f}'
+            # Add the idxs for the rotors
+            for idx in idxs:
+                dat_str += f'{idx+1:>6d}'
 
-        # Add any frequencies if necessary
-        if freqs is not None:
-            if idxs in freqs:
-                for freq in freqs[idxs]:
-                    dat_str += f'{freq:>8.1f}'
+            # Add the potential value
+            dat_str += f'{val:>15f}'
 
-        dat_str += '\n'
+            # Add any frequencies if necessary
+            if freqs is not None:
+                if idxs in freqs:
+                    for freq in freqs[idxs]:
+                        dat_str += f'{freq:>8.1f}'
+
+            dat_str += '\n'
 
     return dat_str
 

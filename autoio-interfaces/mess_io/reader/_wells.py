@@ -31,8 +31,10 @@ def merged_wells(mess_aux_str, pressure, temp):
             cond_line = mess_lines[i-1].strip().split()
             well_pressure = float(cond_line[2])
             well_temp = float(cond_line[-2])
-            if (numpy.isclose(pressure, well_pressure) and
-                    numpy.isclose(temp, well_temp)):
+            if (
+                numpy.isclose(pressure, well_pressure) and
+                numpy.isclose(temp, well_temp)
+            ):
                 nspc = int(line.strip().split()[-1])
                 merged_well_lines.append((nspc, i))
 
@@ -44,12 +46,15 @@ def merged_wells(mess_aux_str, pressure, temp):
             well_names = well_line.strip().split()
             if len(well_names) > 1:
                 merged_well_lst += (tuple(well_names),)
+  
+    if not merged_well_lst:
+        merged_well_lst = None
 
     return merged_well_lst
 
 
-def well_average_energy(log_str, well, temp):
-    """ Obtain the average energy of each well from the output
+def well_thermal_energy(log_str, well, temp):
+    """ Obtain the thermal energy of each well from the output
         of MESS rate calculations.
 
         Returns the energies in hartrees.
@@ -72,9 +77,10 @@ def well_average_energy(log_str, well, temp):
     blocks = apf.all_captures(block_ptt, log_str)
 
     if blocks is not None:
+        ptt = ('Temperature' + app.SPACES + '=' + app.SPACES +
+               app.capturing(app.NUMBER) + app.SPACES + 'K')
         for i, block in enumerate(blocks):
-            templine = block.splitlines()[1]
-            blocktemp = float(templine.strip().split()[2])
+            blocktemp = float(apf.first_capture(ptt, block))
             if numpy.isclose(blocktemp, temp, atol=0.01):
                 block_idx = i
                 break
@@ -82,19 +88,17 @@ def well_average_energy(log_str, well, temp):
         block_idx = None
 
     # If block with requested temp found, get energies
-    ene_dct = None
+    ene = None
     if block_idx is not None:
         ptt = (
-            app.capturing(app.VARIABLE_NAME) + app.SPACE +
-            'Well:' + app.SPACE +
-            'average energy =' + app.SPACE +
-            app.capturing(app.NUMBER) + app.SPACE +
-            'kcal/mol'
+            app.escape(well) + app.SPACES +
+            app.escape('Well:') + app.SPACES +
+            'thermal energy =' + app.SPACES +
+            app.capturing(app.NUMBER) + app.SPACES +
+            app.escape('kcal/mol')
         )
-        caps = apf.all_captures(ptt, blocks[block_idx])
-        ene_dct = dict(
-            ((cap[0], float(cap[1])*phycon.KCAL2EH) for cap in caps)
-        )
-        ene = ene_dct[well]
+        cap = apf.first_capture(ptt, blocks[block_idx])
+        if cap is not None:
+            ene = float(cap) * phycon.KCAL2EH
 
     return ene

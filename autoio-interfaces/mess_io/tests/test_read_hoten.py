@@ -3,69 +3,76 @@
 
 import os
 import numpy as np
-import ioformat
+from ioformat import pathtools
 import mess_io
 
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 IPATH = os.path.join(PATH, 'data', 'inp')
 OPATH = os.path.join(PATH, 'data', 'out')
-HOT_INP_SGL = ioformat.pathtools.read_file(IPATH, 'me_ktp_hoten_ch2o_oh.inp')
-HOT_LOG_SGL = ioformat.pathtools.read_file(OPATH, 'me_ktp_hoten_ch2o_oh.logf')
-HOT_INP_DBL = ioformat.pathtools.read_file(IPATH, 'me_ktp_hoten_c3h7.inp')
-HOT_LOG_DBL = ioformat.pathtools.read_file(OPATH, 'me_ktp_hoten_c3h7.logf')
+HOT_INP_SGL = pathtools.read_file(IPATH, 'me_ktp_hoten_ch2o_oh.inp')
+HOT_LOG_SGL = pathtools.read_file(OPATH, 'me_ktp_hoten_ch2o_oh.logf')
+HOT_INP_DBL = pathtools.read_file(IPATH, 'me_ktp_hoten_c3h7.inp')
+HOT_LOG_DBL = pathtools.read_file(OPATH, 'me_ktp_hoten_c3h7.logf')
 
 
-def test_get_hot_names():
-    """ test mess_io.read.get_hot_names
+def test_get_hot_species():
+    """ test mess_io.read.get_hot_species
     """
-    assert mess_io.reader.hoten.get_hot_names(HOT_INP_SGL) == (
-        'W1',)
-    assert mess_io.reader.hoten.get_hot_names(HOT_INP_DBL) == (
-        'CH3CH2CH2', 'CH3CHCH3')
+    assert mess_io.reader.hoten.get_hot_species(HOT_INP_SGL) == {
+        'W1': 0.0}
+    assert mess_io.reader.hoten.get_hot_species(HOT_INP_DBL) == {
+        'CH3CH2CH2': 3.19, 'CH3CHCH3': 0.0}
 
 
-def __extract_hot_branching():
+def test_extract_hot_branching():
     """ test mess_io.read.extract_hot_branching
     """
-    hotspecies_lst = ('W1',)
-    species_lst = ('W1', 'P1')
-    temp_lst = (300.0, 350.0, 400.0, 450.0, 500.0, 550.0, 600.0,
-                650.0, 700.0, 750.0, 800.0, 850.0, 900.0, 950.0, 1000.0,
-                1050.0, 1100.0, 1150.0, 1200.0, 1250.0, 1300.0, 1350.0,
-                1400.0, 1450.0, 1500.0, 1550.0, 1600.0, 1650.0, 1700.0,
-                1750.0, 1800.0, 1850.0, 1900.0, 1950.0, 2000.0, 2050.0,
-                2100.0, 2150.0, 2200.0, 2250.0, 2300.0, 2350.0, 2400.0,
-                2450.0, 2500.0)
-    pressure_lst = (0.01, 0.1, 0.316, 1.0, 3.16, 10.0, 31.6, 100.0)
+    hotspecies_en = {'W1': 0.0}
+    species_lst = ('W1', 'CO+H')
     hoten_branch_dct = mess_io.reader.hoten.extract_hot_branching(
-        HOT_LOG_SGL, hotspecies_lst, species_lst, temp_lst, pressure_lst)
+        HOT_LOG_SGL, hotspecies_en, species_lst)
     hoten = hoten_branch_dct['W1']
-
+    
     assert np.allclose(hoten[3.16][1200].iloc[0].values,
                        np.array([0, 1]))
     assert np.allclose(hoten[3.16][1200].iloc[-1].values,
                        np.array([1, 0]))
-    assert np.allclose(hoten[3.16][1200].loc[21.1231].values,
-                       np.array([6.74809675e-05, 9.99932519e-01]))
+    assert np.allclose(hoten[3.16][1200].loc[21.0].values,
+                       np.array([0.000075, 0.999925]), atol=1e-5)
 
-    hotspecies_lst = ('CH3CH2CH2', 'CH3CHCH3')
-    species_lst = ('CH3CH2CH2', 'CH3CHCH3', 'P1', 'P2')
-    temp_lst = (400.0, 450.0, 500.0, 550.0, 600.0, 650.0, 700.0, 750.0,
-                800.0, 850.0, 900.0, 950.0, 1000.0, 1050.0, 1100.0, 1150.0,
-                1200.0, 1250.0, 1300.0, 1350.0, 1400.0, 1450.0, 1500.0,
-                1550.0, 1600.0, 1650.0, 1700.0, 1750.0, 1800.0, 1850.0,
-                1900.0, 1950.0, 2000.0)
-    pressure_lst = (0.1, 1.0, 10.0, 100.0)
+    hotspecies_en = {'CH3CH2CH2': 3.19, 'CH3CHCH3': 0.0}
+    species_lst = ('CH3CH2CH2', 'CH3CHCH3', 'C2H4+CH3', 'CH3CHCH2+H')
     hoten_branch_dct = mess_io.reader.hoten.extract_hot_branching(
-        HOT_LOG_DBL, hotspecies_lst, species_lst, temp_lst, pressure_lst)
+        HOT_LOG_DBL, hotspecies_en, species_lst)
     hoten = hoten_branch_dct['CH3CHCH3']
-
+    
     assert np.allclose(hoten[100][1800].iloc[0].values,
-                       np.array([0.0, 1.000000, 0.000000, 0.000000]))
+                       np.array([2.27908435e-08, 1.73930121e-06, 5.13793577e-02, 9.48618880e-01]),
+                       atol=1e-5)
     assert np.allclose(hoten[100][1800].iloc[-1].values,
-                       np.array([0.0, 0.000117, 0.046422, 0.953461]),
+                       np.array([2.15953354e-04, 9.99784047e-01,
+                                 0.00000000e+00, 0.00000000e+00]),
                        atol=1e-5)
-    assert np.allclose(hoten[100][1800].loc[149.174].values,
-                       np.array([0.0, 0.000224, 0.045513, 0.954262]),
+    assert np.allclose(hoten[100][1800].loc[91.4].values,
+                       np.array([0.002120,  0.441947,  0.011999,    0.543935]),
                        atol=1e-5)
+
+def test_extract_fne():
+
+    dct_bf_tp_df = mess_io.reader.hoten.extract_fne(HOT_LOG_SGL)
+    
+    assert np.allclose((dct_bf_tp_df['W1'][0.1][1000]).values,
+                       np.array([0.98928607, 0.01071393]))
+
+    dct_bf_tp_df = mess_io.reader.hoten.extract_fne(HOT_LOG_DBL)
+
+    assert np.allclose((dct_bf_tp_df['CH3CH2CH2'][0.1][1000]).values,
+                       np.array([9.91380043e-01, 6.53250422e-07, 8.51326353e-03, 1.06040650e-04]))
+    assert np.allclose((dct_bf_tp_df['CH3CHCH3'][0.1][1000]).values,
+                       np.array([2.21902815e-07, 9.99562230e-01, 1.73923828e-06, 4.35809132e-04]))
+
+if __name__ == '__main__':
+    test_get_hot_species()
+    test_extract_hot_branching()
+    test_extract_fne()

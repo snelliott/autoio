@@ -13,7 +13,7 @@ SRC_PATH = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_PATH = os.path.join(SRC_PATH, 'templates')
 
 
-def species(rvalues, potentials, bnd_frm_idxs,
+def species(rvalues, potentials, aidx, bidx,
             dist_restrict_idxs=(), pot_labels=(), species_name='mol'):
     """ Writes the string for a Fortran source file containing information
         used to build the correction potential for a species.
@@ -22,10 +22,10 @@ def species(rvalues, potentials, bnd_frm_idxs,
         :type rvalues: list(float)
         :param potentials: list of potentials calculates along rvalues
         :type potentials: list(list(float))
-        :param bnd_frm_idxs: indexes for the radical atoms that form bond
-        :type bnd_frm_idxs: list(int)
-        :param dist_restrict_idxs: ???
-        :type dist_restrict_idxs: list(int)
+        :param aidx: index for first radical atom that form bond
+        :type aidx: int
+        :param bidx: index for second radical atom that form bond
+        :type bidx: int
         :param pot_labels: names of each of the potentials in .f file
         :type pot_labels: list(str)
         :param species_name: name given to mol_corr.f file
@@ -35,7 +35,6 @@ def species(rvalues, potentials, bnd_frm_idxs,
 
     npot = len(potentials)
     npot_terms = len(potentials[0])
-    [aidx, bidx] = bnd_frm_idxs
     asym, bsym = 'A', 'B'
 
     assert npot > 0

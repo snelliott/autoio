@@ -20,12 +20,12 @@ CalculationMethod                       direct #low-eigenvalue #direct
 !  GlobalCutoff[kcal/mol]			-45.0
 
 RateOutput                              rate_ped.out                        ! output file name for rate coefficients                         
-PEDOutput       thf_pyro_ped.out
-PEDSpecies      RH_R
+PEDOutput       thf_pyro_ped_ch2o_h.out
+PEDSpecies      CH2O+H=HCO+H2
 
 MicroRateOutput                         ke_ped.out
 MicroEnerMin[kcal/mol]                  0.
-MicroEnerMax[kcal/mol]                  140.
+MicroEnerMax[kcal/mol]                  240.
 MicroEnerStep[kcal/mol]                 0.1
 
 
@@ -82,10 +82,8 @@ Model
 !Bimolecular R:  Reactants CH2O + H
 !-----------------------------------------------
 
-  Bimolecular		RH	# ch3ch2ch3+oh
+  Bimolecular		CH2O+H
     Fragment	CH2O
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/ch2o/cc/ch2o_cc_tz.out
       RRHO
         Geometry[angstrom]	4
 	 C          0.0000000000        0.0000000000       -0.6053837008
@@ -118,15 +116,8 @@ Model
 
 
 
-
-!-----------------------------------------------
-!Bimolecular Products C3H7 + H2O
-!-----------------------------------------------
-
-  Bimolecular		R	#ch3ch2ch2+h2o
+  Bimolecular		HCO+H2
     Fragment    HCO density
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/hco/cc/hco_cc_tz.out
       RRHO
         Geometry[angstrom]	3
 	 C          0.0000000000       -0.1017851707       -0.6226018557
@@ -146,8 +137,6 @@ Model
       End
 
     Fragment	H2 density
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/h/h2/dft/h2_b2plypd3_ccpvtz.log
       RRHO
         Geometry[angstrom]	2
 	H	  0.000000	  0.000000	  0.000000
@@ -172,7 +161,7 @@ Model
 !TS addition: ch2o+h --> ch2o--h
 !-----------------------------------------------
 
-   Barrier      B0   W0   RH    # 
+   Barrier      B0   W0   CH2O+H    # 
      RRHO
 	Stoichiometry  C1H3O1
         Core     PhaseSpaceTheory
@@ -200,9 +189,7 @@ Model
 !TS abstraction: ch2o + h --> hco + h2
 !-----------------------------------------------
 
-  Barrier	B1	W0 R
-      ! Current data taken from:
-      !/gpfs/data/cfgoldsm/cfgoldsm/qchem/gas_phase/coh/c1o1/ch3o/transition_states/ts_ch2o_h_to_hco_h2/new_trajectories/ts_v0.log
+  Barrier	B1	W0 HCO+H2
       RRHO
         Geometry[angstrom]	5
 	C	  0.000000	  0.000000	  0.000000

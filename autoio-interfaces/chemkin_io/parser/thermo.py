@@ -104,8 +104,11 @@ def get_spc_name(entry, print_notice=False):
         :rtype: str
     """
     first_line = entry[0]
-    spc_name = first_line[0:16]  # first 16 characters
+    spc_name = first_line[0:25]  # first 25 characters (names should be 16)
     spc_name = spc_name.split()[0]  # just get the first space-separated entry
+    if len(spc_name) > 16:
+        print(f"Name '{spc_name}' is longer than 16 chars, "
+              "this could cause parsing issues if a comment is included")
 
     # If there's something other than a species name here, print notice of this
     if len(spc_name) > 1 and print_notice:
@@ -277,7 +280,7 @@ def get_coeffs(entry):
     # Make sure three lines were read
     assert line_counter == 3, (
         'Less than three lines of coefficients were read' +
-        ' for the following entry:\n{formatted_entry}'
+        f' for the following entry:\n{formatted_entry}'
     )
     coeffs = tuple((high_coeffs, low_coeffs))
 

@@ -18,29 +18,31 @@ MESSPF = (
     "ulimit -c 0\n"
     "messpf pf.inp >& pf.out"
 )
-MESSRATE = (
+MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    "mess mess.inp rate.out >> stdout.log &> stderr.log"
+    # "/home/ygeorgievski/build/crossrate/mess mess.inp >> stdout.log &> stderr.log"
+    "mess mess.inp >> stdout.log &> stderr.log"
 )
-VARECOF = (
+MESSRATEV2 = (
+    "#!/usr/bin/env bash\n"
+    "export OMP_NUM_THREADS=8\n"
+    "ulimit -c 0\n"
+    # "/home/ygeorgievski/build/crossrate/mess_test mess.inp >> stdout.log &> stderr.log"
+    "mess-v2 mess.inp >> stdout.log &> stderr.log"
+)
+VARECOF_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "MPI=`which mpirun`\n"
     # 'MPI_OPTIONS="-machinefile machines"'
     # 'MPI_OPTIONS="-host b460"'
-    # 'MPI_OPTIONS="-n {}"\n'
-    'MPI_OPTIONS="-n 5"\n'
+    'MPI_OPTIONS="-n {}"\n'
     "VARECOFEXE=/lcrc/project/CMRP/amech/VaReCoF/build/multi\n\n"
     "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
-INTDER = (
-    "#!/usr/bin/env bash\n"
-    "ulimit -c 0\n"
-    f"{EXTERN_PATH}/INTDER < intder.inp >& intder.out"
-)
-MCFLUX = (
+VARECOF_MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
@@ -50,12 +52,23 @@ VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct "
-    "tst.inp >& varecof_conv.out"
+    "tst.inp >& varecof_struct_conv.out"
 )
-TSTCHECK = (
+VARECOF_CONV_MULTI = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_multi "
+    "convert.inp >& varecof_multi_conv.out"
+)
+VARECOF_TSTCHECK = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "/home/ygeorgi/build/rotd/tst_check >& tst_check.out"
+)
+INTDER = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    f"{EXTERN_PATH}/INTDER < intder.inp >& intder.out"
 )
 THERMP = (
     "#!/usr/bin/env bash\n"
@@ -78,6 +91,13 @@ PSI4 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
     "psi4 -i run.inp -o run.out -n 8 >> stdout.log &> stderr.log"
+)
+QCHEM5 = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "export QC=/soft/qchem/5.3.0_mpich3/\n"
+    "export QCSCRATCH=/scratch/$USER\n"
+    "qchem -nt {} run.inp run.out"
 )
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
@@ -127,21 +147,25 @@ MOLPRO_MREF_MPPX = (
 SCRIPT_DCT = {
     # MESS
     'messpf': MESSPF,
-    'messrate': MESSRATE,
+    'messrate-v1': MESSRATEV1,
+    'messrate-v2': MESSRATEV2,
     # PAC99
     'pac99': PAC99,
     # ProjRot
     'projrot': PROJROT,
     # ThermP
     'thermp': THERMP,
-    # VaReCoF
-    'varecof': VARECOF,
-    'varecof_conv_struct': VARECOF_CONV_STRUCT,
+    # INTDER
     'intder': INTDER,
-    'mcflux': MCFLUX,
-    'tstchk': TSTCHECK,
+    # VaReCoF
+    'varecof_multi': VARECOF_MULTI,
+    'varecof_conv_struct': VARECOF_CONV_STRUCT,
+    'varecof_conv_multi':  VARECOF_CONV_MULTI,
+    'varecof_mcflux': VARECOF_MCFLUX,
+    'varecof_tstchk': VARECOF_TSTCHECK,
     # Electronic Structure
     'gaussian09': G09,
+    'qchem5': QCHEM5,
     'molpro2021': MOLPRO_2021,
     'molpro2021_mppx': MOLPRO_2021_MPPX,
     'molpro2015': MOLPRO,

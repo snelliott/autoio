@@ -233,6 +233,13 @@ class Method():
                     Program.MOLPRO2021: (
                        'mrci', 'mrci',
                        ('R',), ('R', 'R'))})
+        MRCIF12 = ('mrcisd_q-f12',
+                   {Program.MOLPRO2015: (
+                       'mrci-f12', 'mrci-f12',
+                       ('R',), ('R', 'R')),
+                    Program.MOLPRO2021: (
+                       'mrci-f12', 'mrci-f12',
+                       ('R',), ('R', 'R'))})
 
     class Dft():
         """ Density functional theory method names """
@@ -250,6 +257,9 @@ class Method():
                   {Program.PSI4: (
                       'WB97X-D', 'WB97X-D',
                       ('R',), ('U',)),
+                   Program.QCHEM5: (
+                       'wb97X-D', 'wb97X-D',
+                       ('R',), ('U',)),
                    Program.GAUSSIAN09: (
                        'wb97xd', 'wb97xd',
                        ('R',), ('U',)),
@@ -618,7 +628,8 @@ class Basis():
                             Program.MRCC2018: None,
                             Program.NWCHEM6: None,
                             Program.ORCA4: None,
-                            Program.PSI4: None})
+                            Program.PSI4: None,
+                            Program.QCHEM5: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
                               Program.GAUSSIAN09: None,
                               Program.GAUSSIAN16: None,
@@ -629,6 +640,15 @@ class Basis():
                               Program.ORCA4: None,
                               Program.PSI4: None})
         P6311SS = ('6-311g**', {Program.CFOUR2: None,
+                                Program.GAUSSIAN09: None,
+                                Program.GAUSSIAN16: None,
+                                Program.MOLPRO2015: None,
+                                Program.MOLPRO2021: None,
+                                Program.MRCC2018: None,
+                                Program.NWCHEM6: None,
+                                Program.ORCA4: None,
+                                Program.PSI4: None})
+        P6311PSS = ('6-311+g**', {Program.CFOUR2: None,
                                 Program.GAUSSIAN09: None,
                                 Program.GAUSSIAN16: None,
                                 Program.MOLPRO2015: None,

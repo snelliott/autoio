@@ -203,10 +203,10 @@ def format_rotor_potential(potential):
     for i, (coord, energy) in enumerate(potential.items()):
         if ((i+1) % 6) == 0 and (i+1) != npot:
             coord_str += f'{coord[0]:<8.2f}\n'
-            ene_str += f'{energy:<8.2f}\n'
+            ene_str += f'{energy:<10.4f}\n'
         else:
             coord_str += f'{coord[0]:<8.2f}'
-            ene_str += f'{energy:<8.2f}'
+            ene_str += f'{energy:<10.4f}'
 
     # Indent the lines
     coord_str = indent(coord_str, 4)
@@ -353,8 +353,8 @@ def format_hot_enes(hot_enes_dct):
     ene_str = ''
     n_enes = 0
     for spc, ene_lst in hot_enes_dct.items():
-        _str = ' '.join((f'{ene:.1f}' for ene in ene_lst))
-        ene_str += f'{spc:5s}{_str}\n'
+        _str = ':'.join((f'{ene:.1f}' for ene in ene_lst))
+        ene_str += f'{spc:5s} {_str}\n'
         n_enes += 1
 
     return n_enes, ene_str.rstrip()

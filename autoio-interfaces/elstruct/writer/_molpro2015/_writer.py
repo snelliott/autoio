@@ -91,7 +91,7 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
 
     # Set the geometry (combine opt+constrainted coordinates
     geo_str, zmat_vval_str, zmat_cval_str = fill.geometry_strings(
-        geo, frozen_coordinates)
+        geo, frozen_coordinates, offset=True)
     zmat_val_str = zmat_vval_str + '\n' + zmat_cval_str
 
     # Set the memory; convert from GB to MW

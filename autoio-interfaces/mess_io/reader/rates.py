@@ -7,14 +7,21 @@
 import sys
 import numpy
 import pandas as pd
+import copy
 from phydat import phycon
 import autoparse.find as apf
+from mess_io.reader._label import relabel
+from mess_io.reader._label import name_label_dct
+
+# Global lists
+UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
 
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str,
-                    read_fake=False, read_self=False, read_rev=True,
                     filter_kts=True,
+                    filter_reaction_types=UNWANTED_RXN_TYPS,
+                    relabel_reactions=True,
                     tmin=None, tmax=None,
                     pmin=None, pmax=None, convert=True):
     """ Read a ktp dictionary for each reaction listed in the MESS output
@@ -27,35 +34,46 @@ def get_rxn_ktp_dct(out_str,
         :type output_str: str
         :param label_dct: dictionary to map name from MESS name to alternative
         :type label_dct: dict[str: str]
-        :param read_fake: read reactions involving "fake" wells named "Fn"
-        :type read_fake: bool
-        :param read_self: read reactions where reactant and prod are the same
-        :type read_self: bool
-        :param read_rev: read reactions in reverse direction
-        :type read_ref: bool
         :param filter_kts: filter unphysical, insignificant rate constants
         :type filter_kts: bool
 
         :rtype dict[float: (float, float)]
     """
 
-    # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
-    rxns = reactions(out_str,
-                     read_fake=read_fake,
-                     read_self=read_self,
-                     read_rev=read_rev)
+    # Read the reactions; filter them if requested
+    rxns = reactions(out_str)
+    if filter_reaction_types:
+        rxns = filter_reactions(
+            rxns,
+            filter_fake=('fake' in filter_reaction_types),
+            filter_self=('self' in filter_reaction_types),
+            filter_loss=('loss' in filter_reaction_types),
+            filter_capture=('capture' in filter_reaction_types),
+            filter_reverse=('reverse' in filter_reaction_types)
+        )
 
+    # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
     # For each rxn pair, get rate constants, with filtering as indicated
     rxn_ktp_dct = {}
     for rxn in rxns:
-        rct, prd = rxn[0][0], rxn[1][0]
-        rxn_ktp_dct[rxn] = ktp_dct(out_str, rct, prd,
+        rxn_ktp_dct[rxn] = ktp_dct(out_str, rxn[0][0], rxn[1][0],
                                    filter_kts=filter_kts, tmin=tmin,
                                    tmax=tmax, pmin=pmin, pmax=pmax,
                                    convert=convert)
+
     # Reformat the dictionary keys to follow the tuple of tuples format
-    # (if no label_dct was given, the MESS names will be used)
-    # rxn_ktp_dct = translate_rxn_names(mess_rxn_ktp_dct, label_dct=label_dct)
+    # print('dct 1', rxn_ktp_dct.keys())
+    if relabel_reactions:
+        lbl_dct = name_label_dct(out_str)
+        if lbl_dct is not None:
+            rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
+        else:
+            rxn_ktp_dct_relabeled = {}
+            for key, val in rxn_ktp_dct.items():
+                new_key = (tuple(key[0][0].split('+')),
+                           tuple(key[1][0].split('+')), key[2])
+                rxn_ktp_dct_relabeled[new_key] = val
+            rxn_ktp_dct = copy.deepcopy(rxn_ktp_dct_relabeled)
 
     return rxn_ktp_dct
 
@@ -78,23 +96,25 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
         :rtype dict[float: (float, float)]
     """
 
-    # Build the reaction string found in the MESS output
-    reaction = _reaction_header(reactant, product)
-
     # Get the MESS output lines
     out_lines = output_str.splitlines()
 
     # Initialize dictionary with high-pressure rate constants
-    _ktp_dct = {'high': _highp_kts(out_lines, reaction)}
+    _highp = _highp_kts(out_lines, reactant, product)
+    if _highp is not None:
+        _ktp_dct = {'high': _highp_kts(out_lines, reactant, product)}
+    else:
+        _ktp_dct = {}
 
     # Read the pressures and convert them to atm if needed
     _pressures, _ = pressures(output_str, mess_file='out')
 
     # Update the dictionary with the pressure-dependent rate constants
     for pressure in (_press for _press in _pressures if _press != 'high'):
-        _ktp_dct.update(_pdep_kts(out_lines, reaction, pressure))
+        _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
 
-    bimol = bool('P' in reactant)
+    bimol = (reactant[0] == 'P') or ('+' in reactant)
+
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     if filter_kts:
         _ktp_dct = filter_ktp_dct(_ktp_dct, bimol, tmin=tmin, tmax=tmax,
@@ -105,14 +125,16 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     return _ktp_dct
 
 
-def _highp_kts(out_lines, reaction):
+def _highp_kts(out_lines, reactant, product):
     """ Parses the MESS output file string for the rate constants [k(T)]s
         for a single reaction at the high-pressure limit.
 
         :param out_lines: all of the lines of MESS output
         :type out_lines: list(str)
-        :param reaction: string matching reaction line in MESS output
-        :type reaction: str
+        :param reactant: label for the reactant used in the MESS output
+        :type reactant: str
+        :param product: label for the product used in the MESS output
+        :type product: str
         :return rate_constants: all high-P rate constants for the reaction
         :rtype list(float)
     """
@@ -123,56 +145,78 @@ def _highp_kts(out_lines, reaction):
     for i, line in enumerate(out_lines):
         if block_str in line:
             block_start = i
+            for j in range(i, len(out_lines)):
+                if '_________________________________' in out_lines[j]:
+                    block_end = j
+                    break
             break
+    block_lines = out_lines[block_start: block_end]
 
     # Get the high-pressure rate constants
-    rate_constants = []
-    for i in range(block_start, len(out_lines)):
-        if reaction in out_lines[i]:
-            rate_const_block_start = i
-            rate_constants = _parse_rate_constants(
-                out_lines, rate_const_block_start, reaction)
-            break
+    rate_constants = None
+    for i, line in enumerate(block_lines):
+        # Find line with reactant name
+        # If they match desired reactant, read rates
+        # Rates start one line later in output
+        if 'Reactant =' in line:
+            mess_reac = line.strip().split()[2]
+            if mess_reac == reactant:
+                rate_constants = _parse_reactant_rate_constants(
+                    block_lines, i+1, product)
+                break
 
     return rate_constants
 
 
-def _pdep_kts(out_lines, reaction, pressure):
+def _pdep_kts(out_lines, reactant, product, pressure):
     """ Parses the MESS output file string for the rate constants [k(T,P)]s
         for a single reaction at a given numerical pressure, P.
 
         :param out_lines: all of the lines of MESS output
         :type out_lines: list(str)
-        :param reaction: string matching reaction line in MESS output
-        :type reaction: str
+        :param reactant: reactant name in MESS output
+        :type reactant: str
+        :param product: product name in MESS output
+        :type product: str
         :param pressure: pressure that k(T,P)s will be read for
         :type pressure: float
         :return rate_constants: k(T,P)s for the reaction at given pressure
         :rtype list(float)
     """
 
-    # Find where the block of text where the pressure-dependent rates exist
-    block_str = ('Temperature-Species Rate Tables:')
-
-    pdep_dct = {}
     for i, line in enumerate(out_lines):
-        if block_str in line:
+        if 'Temperature-Species Rate Tables:' in line:
+            block_start = i
             for j in range(i, len(out_lines)):
-                if 'Temperature-Pressure Rate Tables' in out_lines[j]:
+                if '_________________________________' in out_lines[j]:
+                    block_end = j
                     break
-                if reaction in out_lines[j]:
-                    mess_press = float(out_lines[j-2].strip().split()[2])
-                    mess_punit = out_lines[j-2].strip().split()[3]
-                    if numpy.isclose(mess_press, pressure):
-                        conv_pressure = _convert_pressure(pressure, mess_punit)
-                        pdep_dct[conv_pressure] = _parse_rate_constants(
-                            out_lines, j, reaction)
-                        break
+            break
+    block_lines = out_lines[block_start: block_end]
+
+    # Find where the block of text where the pressure-dependent rates exist
+    pdep_dct = {}
+    for i, line in enumerate(block_lines):
+        # Find line with reactant name and pressure
+        # If they match desired reactant and pressure, read rates
+        # Rates start two lines later in output
+        if 'Reactant =' in line:
+            tmp = line.strip().split()
+            mess_reac = tmp[2]
+            mess_press, mess_punit = float(tmp[5]), tmp[6]
+            if (
+                mess_reac == reactant and
+                numpy.isclose(mess_press, pressure)
+            ):
+                atm_pressure = _convert_pressure(pressure, mess_punit)
+                pdep_dct[atm_pressure] = _parse_reactant_rate_constants(
+                    block_lines, i+2, product)
+                break
 
     return pdep_dct
 
 
-def _parse_rate_constants(out_lines, block_start, reaction):
+def _parse_reactant_rate_constants(out_lines, block_start, product):
     """ Parses specific rate constants from the correct column
         in the MESS output file string.
 
@@ -180,18 +224,18 @@ def _parse_rate_constants(out_lines, block_start, reaction):
         :type out_lines: list(str)
         :param block_start: line num corresponding to reaction and pressure
         :type block_start: int
-        :param reaction: string matching reaction line in MESS output
-        :type reaction: str
+        :param product: label for the product used in the MESS output
+        :type product: str
         :return rate_constants: all rate constants for the reaction
         :rtype: list(str, float)
     """
 
     # Find the column corresponding to the reaction
-    reaction_col = 0
-    reaction_headers = out_lines[block_start].strip().split()
-    for i, reaction_header in enumerate(reaction_headers):
-        if reaction == reaction_header:
-            reaction_col = i
+    product_col = 0
+    product_headers = out_lines[block_start].strip().split()
+    for i, product_header in enumerate(product_headers):
+        if product == product_header:
+            product_col = i
             break
 
     # Parse the following lines and store the constants in a list
@@ -200,7 +244,7 @@ def _parse_rate_constants(out_lines, block_start, reaction):
         if out_lines[i].strip() == '':
             break
         temps.append(out_lines[i].strip().split()[0])
-        kts.append(out_lines[i].strip().split()[reaction_col])
+        kts.append(out_lines[i].strip().split()[product_col])
 
     # Convert temps and rate constants to floats and combine values
     # only do so if the rate constant is defined (i.e., not '***')
@@ -250,7 +294,7 @@ def ke_dct(output_str, reactant, product):
     return _ke_dct
 
 
-def dos_rovib(ke_ped_out):
+def dos_rovib(ke_ped_out, sp_labels='auto'):
     """ Read the microcanonical pedoutput file and extracts rovibrational density
         of states of each fragment as a function of the energy
 
@@ -258,24 +302,51 @@ def dos_rovib(ke_ped_out):
 
         :param ke_ped_out: string of lines of microcanonical rates output file
         :type ke_ped_out: str
-
+        :param sp_labels: type of pedspecies labels: 'inp' is how you find them
+                in mess input, 'out' is how they are labeled in the output
+                'auto' sets 'inp' if it finds lbl dct
+        :type sp_labels: str
         :return dos_df: dataframe(columns:prod1, prod2, rows:energy [kcal/mol])
                         with the density of states
         :rtype dos_df: dataframe(float)
     """
-    # apf.where data of interest are
+    # get label dictionary
+    lbl_dct = name_label_dct(ke_ped_out)
+    if sp_labels == 'auto':
+        sp_labels = 'out'*(not lbl_dct) + 'inp'*(not not lbl_dct)
+
     ke_lines = ke_ped_out.splitlines()
 
     i_in = apf.where_in(
-        'Bimolecular fragments density of states:', ke_lines)[0]+2
-    _labels = ke_lines[i_in-1].strip().split()[2:]
+        'Bimolecular fragments density of states, mol/kcal', ke_lines)[0]+2
+    mess_labels = ke_lines[i_in-1].strip().split()[2:]
     en_dos_all = numpy.array(
         [line.strip().split() for line in ke_lines[i_in:]], dtype=float).T
     energy = en_dos_all[:][0]
     dos_all = en_dos_all[:][1:].T
 
+    # relabel if necessary
+    _labels = []
+    if sp_labels == 'inp' or sp_labels == 'out':
+        for sp in mess_labels:
+            bim, frag_n = sp.split('_')
+            if sp_labels == 'inp':
+                sp_tosplit = lbl_dct[bim]
+            elif sp_labels == 'out':
+                sp_tosplit = bim
+            try:
+                _labels.append(sp_tosplit.split('+')[int(frag_n)])
+            except IndexError:
+                print('*Error: bimol species should be named as P1+P2 \
+                    with P1, P2 being the fragment names')
+                sys.exit()
+    else:
+        print('*Error: sp_labels must be "inp" (as in mess input) \
+            or "out" (as in mess output)')
+        sys.exit()
+
     dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
-    # drop potentially duplicate columns
+    # drop potentially duplicate columns WARNING CHECK THE EFFECT OF THIS
     dos_rovib_df = dos_rovib_df.T.drop_duplicates().T
 
     return dos_rovib_df
@@ -358,7 +429,7 @@ def barriers(barriers_ene_s, species_ene_s, reac, prod):
     elif (
         any(findreac) or any(findreac_rev) and
         any(findprod) or any(findprod_rev)
-         ):
+    ):
         # check if you have reac->wr->wp->prod like in habs
         connect_reac = numpy.array(list(barriers_ene_s.keys()))[findreac]
         fromreac = [p[1] for p in connect_reac]
@@ -474,25 +545,28 @@ def _temperatures_output_string(output_str):
     mess_lines = output_str.splitlines()
 
     # Find the block of lines where the temperatures can be read
-    temp_str = 'Pressure-Species Rate Tables:'
     for i, line in enumerate(mess_lines):
-        if temp_str in line:
+        if 'Pressure-Species Rate Tables:' in line:
             block_start = i
+            for j in range(i, len(mess_lines)):
+                if 'Temperature-Species Rate Tables:' in mess_lines[j]:
+                    block_end = j
+                    break
             break
 
     # Read the temperatures
     temps = []
-    for i in range(block_start, len(mess_lines)):
+    for i in range(block_start, block_end):
         if 'Temperature =' in mess_lines[i]:
             tmp = mess_lines[i].strip().split()
-            temps.append(float(tmp[2]))
+            temps.append(float(tmp[5]))
     temps = list(set(temps))
     temps.sort()
 
     # Read unit
-    for i in range(block_start, len(mess_lines)):
+    for i in range(block_start, block_end):
         if 'Temperature =' in mess_lines[i]:
-            temp_unit = mess_lines[i].strip().split()[3]
+            temp_unit = mess_lines[i].strip().split()[6]
             break
 
     return tuple(temps), temp_unit
@@ -586,10 +660,8 @@ def _convert_pressure(pressure, pressure_unit):
     return pressure
 
 
-# Read the labels for all species and reactions
-def reactions(out_str,
-              third_body=(None,),
-              read_fake=False, read_self=False, read_rev=True):
+# Read the reactions
+def reactions(out_str, third_body=(None,)):
     """ Read the reactions from the output file.
 
         Currently, we assume we don't care about the third body
@@ -601,116 +673,83 @@ def reactions(out_str,
         Ignores 'Capture' reactions
     """
 
+    # Split into lines
+    out_lines = out_str.splitlines()
+
+    # Grab reactions from T-dep
+    for i, line in enumerate(out_lines):
+        if 'Temperature-Species Rate Tables:' in line:
+            block_start = i
+            for j in range(i, len(out_lines)):
+                if 'Temperature-Pressure Rate Tables' in out_lines[j]:
+                    block_end = j
+            break
+    reac_lines = out_lines[block_start:block_end+1]
+
     # Read all of the reactions out of the file
-    init_rxns = ()
-    for line in out_str.splitlines():
-        if 'T(K)' in line and '->' in line:
-            init_rxns += tuple(line.strip().split()[1:])
+    # Reactant = <reactant>
+    #
+    # T(K) <prod1> <prod2> ... Loss Capture
+    rxns = ()
+    for i, line in enumerate(reac_lines):
+        if 'Reactant = ' in line and 'Pressure =' in line:
+            _reac = line.strip().split()[2]
+            _prods = reac_lines[i+2].strip().split()[1:]
+            for _prod in _prods:
+                rxns += (
+                    ((_reac,), (_prod,), third_body),
+                )
 
     # Remove duplcates while preserving order
-    init_rxns = tuple(n for i, n in enumerate(init_rxns)
-                      if n not in init_rxns[:i])
+    rxns = tuple(n for i, n in enumerate(rxns)
+                 if n not in rxns[:i])
 
-    # Remove capture reactions
-    init_rxns = tuple(rxn for rxn in init_rxns
-                      if rxn != 'Capture')
-
-    # Build list of reaction pairs: rct->prd = (rct, prd)
-    # Filter out reaction as necessary
-    rxn_pairs = ()
-    for rxn in init_rxns:
-        [rct, prd] = rxn.split('->')
-        if not read_fake:
-            if 'F' in rxn or 'B' in rxn:
-                continue
-        if not read_self:
-            if rct == prd:
-                continue
-        if prd:  # removes rct->  reactions in output
-            rxn_pairs += ((rct, prd),)
-
-    # Remove reverse reactions, if requested
-    if read_rev:
-        sort_rxn_pairs = rxn_pairs
-    else:
-        sort_rxn_pairs = ()
-        for pair in rxn_pairs:
-            rct, prd = pair
-            if (rct, prd) in sort_rxn_pairs or (prd, rct) in sort_rxn_pairs:
-                continue
-            sort_rxn_pairs += ((rct, prd),)
-
-    # Add the third body to the sorted pairs
-    fin_rxns = ()
-    for rxn in sort_rxn_pairs:
-        rct, prd = rxn
-        fin_rxns += (
-            ((rct,), (prd,), third_body),
-        )
-
-    return fin_rxns
+    return rxns
 
 
-def labels(file_str, read_fake=False, mess_file='out'):
-    """ Read the labels out of a MESS file
+def filter_reactions(rxns,
+                     filter_fake=True,
+                     filter_self=True,
+                     filter_loss=True,
+                     filter_capture=True,
+                     filter_reverse=True):
+    """ Filter the reactions from a ktp dictionary
     """
 
-    if mess_file == 'out':
-        lbls = _labels_output_string(file_str)
-    elif mess_file == 'inp':
-        lbls = _labels_input_string(file_str)
-    else:
-        lbls = ()
+    filt_rxns = ()
+    for rxn in rxns:
 
-    if not read_fake:
-        lbls = tuple(lbl for lbl in lbls
-                     if 'F' not in lbl and 'f' not in lbl)
+        # Move on from reaction if find any indication it should be filtered
+        rct, prd, tbody = rxn[0], rxn[1], rxn[2]
 
-    return lbls
+        if prd == ('Loss',):
+            if filter_loss:
+                continue
 
+        if prd == ('Capture',):
+            if filter_capture:
+                continue
 
-def _labels_input_string(inp_str):
-    """ Read the labels out of a MESS input file
-    """
+        # if (
+        #     any('F' in rgt for rgt in rct+prd)  or
+        #     any('FW' in rgt for rgt in rct+prd)
+        # ):
+        if any('Fake' in rgt for rgt in rct+prd):
+            if filter_fake:
+                continue
 
-    def _read_label(line, header):
-        """ Get a labe from a line
-        """
-        lbl = None
-        idx = 2 if header != 'Barrier' else 4
-        line_lst = line.split()
-        if len(line_lst) == idx and '!' not in line:
-            lbl = line_lst[idx]
-        return lbl
+        if rct == prd:
+            if filter_self:
+                continue
 
-    lbls = ()
-    for line in inp_str.splitlines():
-        if 'Well ' in line:
-            lbls += (_read_label(line, 'Well'),)
-        elif 'Bimolecular ' in line:
-            lbls += (_read_label(line, 'Bimolecular'),)
-        elif 'Barrier ' in line:
-            lbls += (_read_label(line, 'Barrier'),)
+        if filter_reverse:
+            if (prd, rct, tbody) in filt_rxns:
+                continue
 
-    return lbls
+        # If continues not hit, reaction good to be added to new dct
+        filt_rxns += (rxn,)
 
-
-def _labels_output_string(out_str):
-    """ Read the labels out of a MESS input file
-    """
-
-    lbls = []
-    for line in out_str.splitlines():
-        if 'T(K)' in line and '->' not in line:
-            rxns = line.strip().split()[1:]
-            line_lbls = [rxn.split('->') for rxn in rxns]
-            line_lbls = [lbl for sublst in line_lbls for lbl in sublst]
-            lbls.extend(line_lbls)
-
-    # Remove duplicates and make lst a tuple
-    lbls = tuple(set(lbls))
-
-    return lbls
+    return filt_rxns
 
 
 # Helper functions
@@ -749,8 +788,6 @@ def filter_ktp_dct(_ktp_dct, bimol,
         # Set max temperature
         if tmax is None:
             tmax = max(temps)
-        else:
-            assert tmax in temps, (f'{tmax} not in temps: {temps}')
 
         # Set min temperature to user input, if none use either
         # min of input temperatures or
@@ -816,35 +853,6 @@ def filter_ktp_dct(_ktp_dct, bimol,
                 filt_ktp_dct.pop(pressure)
 
     return filt_ktp_dct
-
-
-def relabel(rxn_ktp_dct, label_dct):
-    """ Relabel the rxn ktp dictionaries using the label dictionary
-    """
-
-    def _relabel(lbl, label_dct):
-        """ a
-        """
-        if lbl in label_dct:
-            relbl = tuple(label_dct[lbl].split('+'))
-        else:
-            relbl = (lbl,)
-        return relbl
-
-    relab_rxn_ktp_dct = {}
-    for rxn, _ktp_dct in rxn_ktp_dct.items():
-        rcts, prds, thirdbody = rxn
-
-        relab_rcts = ()
-        for rct in rcts:
-            relab_rcts += _relabel(rct, label_dct)
-        relab_prds = ()
-        for prd in prds:
-            relab_prds += _relabel(prd, label_dct)
-
-        relab_rxn_ktp_dct[(relab_rcts, relab_prds, thirdbody)] = _ktp_dct
-
-    return relab_rxn_ktp_dct
 
 
 def convert_units(_ktp_dct, bimol):

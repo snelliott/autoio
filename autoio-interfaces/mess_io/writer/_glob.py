@@ -21,7 +21,8 @@ SECTION_PATH = os.path.join(TEMPLATE_PATH, 'sections')
 
 # Write the full input file strings
 def messrates_inp_str(globkey_str, rxn_chan_str,
-                      energy_trans_str=None, well_lump_str=None):
+                      energy_trans_str=None, well_lump_str=None,
+                      use_short_names=False):
     """ Combine various MESS strings together to combined MESS rates
     """
 
@@ -30,7 +31,8 @@ def messrates_inp_str(globkey_str, rxn_chan_str,
         'globkey_str': globkey_str,
         'energy_trans_str': energy_trans_str,
         'well_lump_str': well_lump_str,
-        'rxn_chan_str': rxn_chan_str
+        'rxn_chan_str': rxn_chan_str,
+        'use_short_names': use_short_names
     }
 
     mess_inp_str = build_mako_str(
@@ -74,17 +76,26 @@ def messhr_inp_str(geo, hind_rot_str,
 
 
 # Write individual sections of the input file
-def global_rates_input(temperatures, pressures,
-                       calculation_method='well-reduction',
-                       well_extension='auto',
-                       well_reduction_thresh=10.0,
-                       ped_spc_lst=None,
-                       hot_enes_dct=None,
-                       excess_ene_temp=None,
-                       micro_out_params=None,
-                       float_type='double'):
+def global_rates_input_v1(
+        temperatures, pressures,
+        calculation_method='well-reduction',
+        model_ene_limit=800.0,
+        ene_stepover_temp=0.2, excess_ene_temp=None,
+        well_extension=0.001,
+        chem_eig_max=None,
+        well_reduction_thresh=10.0,
+        ground_ene_shift_max=None,
+        ped_spc_lst=None,
+        hot_enes_dct=None,
+        micro_out_params=None,
+        float_type='double',
+        ktp_outname='rate.out',
+        ke_outname='ke.out',
+        ped_outname='ped.out'):
     """ Writes the global keywords section of the MESS input file by
         formatting input information into strings a filling Mako template.
+
+        This is for the original MESS binary code.
 
         :param temperatures: List of temperatures (in K)
         :type temperatures: float
@@ -126,11 +137,100 @@ def global_rates_input(temperatures, pressures,
             assert isinstance(well_extension, float), (
                 'WellExtension value must be a float'
             )
-            well_extension_str = f'{well_extension:.2f}'
+            well_extension_str = f'{well_extension:.4f}'
         else:
             well_extension_str = ''
     else:
         well_extension_str = None
+
+    if chem_eig_max is not None:
+        chem_eig_max = f'{chem_eig_max:.2f}'
+
+    if ped_spc_lst is not None:
+        ped_spc_str = messformat.format_ped_species(ped_spc_lst)
+    else:
+        ped_spc_str = None
+
+    if hot_enes_dct is not None:
+        nhot, hot_ene_str = messformat.format_hot_enes(hot_enes_dct)
+        if ped_spc_lst is not None:
+            calculation_method = 'well-reduction'
+    else:
+        nhot, hot_ene_str = 0, None
+
+    well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
+
+    if ground_ene_shift_max is not None:
+        ground_ene_shift_max = f'{ground_ene_shift_max*phycon.EH2KCAL:.2f}'
+
+    if micro_out_params is not None:
+        assert (len(micro_out_params) == 3 and
+                all(isinstance(x, float) for x in micro_out_params)), (
+            f'{micro_out_params} is not a tuple/list of three floats')
+
+    # Create dictionary to fill template
+    globrxn_keys = {
+        'temperatures': temperature_list,
+        'pressures': pressure_list,
+        'model_ene_limit': f'{model_ene_limit:.2f}',
+        'ene_stepover_temp': f'{ene_stepover_temp:.2f}',
+        'excess_ene_temp': excess_ene_temp_str,
+        'calculation_method': calculation_method,
+        'well_reduction_thresh': well_reduction_thresh_str,
+        'well_extension': well_extension_str,
+        'ground_ene_shift_max': ground_ene_shift_max,
+        'chem_eig_max': chem_eig_max,
+        'hot_ene_str': hot_ene_str,
+        'nhot': nhot,
+        'ped_spc_str': ped_spc_str,
+        'micro_out_params': micro_out_params,
+        'float_type': float_type,
+        'ktp_outname': ktp_outname,
+        'ke_outname': ke_outname,
+        'ped_outname': ped_outname,
+    }
+
+    return build_mako_str(
+        template_file_name='global_rates.mako',
+        template_src_path=SECTION_PATH,
+        template_keys=globrxn_keys)
+
+
+def global_rates_input_v2(
+        temperatures, pressures,
+        ref_temperature=1000.0, ref_pressure=1.0,
+        model_ene_limit=800.0,
+        ene_stepover_temp=0.2, ene_cutoff_temp=20.0, excess_ene_temp=10.0,
+        chem_tol=1.0e-10, chem_thresh=0.1,
+        well_pojection_thresh=0.1, well_reduction_thresh=10.0,
+        time_propagation_limit=50.0, time_propagation_step=0.02,
+        well_extension=0.001,
+        ground_ene_shift_max=None,
+        ped_spc_lst=None, hot_enes_dct=None,
+        micro_out_params=None,
+        float_type='double',
+        ktp_outname='rate.out',
+        ke_outname='ke.out',
+        ped_outname='ped.out'):
+    """ Writes the global keywords section of the MESS input file by
+        formatting input information into strings a filling Mako template.
+
+        This is for the new MESS binary code.
+
+        :param temperatures: List of temperatures (in K)
+        :type temperatures: float
+        :param pressures: List of pressures (in atm)
+        :type pressures: float
+        :return global_str: String for section
+        :rtype: string
+    """
+
+    assert float_type in ('double', 'quadruple'), (
+        f'float_type is {float_type}, not double or quadruple')
+
+    # Format temperature and pressure lists
+    temperature_list = '  '.join(str(val) for val in temperatures)
+    pressure_list = '  '.join(str(val) for val in pressures)
 
     if ped_spc_lst is not None:
         ped_spc_str = messformat.format_ped_species(ped_spc_lst)
@@ -142,33 +242,44 @@ def global_rates_input(temperatures, pressures,
     else:
         nhot, hot_ene_str = 0, None
 
-    well_reduction_thresh_str = f'{well_reduction_thresh:.2f}'
+    if ground_ene_shift_max is not None:
+        ground_ene_shift_max = f'{ground_ene_shift_max*phycon.EH2KCAL:.2f}'
 
     if micro_out_params is not None:
         assert (len(micro_out_params) == 3 and
                 all(isinstance(x, float) for x in micro_out_params)), (
             f'{micro_out_params} is not a tuple/list of three floats')
-    #    # micro_min, micro_max, micro_step = micro_out_params
-    # else:
-    #    micro_min, micro_max, micro_step = None, None, None
 
     # Create dictionary to fill template
     globrxn_keys = {
         'temperatures': temperature_list,
         'pressures': pressure_list,
-        'calculation_method': calculation_method,
-        'well_reduction_thresh': well_reduction_thresh_str,
-        'well_extension': well_extension_str,
+        'ref_temperature': f'{ref_temperature:.2f}',
+        'ref_pressure': f'{ref_pressure:.2f}',
+        'model_ene_limit': f'{model_ene_limit:.2f}',
+        'ene_stepover_temp': f'{ene_stepover_temp:.2f}',
+        'ene_cutoff_temp': f'{ene_cutoff_temp:.2f}',
+        'excess_ene_temp': f'{excess_ene_temp:.2f}',
+        'chem_tol': f'{chem_tol:.2e}',
+        'chem_thresh': f'{chem_thresh:.2f}',
+        'well_projection_thresh': f'{well_pojection_thresh:.2f}',
+        'well_reduction_thresh': f'{well_reduction_thresh:.2f}',
+        'time_propagation_limit': f'{time_propagation_limit:.2f}',
+        'time_propagation_step': f'{time_propagation_step:.2f}',
+        'well_extension': f'{well_extension:.4f}',
+        'ground_ene_shift_max': ground_ene_shift_max,
         'hot_ene_str': hot_ene_str,
         'nhot': nhot,
         'ped_spc_str': ped_spc_str,
         'micro_out_params': micro_out_params,
-        'excess_ene_temp': excess_ene_temp_str,
-        'float_type': float_type
+        'float_type': float_type,
+        'ktp_outname': ktp_outname,
+        'ke_outname': ke_outname,
+        'ped_outname': ped_outname
     }
 
     return build_mako_str(
-        template_file_name='global_rates.mako',
+        template_file_name='global_rates_v2.mako',
         template_src_path=SECTION_PATH,
         template_keys=globrxn_keys)
 

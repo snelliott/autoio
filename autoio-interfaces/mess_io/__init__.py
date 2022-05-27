@@ -10,5 +10,5 @@ from mess_io._wellextend import well_lumped_input_file
 __all__ = [
     'writer',
     'reader',
-    'well_lumped_input_file'
+    'well_lumped_input_file',
 ]

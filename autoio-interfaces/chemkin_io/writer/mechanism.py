@@ -4,6 +4,7 @@ Write various parts of a Chemkin mechanism file
 
 from chemkin_io.writer import reaction
 from chemkin_io.writer import thermo
+from chemkin_io.writer import spc
 
 
 def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
@@ -26,11 +27,11 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
 
     total_str = ''
     if elem_tuple:
-        elem_str = elements_block(elem_tuple)
-        total_str += elem_str
+        print("'elem_tuple' input in ckin_io.writer will soon be deprecated!")
     if mech_spc_dct:
+        elem_str = elements_block(mech_spc_dct)
         spc_str = species_block(mech_spc_dct)
-        total_str += spc_str
+        total_str += elem_str + spc_str
     if spc_nasa7_dct:
         thermo_str = thermo_block(spc_nasa7_dct)
         total_str += thermo_str
@@ -41,7 +42,7 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
     return total_str
 
 
-def elements_block(elem_tuple):
+def elements_block(mech_spc_dct):
     """ Writes the elements block of the mechanism file
 
         :param elem_tuple: tuple containing the element names
@@ -50,15 +51,30 @@ def elements_block(elem_tuple):
         :rtype: str
     """
 
-    elem_str = 'ELEMENTS \n\n'
-    for elem in elem_tuple:
-        elem_str += elem + '\n'
-    elem_str += '\nEND \n\n\n'
+    elem_str = 'ELEMENTS\n\n'
+    elem_str += spc.write_elements(mech_spc_dct)
+    elem_str += '\nEND\n\n\n'
 
     return elem_str
 
 
 def species_block(mech_spc_dct):
+    """ Writes the species block of the mechanism file
+
+        :param mech_spc_dct: species data for a mechanism
+        :type mech_spc_dct: dct {spc_name:data}
+        :return spc_str: str containing the species block
+        :rtype: str
+    """
+
+    spc_str = 'SPECIES\n\n'
+    spc_str += spc.write_species(mech_spc_dct) 
+    spc_str += '\nEND\n\n\n'
+
+    return spc_str
+
+
+def species_block_old(mech_spc_dct):
     """ Writes the species block of the mechanism file
 
         :param mech_spc_dct: species data for a mechanism
@@ -82,7 +98,7 @@ def species_block(mech_spc_dct):
     buffer = 5
 
     # Write the spc_str
-    spc_str = 'SPECIES \n\n'
+    spc_str = 'SPECIES\n\n'
     for spc, ident_dct in mech_spc_dct.items():
         spc_str += (
             '{0:<'+str(max_spc_len+buffer)+'s}{1:>9s}{2:<' +
@@ -90,7 +106,7 @@ def species_block(mech_spc_dct):
                 spc, '! SMILES: ',
                 ident_dct['smiles'], 'InChi: ', ident_dct['inchi'])
 
-    spc_str += '\nEND \n\n\n'
+    spc_str += '\nEND\n\n\n'
 
     return spc_str
 
@@ -100,8 +116,8 @@ def thermo_block(spc_nasa7_dct):
 
     """
 
-    thermo_str = 'THERMO \n'
-    thermo_str += '200.00    1000.00   5000.000  \n\n'
+    thermo_str = 'THERMO\n'
+    thermo_str += '200.00    1000.00   5000.000\n\n'
     for spc_name, params in spc_nasa7_dct.items():
         thermo_str += thermo.thermo_entry(spc_name, params)
 

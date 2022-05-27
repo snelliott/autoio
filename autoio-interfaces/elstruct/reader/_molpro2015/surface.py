@@ -80,8 +80,21 @@ def harmonic_frequencies(output_str):
             vals = capture.split()
             for val in vals:
                 freqs.append(float(val))
+        freqs = tuple(freqs)
     else:
         freqs = None
+
+    imag_block = apf.last_capture(
+        (app.escape('Imaginary Vibration  Wavenumber') +
+         app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
+         app.escape('Vibration        Wavenumber')),
+        output_str)
+    if imag_block is not None:
+        ptt = app.INTEGER + app.SPACES + app.capturing(app.FLOAT)
+        imag_freqs = apf.all_captures(ptt, imag_block)
+        if imag_freqs is not None:
+            imag_freqs = tuple(-1*float(val) for val in imag_freqs)
+            freqs = imag_freqs + freqs
 
     return freqs
 

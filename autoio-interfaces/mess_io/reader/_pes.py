@@ -37,7 +37,7 @@ def pes(input_string, read_fake=False):
         if 'Well' in line:
 
             line_lst = line.strip().split()
-            if line_lst[0].strip() == 'Well' and '!' not in line:
+            if line_lst[0].strip() == 'Well' and '!' not in line_lst[0]:
                 # Get label
                 label = line_lst[1]
 

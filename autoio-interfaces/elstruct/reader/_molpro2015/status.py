@@ -195,4 +195,7 @@ def check_convergence_messages(error, success, output_str):
     else:
         job_success = True
 
+    if not job_success:
+        print(f'  - Error found: {error}')
+
     return job_success

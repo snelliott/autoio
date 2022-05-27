@@ -18,14 +18,15 @@ def call_module_function(prog, function, *args, **kwargs):
 
     def _rename_prog(prog):
         """ Rename a program if number does not match module name """
-        if prog == 'molpro2021':
+        if prog in ('molpro2021', 'molpro2021_mppx'):
             prog = 'molpro2015'
         elif prog == 'gaussian16':
             prog = 'gaussian09'
         return prog
 
-    assert prog in pclass.values(par.Program)
-    assert prog in program_modules_with_function(function)
+    new_name = _rename_prog(prog)
+    assert new_name in pclass.values(par.Program)
+    assert new_name in program_modules_with_function(function)
 
     name = f'_{_rename_prog(prog)}'
     module = importlib.import_module(f'elstruct.writer.{name:s}')
@@ -87,5 +88,7 @@ WRITER_MODULE_DCT = {
     par.Program.PSI4: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
         Job.MOLPROP, Job.IRC),
-    par.Program.QCHEM5: (),
+    par.Program.QCHEM5: (
+        Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION
+    )
 }

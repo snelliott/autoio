@@ -156,8 +156,8 @@ def format_corrpot_dist_string(aidx, bidx, asym, bsym):
         f"      n{lbsym} = {bidx}\n" +
         f"      r{asym}{bsym} = dsqrt( (x(1,n{lbsym})-x(1,n{lasym}))**2 +\n" +
         f"     x             (x(2,n{lbsym})-x(2,n{lasym}))**2 +\n" +
-        f"     x             (x(3,n{lbsym})-x(3,n{lasym}))**2)\n" +
-        f"      r{asym}{bsym} = r{asym}{bsym}*0.52917"
+        f"     x             (x(3,n{lbsym})-x(3,n{lasym}))**2)\n"  # +
+        # f"      r{asym}{bsym} = r{asym}{bsym}*0.52917"
     )
 
 
