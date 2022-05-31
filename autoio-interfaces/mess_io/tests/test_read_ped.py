@@ -45,7 +45,7 @@ def test_ped_get_ped():
                    'C5H5CH2-2': 6.78, 'W5': 15.85, 'W6': -2.95, 'FULVENE+H': 50.0, 'C6H6+H': 18.46}
     energy_dct3, _, _, _ = mess_io.reader.pes(PED_INP_HOT)
     ped_dct3 = mess_io.reader.ped.get_ped(
-        PED_OUT_HOT, pedspecies3, energy_dct3)
+        PED_OUT_HOT, energy_dct3)
     #print(ped_dct3[(('C5H4CH3',), ('C6H6+H',), (None,))][1.][500.].iloc[0])
     assert np.isclose((ped_dct3[(('C5H4CH3',), ('C6H6+H',), (None,))]
                        [1.][500.].iloc[0].iloc[-1]), 0.04, atol=1e-2)
@@ -55,7 +55,7 @@ def test_ped_get_ped():
     energy_dct1 = {'W0': -0.8, 'CH2O+H': 0.0, 'HCO+H2': -16.7,
                    'B0': 0.0, 'B1': 5.2}
     ped_dct1 = mess_io.reader.ped.get_ped(
-        PED_OUT_SGL, pedspecies1, energy_dct1)
+        PED_OUT_SGL, energy_dct1)
 
     assert np.isclose(
         ped_dct1[(('CH2O+H',), ('HCO+H2',), (None,))
@@ -67,7 +67,7 @@ def test_ped_get_ped():
     energy_dct2 = {'W0': 0.0, 'C3H8+H': 0.0, 'CH3CH2CH2+H2': -3.53, 'CH3CHCH3+H2': -6.58,
                    'B0': 0.0, 'B1': 10.19, 'B2': 7.67}
     ped_dct2 = mess_io.reader.ped.get_ped(
-        PED_OUT_DBL, pedspecies2, energy_dct2)
+        PED_OUT_DBL, energy_dct2)
 
     assert np.isclose(
         ped_dct2[(('C3H8+H',), ('CH3CH2CH2+H2',), (None,))

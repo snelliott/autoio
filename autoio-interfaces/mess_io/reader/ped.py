@@ -43,13 +43,12 @@ def ped_names(input_str):
             break
 
     if not ped_species or not ped_output:
-        print('*Warning: PEDSpecies and PEDOutput options incomplete. \n'
-              'Why did you call this function then? \n')
+        print('*Warning: PEDSpecies and PEDOutput options incomplete, returning None \n')
 
     return ped_species, ped_output
 
 
-def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
+def get_ped(pedoutput_str, energy_dct, sp_labels='auto'):
     """ Read `PEDOutput` file and extract product energy distribution at T,P.
         Energy in output set with respect to the ground energy of the products
 
@@ -63,8 +62,6 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
                 in mess input, 'out' is how they are labeled in the output,
                 'auto' sets inp if it finds the labels
         :type sp_labels: str
-        :param hotwells: list of hot wells to find in the output
-        :type hotwells: list(str)
         :return ped_df_dct: dct(dataframe(columns:P, rows:T))
                             with the Series of energy distrib
                             for hotwells: Series of energies containing series of energy distrib for each
@@ -82,15 +79,33 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
         # remove them
         prob_en = prob_en[prob_en.index > 0]
 
+        # prob_en = prob_en[prob_en > 0]
         if len(prob_en[prob_en < 0]) > 0:
-            # if there are negative values of the probability: remove them
-            prob_en = prob_en[prob_en[prob_en < 0].index[-1]+1:]
+            # find indexes of negative values
+            idx_neg = np.where(prob_en < 0)[0]
+            idx_1 = np.where(prob_en == 1)[0]
+            # indexes of negative values closest to the center of ped (always =1)
+            try:
+                low = idx_neg[idx_neg < idx_1][-1]+1
+            except IndexError:
+                low = 0
+            try:
+                up = idx_neg[idx_neg > idx_1][0]
+            except IndexError:
+                up = -1
+                
+            prob_en = prob_en.iloc[low:up]
+        # algorithm before 05-25-2022
+        # if there are negative values of the probability: remove them
+        #    prob_en = prob_en[prob_en[prob_en < 0].index[-1]+1:]
+        #    print(prob_en, '\n')
         # integrate with trapz
         prob_en /= np.trapz(prob_en.values, x=prob_en.index)
+
         # if issues : keep only max value like dirac delta
         if any(np.isnan(prob_en.values)) or any(np.isinf(prob_en.values)):
             prob_en = np.NaN
-            
+
         try:
             if max(prob_en) > 1:
                 prob_en /= max(prob_en)
@@ -102,7 +117,7 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
             prob_en = pd.Series(probability[prob_1], index=energy[prob_1])
             if prob_en.empty or energy[prob_1] < 0:
                 prob_en = np.NaN
-                
+
         except TypeError:
             pass
 
@@ -114,6 +129,15 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
         final_i = np.array([empty_i[i < empty_i][0] for i in species_i])
 
         return species_i, final_i
+
+    def def_prods_outinp(sp_labels, prods_list, lbl_dct):
+        if sp_labels == 'inp':
+            prods_outinp = pd.Series([lbl_dct[prod]
+                                      for prod in prods_list], index=prods_list)
+        elif sp_labels == 'out':
+            prods_outinp = pd.Series(prods_list, index=prods_list)
+
+        return prods_outinp
 
     ped_lines = pedoutput_str.splitlines()
 
@@ -136,33 +160,46 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
     lines_wells, _ = indexes('Initial well', ped_lines)
     hotwells = []
     if len(lines_wells) > 0:
-        hotwells = list(set([ped_lines[well_idx-1].split()[2] for well_idx in lines_wells]))
+        hotwells = list(set([ped_lines[well_idx-1].split()[2]
+                             for well_idx in lines_wells]))
         if sp_labels == 'inp':
             hotwells = [lbl_dct[well] for well in hotwells]
 
+    lines_bimolbimol, _ = indexes('Bimolecular-to-bimolecular', ped_lines)
+    lines_wellbimol, _ = indexes('Well-to-bimolecular', ped_lines)
+    lines_all = np.concatenate((lines_bimolbimol, lines_wellbimol))
+
+    ped_spc = []
+    for line in lines_all:
+        ped_spc.extend(ped_lines[line].split('mol')[1].strip().split())
+    ped_spc = list(set(ped_spc))
     ped_df_dct = {}
+
     # ped_df_dct = dict.fromkeys(energy_dct.keys())
     # find the energy for the scaling: everything refers to the products
-    for spc in ped_spc:
+    for label_messout in ped_spc:
         # allocate empty dataframe
         ped_df = pd.DataFrame(index=list(set(temperature_lst)),
                               columns=list(set(pressure_lst)), dtype=object)
-        reacs, prods = spc
-        label = ((reacs,), (prods,), (None,))  # rxn name
+
+        reacs, prods = label_messout.split('->')
         # relabel if necessary
         if sp_labels == 'inp':
-            label_messout = '->'.join([inv_lbl_dct[reacs], inv_lbl_dct[prods]])
+            label = (tuple(lbl_dct[reacs].split('+')),
+                     tuple(lbl_dct[prods].split('+')), (None,))
         elif sp_labels == 'out':
-            label_messout = '->'.join(spc)
+            label = (tuple(reacs.split('+')), tuple(prods.split('+')), (None,))
         else:
             print('*Error: sp_labels must be "inp" (as in mess input) \
                 or "out" (as in mess output)')
             sys.exit()
 
         # 0th of the energy: products energy
-        ene0 = -energy_dct[prods]
+        prods_outinp = def_prods_outinp(sp_labels, [prods], lbl_dct)
+        ene0 = -energy_dct[prods_outinp[prods]]
 
         species_i, final_i = indexes(label_messout, ped_lines)
+
         # column label
         column_i = apf.where_is(
             label_messout, ped_lines[species_i[0]-1].strip().split()[1:])[0]
@@ -172,6 +209,7 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
         # extract the data
         for i in np.arange(0, len(species_i)):
             # if labels don't match: go to next loop
+
             if label_messout not in ped_lines[species_i[i]-1]:
                 continue
 
@@ -183,11 +221,10 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
                 dtype=float).T
             energy = en_prob_all[:][0] + ene0
             probability = en_prob_all[:][column_i]
-
             ped_df[pressure][temp] = prob_en_single(probability, energy)
 
         ped_df_dct[label] = ped_df
-        
+
     for hotwell in hotwells:
 
         # relabel if necessary
@@ -201,18 +238,15 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
             sys.exit()
         # find products label
         species_i, final_i = indexes(label_messout, ped_lines)
-
         prods_list = ped_lines[species_i[0]].split('mol')[1].split()
-        if sp_labels == 'inp':
-            prods_outinp = pd.Series([lbl_dct[prod]
-                                      for prod in prods_list], index=prods_list)
-        elif sp_labels == 'out':
-            prods_outinp = pd.Series(prods_list, index=prods_list)
+
+        prods_outinp = def_prods_outinp(sp_labels, prods_list, lbl_dct)
+
         ene0_all = pd.Series(-np.array([energy_dct[prods_outinp[prods]]
                                         for prods in prods_list]), index=prods_list)
         # allocate dataframes and labels
         for prods in prods_outinp.values:
-            label = ((hotwell,), (prods,), (None,))
+            label = ((hotwell,), tuple(prods.split('+')), (None,))
             ped_df_dct[label] = pd.DataFrame(index=list(set(temperature_lst)),
                                              columns=list(set(pressure_lst)), dtype=object)
 
@@ -230,7 +264,8 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
 
             for pi, prods in enumerate(prods_list):
 
-                label = ((hotwell,), (prods_outinp[prods],), (None,))
+                label = ((hotwell,), tuple(
+                    prods_outinp[prods].split('+')), (None,))
                 try:
                     ped_df_dct[label][pressure][temp][init_energy]
                 except TypeError:
@@ -244,6 +279,7 @@ def get_ped(pedoutput_str, ped_spc, energy_dct, sp_labels='auto'):
                     ped_df_dct[label][pressure][temp][init_energy] = prob_en_single(
                         probability, energy)
                     # print(label, prods , pressure, temp , ped_df_dct[label][pressure][temp][init_energy])
-                    ped_df_dct[label][pressure][temp] = ped_df_dct[label][pressure][temp].dropna()
+                    ped_df_dct[label][pressure][temp] = ped_df_dct[label][pressure][temp].dropna(
+                    )
 
     return ped_df_dct
