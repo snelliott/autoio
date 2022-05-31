@@ -59,8 +59,8 @@ def pes(input_string, read_fake=False):
                         pes_label_dct[spc.strip()] = label
                     else:
                         pes_label_dct[label] = label
-                        print('Warning: labeling not found for '
-                              f'species {label}')
+                        #print('Warning: labeling not found for '
+                        #      f'species {label}')
 
         if 'Bimolecular' in line:
 
@@ -100,8 +100,8 @@ def pes(input_string, read_fake=False):
                             frag_line_lst = line2.split()
                             frag = frag_line_lst[1]
                             frags.append(frag.strip())
-                            print('Warning: labeling not found for '
-                                  f'bimol fragments for {label}')
+                            #print('Warning: labeling not found for '
+                            #      f'bimol fragments for {label}')
                         cnt += 1
                     if cnt == 2:
                         break
