@@ -14,7 +14,7 @@ rxn_smis_lst = [
 ]
 for i, smi in enumerate(rxn_smis_lst):
     zma = automol.geom.zmatrix(
-        automol.inchi.geometry(automol.smiles.inchi(smi)))
+        automol.chi.geometry(automol.smiles.chi(smi)))
     print()
     print(smi)
     print(zma)

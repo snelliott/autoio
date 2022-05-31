@@ -2,26 +2,26 @@
  tests chemkin_io.writer.transport.properties
 """
 
-import automol.inchi
+import automol.chi
 from chemkin_io.writer.transport import properties as writer
 
 
 SPC_TRANS_DCT = {
-    'He': {'geo': automol.inchi.geometry('InChI=1S/He'),
+    'He': {'geo': automol.chi.geometry('InChI=1S/He'),
            'epsilon': 0.0000362344204,
            'sigma': 5.1306064,
            'dipole_moment': 0.00,
            'polarizability': 9.2898,
            'zrot': 2.00
            },
-    'O2': {'geo': automol.inchi.geometry('InChI=1S/O2/c1-2'),
+    'O2': {'geo': automol.chi.geometry('InChI=1S/O2/c1-2'),
            'epsilon': 0.00048935,
            'sigma': 3.458,
            'dipole_moment': 0.00,
            'polarizability': 10.7974,
            'zrot': 3.800
            },
-    'H2O': {'geo': automol.inchi.geometry('InChI=1S/H2O/h1H2'),
+    'H2O': {'geo': automol.chi.geometry('InChI=1S/H2O/h1H2'),
             'epsilon': 0.002017423107,
             'sigma': 5.561464,
             'dipole_moment': 1.851,
