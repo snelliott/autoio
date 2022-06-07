@@ -41,7 +41,7 @@ def get_hot_species(input_str):
 
 
 def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
-                          sp_labels='auto'):
+                          sp_labels='auto', filter=False):
     """ Extract hot branching fractions for a single species
         :param hot_log_str: string of mess log file
         :type hot_log_str: str
@@ -148,23 +148,27 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
 
                         # check that value of reactant branching is between 0 and 1
                         # if any bf > 1: skip the line
-                        if sp_i.size > 0:
-                            if any(branch_ratio_arr > 1):
-                                continue
-                            elif branch_ratio_arr[sp_i] <= 1e-10:
-                                continue
+                        if filter:
+                            if sp_i.size > 0:
+                                if branch_ratio_arr[sp_i] > 1:
+                                    branch_ratio_arr = np.ones(branch_ratio_arr.shape)*1e-19
+                                    branch_ratio_arr[sp_i] = 1
 
-                        # remove negative values or values >1
-                        _arr = [abs(x*int(1e-10 < x <= 1))
-                                for x in branch_ratio_arr]
-                        br_filter = np.array(_arr, dtype=float)
+                            # remove negative values or values >1
+                            _arr = [abs(x*int(1e-20 < x <= 1))
+                                    for x in branch_ratio_arr]
+                            br_filter = np.array(_arr, dtype=float)
 
-                        # if all invalid: do not save
-                        if all(br_filter == 0):
-                            continue
-                        br_renorm = br_filter/np.sum(br_filter)
-                        # append values
-                        branch_ratio.append(br_renorm)
+                            # if all invalid: do not save
+
+                            if all(br_filter == 0):
+                                continue
+                            br_renorm = br_filter/np.sum(br_filter)
+                        else:
+                            br_renorm = branch_ratio_arr
+                            
+                        # append values                            
+                        branch_ratio.append(br_renorm) ### COMMENT THIS LATER
                         hot_e_lvl.append(hot_e)
 
             hot_e_lvl = np.array(hot_e_lvl)
@@ -269,7 +273,11 @@ def extract_fne(log_str, sp_labels='auto'):
                 sys.exit()
 
             # remove negative values and renormalize
-            bf_fne = abs(bf_fne * np.array(bf_fne > 0, dtype=int))
+            if any(bf_fne < 0):
+                print('Warning: found negative fne BFs at {:1.0f} K and {:1.1e} atm:'
+                      .format(_temp, _press))
+                # bf_fne = abs(bf_fne * np.array(bf_fne > 0, dtype=int))
+                bf_fne = abs(bf_fne)
             bf_fne_renorm = bf_fne/np.sum(bf_fne)
 
             # put in dct
