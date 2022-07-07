@@ -2,10 +2,9 @@
 """
 # default values
 
-MODEL = 'equip_phi'
 BF_THRESH = 0.1
 
-def write_pes_groups(grp_dct_list, modeltype=MODEL, bf_thresh=BF_THRESH):
+def write_pes_groups(grp_dct_list, modeltype='rovib_dos', bf_thresh=BF_THRESH):
     """ writes the pes groups file from list of dictionaries            
         :param grp_dct_list: [{'grp': N, 'idxs': [1:1, 1:2, ...], 'peds': [[],[A+B=C+D],...], 'hot': [[C],[]]}, ...]
         :type grps: list(dct)
@@ -19,7 +18,12 @@ def write_pes_groups(grp_dct_list, modeltype=MODEL, bf_thresh=BF_THRESH):
         pg_str += '\t idxs = {} \n'.format(grp['idxs']).replace("'","")
         pg_str += '\t peds = {} \n'.format(grp['peds'])
         pg_str += '\t hot = {} \n'.format(grp['hot'])
-        pg_str += '\t modeltype = {} \n'.format(modeltype).replace("'","")
+        model_default = grp['modeltype']
+        if modeltype != 'rovib_dos' and model_default != 'thermal':
+            model = modeltype
+        else:
+            model = model_default
+        pg_str += '\t modeltype = {} \n'.format(model).replace("'","")
         pg_str += '\t bf_threshold = {} \n'.format(bf_thresh)
         pg_str += 'end grp \n\n'
 
