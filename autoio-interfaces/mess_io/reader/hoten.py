@@ -274,10 +274,11 @@ def extract_fne(log_str, sp_labels='auto'):
 
             # remove negative values and renormalize
             if any(bf_fne < 0):
-                print('Warning: found negative fne BFs at {:1.0f} K and {:1.1e} atm:'
+                print('Warning: found negative fne BFs at {:1.0f} K and {:1.1e} atm'
                       .format(_temp, _press))
                 # bf_fne = abs(bf_fne * np.array(bf_fne > 0, dtype=int))
                 bf_fne = abs(bf_fne)
+                
             bf_fne_renorm = bf_fne/np.sum(bf_fne)
 
             # put in dct
