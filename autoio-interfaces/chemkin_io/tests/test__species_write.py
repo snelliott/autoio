@@ -22,8 +22,8 @@ MECH_SPC_DCT = {
 
 SPC_STR = (
     'SPECIES\n\n'
-    'O     ! SMILES: smiles_1       InChi: inchi_1  \n'  # note: dumb spaces
-    'H     ! SMILES: smiles_2       InChi: inchi_2  \n\n'
+    'O     ! SMILES: smiles_1         ChI: inchi_1  \n'  # note: dumb spaces
+    'H     ! SMILES: smiles_2         ChI: inchi_2  \n\n'
     'END\n\n\n'
 )
 
@@ -40,12 +40,6 @@ def test_spc():
     """
     out_str = mechanism.species_block(MECH_SPC_DCT)
     assert out_str == SPC_STR
-#    for i,s in enumerate(difflib.ndiff(out_str, SPC_STR)):
-#            if s[0]==' ': continue
-#            elif s[0]=='-':
-#                print(u'Delete "{}" from position {}'.format(s[-1],i))
-#            elif s[0]=='+':
-#                print(u'Add "{}" to position {}'.format(s[-1],i))
 
 
 def test_elem():

@@ -33,7 +33,7 @@ def write_species(mech_spc_dct):
             '{0:<'+str(max_spc_len+buffer)+'s}{1:>9s}{2:<' +
             str(max_smiles_len+buffer)+'s}{3:>9s}{4:<9s}\n').format(
                 spc, '! SMILES: ',
-                ident_dct['smiles'], 'InChi: ', ident_dct['inchi'])
+                ident_dct['smiles'], 'ChI: ', ident_dct['inchi'])
 
     return spc_str
 

@@ -7,6 +7,7 @@ import nst_io
 import elstruct
 from autorun._run import from_input_string
 from autorun._script import SCRIPT_DCT
+from ioformat import pathtools
 
 
 SCRIPT_NAME = 'run_nst.sh'
@@ -17,10 +18,10 @@ OUTPUT_NAMES = ('output.dat',
                 'hess.1', 'hess.2')
 
 
-# Specialized runner
+# Specialized runners
 def isc_flux(run_dir, prog, geo, charge, mults,
              method, basis, orb_label, ini_kwargs, zero_ene=None):
-    """ Calculate the intersystem crossing flux via a series of calculation
+    """ Calculate the intersystem crossing flux via a series of calculations
     """
 
     # If zero energy not given, makes printing harder to read
@@ -54,6 +55,87 @@ def isc_flux(run_dir, prog, geo, charge, mults,
                 run_dir, hessians,
                 prog, rot_geo, charge, mults, zero_ene,
                 method, basis, orb_label, ini_kwargs)
+        else:
+            print('Hessians is None! Exiting...')
+    else: 
+            print('MSX geom. opt. failed! Exiting...')
+
+
+    return rot_geo, hessians, flux_str
+
+
+# Specialized runner
+def isc_flux_no_opt(run_dir, prog, msx_geo, charge, mults,
+                    method, basis, orb_label, ini_kwargs, zero_ene=None):
+    """ Calculate the intersystem crossing flux via a series of calculations
+        Does not optimize the geo!
+    """
+
+    # If zero energy not given, makes printing harder to read
+    zero_ene = zero_ene or 0.0
+
+    rot_geo, flux_str = None, None
+    # Rotate the msx geometry to the frame for Hessian calculations
+    print('Rotating the MSX geometry...')
+    rot_geo = rotated_geometry(
+        run_dir, prog, msx_geo, zero_ene)
+ 
+    # Calculate Hessians for msx geometry for both spin states
+    print('Calculating Hessians...')
+    hessians = hessians_for_nst(
+        run_dir,
+        prog, rot_geo, charge, mults,
+        method, basis, orb_label, ini_kwargs)
+ 
+    # Use Hessians to calculate intersystem crossing flux
+    if hessians is not None:
+        print('Calculating Flux...')
+        flux_str = isc_flux_from_hessians(
+            run_dir, hessians,
+            prog, rot_geo, charge, mults, zero_ene,
+            method, basis, orb_label, ini_kwargs)
+    else:
+        print('Hessians is None! Exiting...')
+
+    return rot_geo, hessians, flux_str
+
+
+def isc_flux_only(run_dir, prog, msx_geo, charge, mults,
+                  method, basis, orb_label, ini_kwargs, zero_ene=None):
+    """ Calculate the intersystem crossing flux via a series of calculations.
+        Does not optimize the geo or calculate the Hessians! Assumes Hessians
+        can be found in the HESS-1 and HESS-2 directories of the run directory
+    """
+
+    # If zero energy not given, makes printing harder to read
+    zero_ene = zero_ene or 0.0
+
+    rot_geo, flux_str = None, None
+    # Rotate the msx geometry to the frame for Hessian calculations
+    print('Rotating the MSX geometry...')
+    rot_geo = rotated_geometry(
+        run_dir, prog, msx_geo, zero_ene)
+
+    # Read the hessians 
+    print('Reading the Hessians...')
+    hessians = ()
+    for idx in range(len(mults)):
+        _run_dir = os.path.join(run_dir, f'HESS-{idx+1}')
+        raw_str = pathtools.read_file(_run_dir, 'run.out', print_debug=True)
+        #print('raw_str:\n', raw_str)
+        hessians += (elstruct.reader.hessian(prog, raw_str),)
+    if any(hess is None for hess in hessians):
+        hessians = None
+        print('hessians is None! Exiting')
+
+    # Use Hessians to calculate intersystem crossing flux
+    if hessians is not None:
+        print('Calculating Flux...')
+        flux_str = isc_flux_from_hessians(
+            run_dir, hessians,
+            prog, rot_geo, charge, mults, zero_ene,
+            method, basis, orb_label, ini_kwargs)
+    
 
     return rot_geo, hessians, flux_str
 
@@ -141,6 +223,10 @@ def hessians_for_nst(run_dir,
                                 method, basis, orb_label, ini_kwargs[idx])
 
         output_strs = from_input_string(qc_script_str, _run_dir, inp_str)
+        print('output_strs:\n', output_strs)
+        print('type of output_strs:\n', type(output_strs))
+        print('length of output_strs:\n', len(output_strs))
+        print(elstruct.reader.hessian(prog, output_strs[0]))
         hessians += (elstruct.reader.hessian(prog, output_strs[0]),)
 
     if any(hess is None for hess in hessians):

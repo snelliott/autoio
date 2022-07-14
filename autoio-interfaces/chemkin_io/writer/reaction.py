@@ -4,8 +4,9 @@ Writes Chemkin-formatted strings containing the rate parameters
 
 from chemkin_io.writer import _util as util
 
-BUFFER = 5  # buffer between longest reaction name and Arr params
+BUFFER = 10  # buffer between longest reaction name and Arr params
 INLINE_BUFFER = 2  # buffer between Arr params and inline comment
+INDENT = 2  # indent for things like TROE, PLOG
 
 
 def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None):
@@ -94,7 +95,7 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45):
                              colliders=params.lind['collid'], max_len=max_len,
                              inline_cmt=inline_cmt)
         if dups:
-            ckin_str += 'DUP\n'
+            ckin_str += '  DUP\n'
 
     ckin_str += footer_cmt
 
@@ -132,7 +133,7 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
             for dup_idx in range(dup_count):
                 ckin_str += plog(reaction, params.plog_dups[dup_idx],
                                  max_len=max_len)
-                ckin_str += 'DUP\n'
+                ckin_str += '  DUP\n'
         elif form == 'cheb':
             for dup_idx in range(dup_count):
                 ckin_str += cheb(reaction, params.cheb_dups[dup_idx]['alpha'],
@@ -140,7 +141,7 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
                                  params.cheb_dups[dup_idx]['plim'],
                                  params.cheb_dups[dup_idx]['one_atm_arr'],
                                  max_len=max_len)
-                ckin_str += 'DUP\n'
+                ckin_str += '  DUP\n'
         elif form == 'troe':
             for dup_idx in range(dup_count):
                 ckin_str += troe(reaction,
@@ -149,7 +150,7 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
                                  params.troe_dups[dup_idx]['troe_params'],
                                  colliders=params.troe_dups[dup_idx]['collid'],
                                  max_len=max_len)
-                ckin_str += 'DUP\n'
+                ckin_str += '  DUP\n'
         elif form == 'lind':
             for dup_idx in range(dup_count):
                 ckin_str += lind(reaction,
@@ -157,7 +158,7 @@ def handle_duplicates(reaction, params, dup_counts, max_len):
                                  params.lind_dups[dup_idx]['lowp_arr'],
                                  colliders=params.lind_dups[dup_idx]['collid'],
                                  max_len=max_len)
-                ckin_str += 'DUP\n'
+                ckin_str += '  DUP\n'
 
     return ckin_str
 
@@ -183,7 +184,7 @@ def arr(reaction, arr_tuples, colliders=None, max_len=45, inline_cmt=None):
         arr_str += _highp_str(reaction, arr_tuple, max_len=max_len,
                               inline_cmt=inline_cmt)
         if len(arr_tuples) > 1:
-            arr_str += 'DUP\n'
+            arr_str += '  DUP\n'
 
     # Write the collider efficiencies string
     if colliders is not None:
@@ -230,7 +231,7 @@ def plog(reaction, plog_dct, max_len=45, inline_cmt=None):
         single_str = (
             '{0:<' + plog_buffer +
             's}{1:<12.3E}{2:<10.3E}{3:>9.3f}{4:>9.0f} /\n').format(
-                '    PLOG /', pressure, a_par, n_par, ea_par)
+                '  PLOG /', pressure, a_par, n_par, ea_par)
 
         return single_str
 
@@ -423,7 +424,7 @@ def _lowp_str(arr_tuple, max_len=45):
     [a_par, n_par, ea_par] = arr_tuple
     lowp_str = (
         '{0:<' + lowp_buffer + 's}{1:<10.3E}{2:>9.3f}{3:>9.0f}  /').format(
-            '    LOW  /', a_par, n_par, ea_par)
+            '  LOW  /', a_par, n_par, ea_par)
 
     lowp_str += '\n'
 
@@ -454,7 +455,7 @@ def _misc_troe_cheb(header, params, newline=False, val='exp'):
     elif val == 'int':
         val_str = '{0:12.0f}'
 
-    params_str = f'    {header.upper():5s}/'
+    params_str = f'  {header.upper():5s}/'
     for param in params:
         if param:  # skip any None entries
             params_str += ''.join(val_str.format(param))
@@ -475,7 +476,7 @@ def _format_collider_string(colliders):
         :rtype: str
     """
 
-    collider_str = ' ' * BUFFER
+    collider_str = '  '  # two blank spaces
     for collider, efficiency in colliders.items():
         collider_str += f'{collider:s}/{efficiency:4.3f}/   '
     collider_str += '\n'
