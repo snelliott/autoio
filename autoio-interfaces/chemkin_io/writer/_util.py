@@ -53,15 +53,15 @@ def format_rxn_name(rxn):
 
     # Add the +M or (+M) text if it is applicable
     if thrbdy is not None:
-        rct_str += thrbdy
-        prd_str += thrbdy
+        rct_str += f' {thrbdy}'  # buffer space
+        prd_str += f' {thrbdy}'
 
     if len(prds) < 3:
-        join_sign = '='
+        join_sign = ' = '
     else:
-        join_sign = '=>'
+        join_sign = ' => '
 
-    rxn_name = f'{rct_str} {join_sign} {prd_str}'
+    rxn_name = f'{rct_str}{join_sign}{prd_str}'
 
     return rxn_name
 

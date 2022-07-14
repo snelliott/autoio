@@ -39,25 +39,25 @@ VARECOF_MULTI = (
     # 'MPI_OPTIONS="-machinefile machines"'
     # 'MPI_OPTIONS="-host b460"'
     'MPI_OPTIONS="-n {}"\n'
-    "VARECOFEXE=/lcrc/project/CMRP/amech/VaReCoF/build/multi\n\n"
+    "VARECOFEXE=/home/mulvihcr/automech/VaReCoF/build/multi\n\n"
     "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
 VARECOF_MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/lcrc/project/CMRP/amech/VaReCoF/build/mc_flux "
+    "/home/mulvihcr/automech/VaReCoF/build/mc_flux "
     "mc_flux.inp >& mc_flux.out"
 )
 VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_struct "
+    "/home/mulvihcr/automech/VaReCoF/build/convert_struct "
     "tst.inp >& varecof_struct_conv.out"
 )
 VARECOF_CONV_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/lcrc/project/CMRP/amech/VaReCoF/build/convert_multi "
+    "/home/mulvihcr/automech/VaReCoF/build/convert_multi "
     "convert.inp >& varecof_multi_conv.out"
 )
 VARECOF_TSTCHECK = (
