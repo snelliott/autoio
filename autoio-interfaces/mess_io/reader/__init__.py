@@ -16,7 +16,8 @@ from mess_io.reader._wells import merged_wells
 from mess_io.reader._wells import well_thermal_energy
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
-
+from mess_io.reader._nonboltz import ped_info
+from mess_io.reader._nonboltz import hot_info
 
 __all__ = [
     'pfs',
@@ -31,5 +32,7 @@ __all__ = [
     'merged_wells',
     'well_thermal_energy',
     'relabel',
-    'name_label_dct'
+    'name_label_dct',
+    'ped_info',
+    'hot_info'
 ]
