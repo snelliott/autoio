@@ -9,18 +9,20 @@ import ioformat
 from phydat import phycon
 import mess_io.reader
 
-
 # Main calling function
 def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
-                           lump_pressure, lump_temp):
+                           lump_pressure, lump_temp, lump = True):
     """ Run MESS to get the wells and then parse the aux file for wells...
     """
 
     # Get the requisite information from analyzing the output
     well_enes_dct = well_energies(out_str, log_str, lump_pressure)
-    well_lump_str = well_lumping_scheme(
-        aux_str, lump_pressure, lump_temp)
-
+    
+    well_lump_str = None
+    if lump == True:
+        well_lump_str = well_lumping_scheme(
+            aux_str, lump_pressure, lump_temp)
+        
     # Write a new string containing the parsed information
     well_extend_str = _format_well_extension_inp(
         inp_str, well_enes_dct, well_lump_str)
@@ -90,7 +92,19 @@ def well_energies(mess_out_str, mess_log_str, pressure):
         else:
             well_enes[well] = None
 
-    return well_enes
+    # relabel if needed
+    lbl_dct = mess_io.reader._label.name_label_dct(mess_log_str)
+
+    if lbl_dct is not None:    
+        well_enes_new = {lbl_dct[key]: val for key, val in well_enes.items()}
+        well_enes_new = {}
+        for key, val in well_enes.items():
+            new_key = lbl_dct[key]
+            well_enes_new[new_key] = val
+    else:
+        well_enes_new = well_enes
+        
+    return well_enes_new
 
 
 def _get_well_reactions(mess_out_str):
@@ -153,8 +167,8 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
     """ handles building new input will well lumping/extension info
     """
 
-    # Reinitialize string
-    new_inp_str = inp_str
+    # Reinitialize string and uncomment wellext if needed
+    new_inp_str = inp_str.replace('!WellExtension', 'WellExtension')
 
     # Write string for each of the well enes
     for well, ene in well_enes_dct.items():
@@ -163,7 +177,7 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
             for line in inp_str.splitlines():
                 if 'Well' in line and well in line:
                     _search = line
-                    break
+                    break       
             _add = f'  WellExtensionCap[kcal/mol]    {ene*phycon.EH2KCAL:.2f}'
             new_inp_str = ioformat.add_line(
                 string=new_inp_str, addline=_add,
