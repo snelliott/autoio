@@ -51,7 +51,8 @@ def _mp2_energy(output_str):
         output_str,
         app.one_of_these([
             app.escape('!MP2 total energy') + app.maybe(':'),
-            app.escape('!RMP2 energy'),
+            app.escape('!RMP2 energy'), app.escape('!DF-RMP2 energy'), 
+            app.escape('!MP2 energy'),
         ]))
 
     return ene
@@ -319,6 +320,7 @@ ENERGY_READER_DCT = {
     (Method.Corr.CCSDT[0], frozenset({})): _ccsdt_energy,
     (Method.Corr.CCSDT_Q[0], frozenset({})): _ccsdt_q_energy,
     (Method.Corr.CCSD_T_F12[0], frozenset({})): _ccsd_t_f12_energy,
+    (Method.Corr.MP2[0], frozenset({Method.ModPrefix.DF[0]})): _mp2_energy,
     (Method.Corr.CCSD[0], frozenset({Method.ModPrefix.ALL_ELEC[0],
                                      Method.ModPrefix.REL_DKH[0]})):
     _ccsd_energy,

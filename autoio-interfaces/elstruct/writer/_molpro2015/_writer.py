@@ -80,7 +80,7 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
 
     # Set the program method to one of the following
     prog_method = method1 if method1 else method2
-
+    
     # Reset the prog_method again to account for hf, cassf (this is dumb...)
     if prog_method not in ('hf', 'rhf', 'uhf', 'casscf'):
         corr_method = prog_method
