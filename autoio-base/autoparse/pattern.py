@@ -48,6 +48,7 @@ from autoparse._lib import UNDERSCORE
 from autoparse._lib import LETTER
 from autoparse._lib import DIGIT
 from autoparse._lib import URLSAFE_CHAR
+from autoparse._lib import CKINSAFE_CHAR
 from autoparse._lib import SIGN
 from autoparse._lib import UNSIGNED_INTEGER
 from autoparse._lib import UNSIGNED_FLOAT
@@ -106,6 +107,7 @@ __all__ = [
     'LETTER',
     'DIGIT',
     'URLSAFE_CHAR',
+    'CKINSAFE_CHAR',
     'SIGN',
     'UNSIGNED_INTEGER',
     'UNSIGNED_FLOAT',
