@@ -202,10 +202,11 @@ def update_gen_lines(gen_lines,
                 gen_lines_3 += tuple(lines3)
             else:
                 gen_lines_3 = tuple(lines3)
-
-        gen_lines = {1: gen_lines_1,
-                     2: gen_lines_2,
-                     3: gen_lines_3}
+                
+        gen_lines = {}
+        for i, gen_line in enumerate([gen_lines_1, gen_lines_2, gen_lines_3]):
+            if gen_line is not None:
+                gen_lines[i+1] = gen_line
 
     else:
         gen_lines = {}

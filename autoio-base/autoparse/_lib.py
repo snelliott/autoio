@@ -34,8 +34,13 @@ LETTER = r'[A-Za-z]'
 DIGIT = r'[0-9]'
 MINUS = escape('-')
 UNDERSCORE = escape('_')
+SQBRL = escape('[')
+SQBRR = escape(']')
+RBRL = escape('(')
+RBRR = escape(')')
 # characters for urlsafe encoding with the `base64` standard library
 URLSAFE_CHAR = one_of_these([LETTER, DIGIT, MINUS, UNDERSCORE])
+CKINSAFE_CHAR =  one_of_these([LETTER, DIGIT, MINUS, UNDERSCORE, SQBRL, SQBRR, RBRL, RBRR])
 
 PLUS = escape('+')
 SIGN = one_of_these([PLUS, MINUS])

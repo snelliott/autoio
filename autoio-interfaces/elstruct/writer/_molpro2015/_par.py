@@ -1,6 +1,6 @@
 """ elstruct.writer._molpro2015 parameters
 """
-
+import sys
 from elstruct import Option
 from elstruct import option
 import elstruct.par
@@ -49,13 +49,13 @@ def set_method_and_options(method, corr_options, gen_lines):
     """
 
     core_method, pfxs = elstruct.par.Method.evaluate_method_type(method)
-
+    
     # Add to options lists
     if elstruct.par.Method.ModPrefix.ALL_ELEC[0] in pfxs:
         allelec_opt = Option.Corr.ALL_ELEC_
         if allelec_opt not in corr_options:
             corr_options += (allelec_opt,)
-
+    # gdirect here maybe as gen_lines? ONLY FOR DF-MP2 CASES
     if elstruct.par.Method.ModPrefix.REL_DKH[0] in pfxs:
         gen_lines = fill.update_gen_lines(
             gen_lines, lines2=('dkroll=1',))
@@ -69,4 +69,9 @@ def set_method_and_options(method, corr_options, gen_lines):
     if elstruct.par.Method.ModPrefix.L_PNO[0] in pfxs:
         fin_method = method
 
+    if elstruct.par.Method.ModPrefix.DF[0] in pfxs:
+        fin_method = method
+        gen_lines = fill.update_gen_lines(
+            gen_lines, lines2=('gdirect',))       
+         
     return core_method, fin_method, corr_options, gen_lines
