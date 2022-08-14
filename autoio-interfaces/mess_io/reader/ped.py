@@ -331,4 +331,11 @@ def get_ped(pedoutput_str, energy_dct, sp_labels='auto'):
                     ped_df_dct[label][pressure][temp] = ped_df_dct[label][pressure][temp].dropna(
                     )
 
+    # remove "self" reactions, nonsense
+    keydel = []
+    for key in ped_df_dct.keys():
+        if key[0] == key[1]:
+            keydel.append(key)
+    [ped_df_dct.pop(key) for key in keydel]
+            
     return ped_df_dct

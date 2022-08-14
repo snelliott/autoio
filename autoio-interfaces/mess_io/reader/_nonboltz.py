@@ -18,7 +18,6 @@ def ped_info(ped_inp_str, ped_ped_str, ped_ke_out_str):
 
     # Read ke_ped.out file for energy density of each fragment
     dos_df = reader.rates.dos_rovib(ped_ke_out_str, sp_labels='auto')
-
     return ped_spc, ped_dct, dos_df, energy_dct
 
 

@@ -19,7 +19,8 @@ def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
     well_enes_dct = well_energies(out_str, log_str, lump_pressure)
     
     well_lump_str = None
-    if lump == True:
+    if lump == True and len(well_enes_dct.keys()) > 1:
+        # need to have at least 2 wells for merging
         well_lump_str = well_lumping_scheme(
             aux_str, lump_pressure, lump_temp)
         
@@ -34,7 +35,7 @@ def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
 def well_lumping_scheme(mess_aux_str, pressure, temp):
     """ Parse lumped wells from aux output; write into string for new input
     """
-
+    # CURRENTLY NOT WORKING
     well_lump_lst = mess_io.reader.merged_wells(mess_aux_str, pressure, temp)
     if well_lump_lst is not None:
         well_lump_str = mess_io.writer.well_lump_scheme(well_lump_lst)
@@ -85,6 +86,7 @@ def well_energies(mess_out_str, mess_log_str, pressure):
         # Only put enes if they are positive to be written later
         if max_temp is not None:
             ene = mess_io.reader.well_thermal_energy(mess_log_str, well, max_temp)
+
             if ene > 0.0:
                 well_enes[well] = ene
             else:
@@ -117,12 +119,18 @@ def _get_well_reactions(mess_out_str):
     rxns = mess_io.reader.rates.reactions(mess_out_str)
     rxns = mess_io.reader.rates.filter_reactions(
         rxns, filter_reverse=False)
-
+    
+    lbl_dct = mess_io.reader._label.name_label_dct(mess_out_str)
+        
     wells = ()
     for rxn in rxns:
         rcts, prds = rxn[0], rxn[1]
-        wells += tuple(rct for rct in rcts if '+' not in rct)
-        wells += tuple(prd for prd in prds if '+' not in prd)
+        if lbl_dct is None:
+            wells += tuple(rct for rct in rcts if '+' not in rct)
+            wells += tuple(prd for prd in prds if '+' not in prd)
+        else: #renamed 
+            wells += tuple(rct for rct in rcts if rct[0] == 'W')
+            wells += tuple(prd for prd in prds if prd[0] == 'W')            
 
     # Remove duplicates from above loop
     wells = tuple(n for i, n in enumerate(wells) if n not in wells[:i])
