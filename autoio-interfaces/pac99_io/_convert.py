@@ -32,7 +32,7 @@ def pac2ckin_poly(name, atom_dct, pac99_poly_str):
             # '      ' +                  # unused 6-char comment
             f'{elem_str:<20s}' +
             'G'
-            f'{lowt:>10.1f}{breakt:>10.1f}{hight:>8.1f}'
+            f'{lowt:>10.1f}{hight:>10.1f}{breakt:>8.1f}'
             '      ' +                  # unused 6-char comment
             '1\n'
         )
