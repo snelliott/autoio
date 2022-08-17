@@ -36,7 +36,9 @@ def ped_names(input_str):
             check += 1
             ped_species_all = line.strip().split()[1:]
             for coupled_species in ped_species_all:
-                ped_species += (tuple(coupled_species.split('=')),)
+                newset = tuple(coupled_species.split('='))
+                if newset not in ped_species:
+                    ped_species += (newset,)
         if 'PEDOutput' in line:
             check += 1
             ped_output = line.strip().split()[1]
