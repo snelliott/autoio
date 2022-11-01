@@ -20,7 +20,7 @@ def hf298k(output_str):
         app.SPACES +
         'final' +
         app.SPACES +
-        app.capturing(app.FLOAT)
+        app.capturing(app.NUMBER)
     )
 
     caps = apf.all_captures(ptt, output_str)
