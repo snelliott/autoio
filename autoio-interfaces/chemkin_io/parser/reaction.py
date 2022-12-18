@@ -29,8 +29,10 @@ SPECIES_NAME_PATTERN = (
          app.escape('['), app.escape(']')])) +
     app.zero_or_more(app.PLUS)
 )
-SPECIES_NAMES_PATTERN = app.series(
-    app.padded(SPECIES_NAME_PATTERN), app.padded(app.PLUS))
+SPECIES_NAMES_PATTERN = (app.series(
+    app.padded(SPECIES_NAME_PATTERN), app.padded(app.PLUS)) +
+    app.maybe(app.padded(CHEMKIN_PAREN_PLUS_EM))
+)
 
 REACTION_PATTERN = (SPECIES_NAMES_PATTERN + app.padded(CHEMKIN_ARROW) +
                     SPECIES_NAMES_PATTERN)
@@ -319,10 +321,10 @@ def rct_names(rxn_str):
     string = apf.first_capture(pattern, rxn_str)
     try:
         names = _split_reagent_string(string)
-    except TypeError:
-        print('Reaction line not formatted correctly:\n', rxn_str)
-        print('Check that there are three numbers after the rxn equation')
-        sys.exit()
+    except TypeError as exc:
+        raise TypeError(f'Reaction line not formatted correctly:\n{rxn_str}\n'
+                        f'Check that there are three numbers after the '
+                        f'rxn equation') from exc
 
     return names
 
@@ -345,10 +347,10 @@ def prd_names(rxn_str):
     string = apf.first_capture(pattern, rxn_str)
     try:
         names = _split_reagent_string(string)
-    except TypeError:
-        print('Reaction line not formatted correctly:\n', rxn_str)
-        print('Check that there are three numbers after the rxn equation')
-        sys.exit()
+    except TypeError as exc:
+        raise TypeError(f'Reaction line not formatted correctly:\n{rxn_str}\n'
+                        f'Check that there are three numbers after the '
+                        f'rxn equation') from exc
 
     return names
 
