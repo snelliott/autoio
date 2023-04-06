@@ -8,6 +8,7 @@ from mess_io.reader import rates
 from mess_io.reader import tors
 from mess_io.reader import ped
 from mess_io.reader import hoten
+from mess_io.reader import bf
 from mess_io.reader._pes import pes
 from mess_io.reader._pes import get_species
 from mess_io.reader._pes import find_barrier
@@ -25,6 +26,7 @@ __all__ = [
     'tors',
     'ped',
     'hoten',
+    'bf',
     'pes',
     'get_species',
     'find_barrier',
