@@ -69,7 +69,6 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
     # each of them has BF[energy][species]
     # preallocations
     hotspecies_lst = list(hotspecies_en.keys())
-
     # 1. extract P, T and preallocate dictionary
     pt_i_array = apf.where_in(['Pressure', 'Temperature'], lines)
     pt_list = []
@@ -175,12 +174,11 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
             branch_ratio = np.array(branch_ratio)
 
             # 3. allocate in the dataframe
-
             bf_hotspecies = pd.DataFrame(
                 0, index=hot_e_lvl, columns=species_lst)
             bf_hotspecies[species_bf_i] = branch_ratio
             hoten_dct[hotspecies][_press][_temp] = bf_hotspecies
-
+            
     return hoten_dct
 
 
