@@ -689,7 +689,7 @@ def _first_line_pattern(rct_ptt, prd_ptt, param_ptt):
         :rtype: str
     """
     return (rct_ptt + app.padded(CHEMKIN_ARROW) + prd_ptt +
-            app.LINESPACES + param_ptt)
+            app.LINESPACES + app.maybe(param_ptt))
 
 
 def _split_reagent_string(rgt_str):
@@ -855,3 +855,8 @@ def ratek_fit_info(rxn_str):
             inf_dct[pressure].update({'max_err': max_vals[idx]})
 
     return inf_dct
+
+
+if __name__ == '__main__':
+    RXN_STR = 'IC6OOH3-2 = IC6O2-3 + OH'
+    print(get_rxn_name(RXN_STR))
