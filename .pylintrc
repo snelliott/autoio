@@ -6,8 +6,6 @@ disable=
     consider-iterating-dictionary,
     duplicate-code,
     deprecated-method,
-    no-init,
-    old-style-class,
     redefined-builtin,
     superfluous-parens,
     too-many-arguments,

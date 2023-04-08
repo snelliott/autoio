@@ -1,7 +1,6 @@
 """ functions operating on the reactions block string
 """
 
-import sys
 import collections
 import itertools
 import numpy as np
