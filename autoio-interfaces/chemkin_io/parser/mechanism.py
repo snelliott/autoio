@@ -5,6 +5,10 @@ import autoparse.pattern as app
 import autoparse.find as apf
 from ioformat import remove_comment_lines
 from ioformat import remove_whitespace_from_string
+from chemkin_io.parser.reaction import get_rxn_strs
+from chemkin_io.parser.reaction import get_rxn_name
+from chemkin_io.parser.reaction import get_params
+from chemkin_io.parser.reaction import fix_duplicates
 
 
 def species_block(mech_str, remove_comments=True):
@@ -27,6 +31,41 @@ def species_block(mech_str, remove_comments=True):
     _check_if_empty(block_str, 'SPECIES')
 
     return block_str
+
+
+def reactions(mech_str):
+    """ Parses all of the chemical equations and corresponding fitting from the
+        mechanism file.
+
+        :param mech_str: string of mechanism input file
+        :type mech_str: str
+        :return rxn_param_dct: dct {rxn1: params1, rxn2: ...}
+        :rtype: dict
+    """
+    ea_units, a_units = reaction_units(mech_str)
+    block_str = reaction_block(mech_str)
+
+    rxn_strs = get_rxn_strs(block_str)
+
+    if rxn_strs is not None:
+        # Loop over each reaction string, creating a RxnParams object for each
+        rxns = []
+        params_lst = []
+        for rxn_str in rxn_strs:
+            rxn = get_rxn_name(rxn_str)
+            params = get_params(rxn_str, ea_units, a_units)
+            rxns.append(rxn)
+            params_lst.append(params)
+
+        # Fix any duplicates
+        rxns, params_lst = fix_duplicates(rxns, params_lst)
+        # Zip into a dictionary
+        rxn_param_dct = dict(zip(rxns, params_lst))
+
+    else:
+        rxn_param_dct = None
+
+    return rxn_param_dct
 
 
 def reaction_block(mech_str, remove_comments=True):
