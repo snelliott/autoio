@@ -43,7 +43,7 @@ def reactions(mech_str):
         :rtype: dict
     """
     ea_units, a_units = reaction_units(mech_str)
-    block_str = reaction_block(mech_str)
+    block_str = reaction_block(mech_str, remove_comments=True)
 
     rxn_strs = get_rxn_strs(block_str)
 

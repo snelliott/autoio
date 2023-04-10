@@ -17,9 +17,9 @@ PP_ARROW = pp.Combine(pp.Opt('<') + pp.Char('=') + pp.Opt('>'))
 PP_THIRD_BODY = pp.Group(
     pp.Opt('(') + pp.Char('+') + pp.Char('M') + pp.Opt(')'))
 PP_SPECIES_NAME = pp.Combine(
-    pp.Char(pp.printables, excludeChars=(pp.nums+'+=')) +
+    pp.Char(pp.printables, excludeChars=(pp.nums+'+=.')) +
     pp.ZeroOrMore(
-        pp.Char(pp.printables, excludeChars='+=<(') ^
+        pp.Char(pp.printables, excludeChars='+=.<(') ^
         '(' + ~pp.FollowedBy('+') ^
         '<' + ~pp.FollowedBy('=')
     )
