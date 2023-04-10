@@ -42,9 +42,9 @@ def format_rxn_name(rxn):
     thrbdy = rxn[2][0]
 
     # Convert to list if only one species
-    if not isinstance(rcts, tuple):
+    if isinstance(rcts, str):
         rcts = [rcts]
-    if not isinstance(prds, tuple):
+    if isinstance(prds, str):
         prds = [prds]
 
     # Write the strings
