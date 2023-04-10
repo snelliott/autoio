@@ -4,12 +4,35 @@
 import collections
 import itertools
 import numpy as np
+import pyparsing as pp
 import autoparse.pattern as app
 import autoparse.find as apf
 from autoparse import cast as ap_cast
 from ioformat import headlined_sections
 from phydat import phycon
 from autoreact.params import RxnParams
+
+# gearing up to replace autoparse with pyparsing
+PP_ARROW = pp.Combine(pp.Opt('<') + pp.Char('=') + pp.Opt('>'))
+PP_THIRD_BODY = pp.Group(
+    pp.Opt('(') + pp.Char('+') + pp.Char('M') + pp.Opt(')'))
+PP_SPECIES_NAME = pp.Combine(
+    pp.Char(pp.printables, excludeChars=(pp.nums+'+=')) +
+    pp.ZeroOrMore(
+        pp.Char(pp.printables, excludeChars='+=<(') ^
+        '(' + ~pp.FollowedBy('+') ^
+        '<' + ~pp.FollowedBy('=')
+    )
+)
+
+PP_COEFF = pp.Word(pp.nums)
+PP_REAGENT = pp.Group(pp.Opt(PP_COEFF) + PP_SPECIES_NAME)
+PP_SPECIES_LIST = pp.delimitedList(PP_REAGENT, delim='+')
+PP_REACTION_EQUATION = (PP_SPECIES_LIST('reactants') +
+                        pp.Opt(PP_THIRD_BODY('thirdbody')) +
+                        PP_ARROW +
+                        PP_SPECIES_LIST('products') +
+                        pp.Opt(PP_THIRD_BODY('thirdbody')))
 
 
 # Various strings needed to parse the data sections of the Reaction block
@@ -130,13 +153,23 @@ def get_rxn_name(rxn_str):
         :return rxn: tuple describing the reactants, products, and third body
         :rtype: tuple ((rct1, rct2, ...), (prd1, prd2, ...), (third_bod1, ...))
     """
+    parse_dct = PP_REACTION_EQUATION.parseString(rxn_str).asDict()
+    rcts = list(itertools.chain(*(r if len(r) == 1 else int(r[0]) * [r[1]]
+                                  for r in parse_dct['reactants'])))
+    prds = list(itertools.chain(*(r if len(r) == 1 else int(r[0]) * [r[1]]
+                                  for r in parse_dct['products'])))
 
-    rcts = rct_names(rxn_str)
-    prds = prd_names(rxn_str)
-    thd_bod = third_body(rxn_str)
+    if 'thirdbody' in parse_dct:
+        thd_bod = (''.join(parse_dct['thirdbody']),)
+    elif 'M' in rcts or 'M' in prds:
+        assert 'M' in rcts and 'M' in prds, rxn_str
+        rcts.remove('M')
+        prds.remove('M')
+        thd_bod = ('M',)
+    else:
+        thd_bod = (None,)
 
-    rxn = (rcts, prds, thd_bod)
-
+    rxn = (tuple(rcts), tuple(prds), thd_bod)
     return rxn
 
 
@@ -218,7 +251,7 @@ def get_pes_info(rxn_str):
             app.INTEGER + app.escape('.') +
             app.INTEGER)
     )
-    
+
     pes_inf = None
     for line in rxn_str.splitlines():
         if '#' in line and 'pes.subpes.channel' in line:
@@ -226,7 +259,7 @@ def get_pes_info(rxn_str):
             if cap is not None:
                 pes_inf = tuple(int(x)-1 for x in cap.strip().split('.'))
             break
-            
+
     return pes_inf
 
 
@@ -689,7 +722,7 @@ def _first_line_pattern(rct_ptt, prd_ptt, param_ptt):
         :rtype: str
     """
     return (rct_ptt + app.padded(CHEMKIN_ARROW) + prd_ptt +
-            app.LINESPACES + app.maybe(param_ptt))
+            app.LINESPACES + param_ptt)
 
 
 def _split_reagent_string(rgt_str):
@@ -858,5 +891,23 @@ def ratek_fit_info(rxn_str):
 
 
 if __name__ == '__main__':
-    RXN_STR = 'IC6OOH3-2 = IC6O2-3 + OH'
-    print(get_rxn_name(RXN_STR))
+    RXN_STR = 'I3C6OOH2-1O2 = I3C6Q12-6'
+    RXN_STR = 'C7H121OOH6-7 = C7H121-6 + HO2'
+    RXN_STR = 'C7H121-6 + HO2 = C7H121OOH6-7'
+    RXN_STR = 'C7H121-6 + HO2 (+ M) = C7H121OOH6-7 (+M)'
+    RXN_STR = '2OH = H2O2'
+
+    print(get_rxn_name('I3C6OOH2-1O2 = I3C6Q12-6'))
+    print(get_rxn_name('C7H121OOH6-7 = C7H121-6 + HO2'))
+    print(get_rxn_name('C7H121-6 + HO2 = C7H121OOH6-7'))
+    print(get_rxn_name('C7H121-6 + HO2 (+ M) = C7H121OOH6-7 (+M)'))
+    print(get_rxn_name('C7H121-6 + HO2 (+ M) = C7H121OOH6-7 ( + M )'))
+    print(get_rxn_name('C7H121-6 + HO2 + M = C7H121OOH6-7 +M'))
+    print(get_rxn_name('2OH = H2O2'))
+    print(get_rxn_name('IC6D2 + O = IC6D1-3 + OH'))
+    print(get_rxn_name('H2+M<=>H+H+M'))
+    print(get_rxn_name('H2(+M)<=>H+H(+M)'))
+    print(get_rxn_name('C(O)CC(+M)<=>H+H(+M)'))
+
+    # print(PP_SPECIES_NAME.parseString('I3C6OOH2-1O2 = I3C6Q12-6').asList())
+    # print(PP_SPECIES_NAME.parseString('C(O)CC(+M)<=>H+H(+M)').asList())
