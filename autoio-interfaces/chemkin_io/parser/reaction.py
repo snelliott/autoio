@@ -165,7 +165,7 @@ def get_rxn_name(rxn_str):
         assert 'M' in rcts and 'M' in prds, rxn_str
         rcts.remove('M')
         prds.remove('M')
-        thd_bod = ('M',)
+        thd_bod = ('+M',)
     else:
         thd_bod = (None,)
 
@@ -908,6 +908,7 @@ if __name__ == '__main__':
     print(get_rxn_name('H2+M<=>H+H+M'))
     print(get_rxn_name('H2(+M)<=>H+H(+M)'))
     print(get_rxn_name('C(O)CC(+M)<=>H+H(+M)'))
+    print(get_rxn_name('C3H2(S)+M<=>C3H2+M'))
 
     # print(PP_SPECIES_NAME.parseString('I3C6OOH2-1O2 = I3C6Q12-6').asList())
     # print(PP_SPECIES_NAME.parseString('C(O)CC(+M)<=>H+H(+M)').asList())
