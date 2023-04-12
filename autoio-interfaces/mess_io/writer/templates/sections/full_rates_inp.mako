@@ -7,6 +7,8 @@ ${globkey_str}
 !
 Model
 !
+GroundEnergyShiftMax[kcal/mol]  10
+!
 % if use_short_names:
 UseShortNames
 !

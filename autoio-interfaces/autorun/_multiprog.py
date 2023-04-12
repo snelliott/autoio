@@ -29,7 +29,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
         mess_script_str, run_dir, mess_geo, mess_hr_str)
 
     # Calculate the projected vibrational frequencies using ProjRot
-    if dist_cutoff_dct1 is not None:
+    if dist_cutoff_dct1 is None:
         dist_cutoff_dct1 = {('H', 'O'): 2.26767, ('H', 'C'): 2.26767}
     rotor_dist1_str = projrot_io.writer.projection_distance_aux(
         dist_cutoff_dct=dist_cutoff_dct1)
@@ -41,7 +41,7 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
         projrot_script_str, run_dir_1, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct1)
 
-    if dist_cutoff_dct2 is not None:
+    if dist_cutoff_dct2 is None:
         dist_cutoff_dct2 = {('H', 'O'): 2.83459, ('H', 'C'): 2.83459,
                             ('C', 'O'): 3.7807}
     rotor_dist2_str = projrot_io.writer.projection_distance_aux(
