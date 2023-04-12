@@ -21,11 +21,7 @@ def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None):
     rxn_cmts_dct = rxn_cmts_dct or {}  # sets to empty dict if None
 
     # Get the length of the longest reaction name
-    max_len = 0
-    for rxn in rxn_param_dct.keys():
-        rxn_name = util.format_rxn_name(rxn)
-        if len(rxn_name) > max_len:
-            max_len = len(rxn_name)
+    max_len = util.max_rxn_length(rxn_param_dct)
 
     # Write each reaction
     ckin_str = ''

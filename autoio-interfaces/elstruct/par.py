@@ -816,6 +816,7 @@ class Basis():
                                     Program.NWCHEM6: None,
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
+            ATd = ('aug-cc-pv(t+d)z', {Program.MOLPRO2015: None})
 
         class F12():
             """ Dunning F12 basis sets """
