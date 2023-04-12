@@ -23,8 +23,9 @@ def utc_time():
 def set_nprocs(nobjs, nprocs='auto'):
     """ Set the number of processors to use for some task
     """
-
-    if nprocs == 'auto':
+    if nprocs is None:
+        _nprocs = 1
+    elif nprocs == 'auto':
         _nprocs = len(os.sched_getaffinity(0)) - 1
     elif isinstance(nprocs, int):
         _nprocs = nprocs
@@ -60,6 +61,7 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
     # obj_per_proc = math.ceiling(num_obj / nprocs)
     if nprocs > 1:
         rand_objs = random.sample(objs, num_obj)
+        print('Begin parallel job array on {:g} processors'.format(nprocs))
     else:
         rand_objs = objs
     rand_objs_splt = numpy.array_split(rand_objs, nprocs)
@@ -67,7 +69,6 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
     # Loop over each processor and launch the process
     output_queue = multiprocessing.Queue()
     procs = []
-
     for proc_n in range(nprocs):
 
         # Generate list of objects to work with for each processor
