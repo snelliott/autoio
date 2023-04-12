@@ -750,37 +750,34 @@ def _reaction_header(reactant, product):
 
 
 def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
+    """ Decides whether the current direction is the desired one by comparing
+        forward and backward rate constants
 
-    def get_avgs(fwd_ktp_dct, bck_ktp_dct, targ_temp, fwd_pressures, 
-                 bck_pressures):
+        :rtype: bool
+    """
+
+    def get_avg(ktp_dct, targ_temp, pressures):
         """ Gets a singular rate constant at a desired temp and pressure
         """
-        fwd_sum = 0
-        bck_sum = 0
-        nfwd = 0  # number of forward rates (i.e., not NaNs)
-        nbck = 0
+        rate_sum = 0
+        nrates = 0  # number of forward rates (i.e., not NaNs)
         # Get forward rates
-        for pressure in fwd_pressures:
-            fwd_temps = fwd_ktp_dct[pressure][0]
-            fwd_temp_idx = (numpy.abs(numpy.array(fwd_temps) - targ_temp)).argmin()
-            fwd_rate = fwd_ktp_dct[pressure][1][fwd_temp_idx]
-            if not numpy.isnan(fwd_rate):
-                fwd_sum += fwd_rate
-                nfwd += 1
-        # Get backward rates
-        for pressure in bck_pressures:
-            bck_temps = bck_ktp_dct[pressure][0]
-            bck_temp_idx = (numpy.abs(numpy.array(bck_temps) - targ_temp)).argmin()
-            bck_rate = bck_ktp_dct[pressure][1][bck_temp_idx]
-            if not numpy.isnan(bck_rate):
-                bck_sum += bck_rate
-                nbck += 1
+        for pressure in pressures:
+            curr_temps = ktp_dct[pressure][0]
+            tidx = (numpy.abs(numpy.array(curr_temps) - targ_temp)).argmin()
+            curr_rate = ktp_dct[pressure][1][tidx]
+            if not numpy.isnan(curr_rate):
+                rate_sum += curr_rate
+                nrates += 1
         # Average
-        fwd_avg = fwd_sum / nfwd
-        bck_avg = bck_sum / nbck
+        if nrates == 0:  # if nothing was found
+            rate_avg = 1e-100
+        else:
+            rate_avg = rate_sum / nrates
 
-        return fwd_avg, bck_avg
+        return rate_avg
 
+    # Load things
     rct, prd, tbody = rxn
     targ_temp = direction_dct['temp']
     thresh = direction_dct['thresh']
@@ -788,13 +785,10 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
     bck_ktp_dct = rxn_ktp_dct[(prd, rct, tbody)]
     if fwd_ktp_dct == {} and bck_ktp_dct == {}:
         print(f'Error: both directions empty for the rxn {rxn}')
-    if fwd_ktp_dct == {}:
-        return False
-    if bck_ktp_dct == {}:
-        return True
-    # Get pressures
-    fwd_pressures = [key for key in fwd_ktp_dct.keys() if key != 'high']
-    bck_pressures = [key for key in bck_ktp_dct.keys() if key != 'high']
+    #if fwd_ktp_dct == {}:
+    #    return False
+    #if bck_ktp_dct == {}:
+    #    return True
 
     # Determine the molecularity of the reaction
     unimol_unimol = False
@@ -805,9 +799,17 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
     if 'P' in rct[0] and 'P' in prd[0]:  # bimol to bimol
         bimol_bimol = True
 
-    # Get the average rate in both directions
-    fwd_avg, bck_avg = get_avgs(fwd_ktp_dct, bck_ktp_dct, targ_temp, 
-                                fwd_pressures, bck_pressures)
+    # Get rate value to use for comparison
+    # If both directions have 'high' values, use that at target T
+    if 'high' in fwd_ktp_dct.keys() and 'high' in bck_ktp_dct.keys():
+        fwd_avg = get_avg(fwd_ktp_dct, targ_temp, ['high'])
+        bck_avg = get_avg(bck_ktp_dct, targ_temp, ['high'])
+    # Otherwise, average over all pressures except 'high' at target T
+    else: 
+        fwd_pressures = [key for key in fwd_ktp_dct.keys() if key != 'high']
+        bck_pressures = [key for key in bck_ktp_dct.keys() if key != 'high']
+        fwd_avg = get_avg(fwd_ktp_dct, targ_temp, fwd_pressures)
+        bck_avg = get_avg(bck_ktp_dct, targ_temp, bck_pressures)
 
     # Finally, determine whether the current direction is desired
     # If unimol > unimol or bimol > bimol, larger direction is preferred 
