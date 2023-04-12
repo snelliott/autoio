@@ -74,43 +74,6 @@ def species_block(mech_spc_dct):
     return spc_str
 
 
-def species_block_old(mech_spc_dct):
-    """ Writes the species block of the mechanism file
-
-        :param mech_spc_dct: species data for a mechanism
-        :type mech_spc_dct: dct {spc_name:data}
-        :return spc_str: str containing the species block
-        :rtype: str
-    """
-
-    # Get the max species name length
-    max_spc_len = 0
-    for spc in mech_spc_dct.keys():
-        if len(spc) > max_spc_len:
-            max_spc_len = len(spc)
-
-    # Get the max SMILES name length
-    max_smiles_len = 0
-    for spc, ident_dct in mech_spc_dct.items():
-        if len(ident_dct['smiles']) > max_smiles_len:
-            max_smiles_len = len(ident_dct['smiles'])
-
-    buffer = 5
-
-    # Write the spc_str
-    spc_str = 'SPECIES\n\n'
-    for spc, ident_dct in mech_spc_dct.items():
-        spc_str += (
-            '{0:<'+str(max_spc_len+buffer)+'s}{1:>9s}{2:<' +
-            str(max_smiles_len+buffer)+'s}{3:>9s}{4:<9s}\n').format(
-                spc, '! SMILES: ',
-                ident_dct['smiles'], 'InChi: ', ident_dct['inchi'])
-
-    spc_str += '\nEND\n\n\n'
-
-    return spc_str
-
-
 def thermo_block(spc_nasa7_dct):
     """ Writes the thermo block of the mechanism file
 

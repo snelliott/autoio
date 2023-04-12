@@ -15,6 +15,33 @@ CKIN_TRANS_HEADER_STR = """! THEORETICAL TRANSPORT PROPERTIES
 ! (6) Z_rot, rotational relaxation collision number at 298 K."""
 
 
+def max_rxn_length(rxn_param_dct):
+    """ Gets the maximum length of the formatted reaction names in a mechanism
+    """
+
+    max_len = 0 
+    for rxn in rxn_param_dct.keys():
+        rxn_name = format_rxn_name(rxn)
+        if len(rxn_name) > max_len:
+            max_len = len(rxn_name)
+
+    return max_len
+
+
+def max_spc_length(mech_spc_dct):
+    """ Gets the maximum length of the species names in a mechanism
+
+        (Will also work fine on any dict with species as the keys)
+    """
+
+    max_len = 0 
+    for spc in mech_spc_dct.keys():
+        if len(spc) > max_len:
+            max_len = len(spc)
+
+    return max_len
+
+
 def name_column_length(names):
     """ Set the width of the name column
     """
@@ -53,8 +80,8 @@ def format_rxn_name(rxn):
 
     # Add the +M or (+M) text if it is applicable
     if thrbdy is not None:
-        rct_str += f' {thrbdy}'  # buffer space
-        prd_str += f' {thrbdy}'
+        rct_str += f'{thrbdy}'  # buffer space
+        prd_str += f'{thrbdy}'
 
     if len(prds) < 3:
         join_sign = ' = '

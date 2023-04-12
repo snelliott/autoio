@@ -15,7 +15,7 @@ from mess_io.reader._label import name_label_dct
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
-
+DIRECTION_DCT = {'temp': 1000.0, 'pressure': 1.0, 'thresh': 1e-14}
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str,
@@ -40,20 +40,9 @@ def get_rxn_ktp_dct(out_str,
         :rtype dict[float: (float, float)]
     """
 
-    # Read the reactions; filter them if requested
-    rxns = reactions(out_str)
-    if filter_reaction_types:
-        rxns = filter_reactions(
-            rxns,
-            filter_fake=('fake' in filter_reaction_types),
-            filter_self=('self' in filter_reaction_types),
-            filter_loss=('loss' in filter_reaction_types),
-            filter_capture=('capture' in filter_reaction_types),
-            filter_reverse=('reverse' in filter_reaction_types)
-        )
-
     # Get the MESS rxn in the tuple format ((rct,), (prd,), third_body))
     # For each rxn pair, get rate constants, with filtering as indicated
+    rxns = reactions(out_str)
     rxn_ktp_dct = {}
     for rxn in rxns:
         rxn_ktp_dct[rxn] = ktp_dct(out_str, rxn[0][0], rxn[1][0],
@@ -61,8 +50,18 @@ def get_rxn_ktp_dct(out_str,
                                    tmax=tmax, pmin=pmin, pmax=pmax,
                                    convert=convert)
 
+    # Read the reactions; filter them if requested
+    if filter_reaction_types:
+        rxn_ktp_dct = filter_rxn_ktp_dct(
+            rxn_ktp_dct,
+            filter_fake=('fake' in filter_reaction_types),
+            filter_self=('self' in filter_reaction_types),
+            filter_loss=('loss' in filter_reaction_types),
+            filter_capture=('capture' in filter_reaction_types),
+            filter_reverse=('reverse' in filter_reaction_types)
+        )
+
     # Reformat the dictionary keys to follow the tuple of tuples format
-    # print('dct 1', rxn_ktp_dct.keys())
     if relabel_reactions:
         lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
@@ -707,55 +706,126 @@ def reactions(out_str, third_body=(None,)):
     return rxns
 
 
-def filter_reactions(rxns,
-                     filter_fake=True,
-                     filter_self=True,
-                     filter_loss=True,
-                     filter_capture=True,
-                     filter_reverse=True):
+def filter_rxn_ktp_dct(rxn_ktp_dct,
+                       filter_fake=True,
+                       filter_self=True,
+                       filter_loss=True,
+                       filter_capture=True,
+                       filter_reverse=True):
     """ Filter the reactions from a ktp dictionary
     """
 
-    filt_rxns = ()
-    for rxn in rxns:
-
-        # Move on from reaction if find any indication it should be filtered
-        rct, prd, tbody = rxn[0], rxn[1], rxn[2]
-
+    filt_rxn_ktp_dct = {}
+    for rxn, ktp_dct in rxn_ktp_dct.items():
+        rct, prd, tbody = rxn
         if prd == ('Loss',):
             if filter_loss:
                 continue
-
         if prd == ('Capture',):
             if filter_capture:
                 continue
-
-        # if (
+        # if (  # can we delete this? 
         #     any('F' in rgt for rgt in rct+prd)  or
         #     any('FW' in rgt for rgt in rct+prd)
         # ):
         if any('Fake' in rgt for rgt in rct+prd):
             if filter_fake:
                 continue
-
         if rct == prd:
             if filter_self:
                 continue
-
         if filter_reverse:
-            if (prd, rct, tbody) in filt_rxns:
+            is_desired = is_desired_direction(rxn, rxn_ktp_dct)
+            if not is_desired:
                 continue
-
         # If continues not hit, reaction good to be added to new dct
-        filt_rxns += (rxn,)
+        filt_rxn_ktp_dct[rxn] = ktp_dct
 
-    return filt_rxns
+    return filt_rxn_ktp_dct
 
 
 # Helper functions
 def _reaction_header(reactant, product):
     return reactant + '->' + product
 
+
+def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
+
+    def get_avgs(fwd_ktp_dct, bck_ktp_dct, targ_temp, fwd_pressures, 
+                 bck_pressures):
+        """ Gets a singular rate constant at a desired temp and pressure
+        """
+        fwd_sum = 0
+        bck_sum = 0
+        nfwd = 0  # number of forward rates (i.e., not NaNs)
+        nbck = 0
+        # Get forward rates
+        for pressure in fwd_pressures:
+            fwd_temps = fwd_ktp_dct[pressure][0]
+            fwd_temp_idx = (numpy.abs(numpy.array(fwd_temps) - targ_temp)).argmin()
+            fwd_rate = fwd_ktp_dct[pressure][1][fwd_temp_idx]
+            if not numpy.isnan(fwd_rate):
+                fwd_sum += fwd_rate
+                nfwd += 1
+        # Get backward rates
+        for pressure in bck_pressures:
+            bck_temps = bck_ktp_dct[pressure][0]
+            bck_temp_idx = (numpy.abs(numpy.array(bck_temps) - targ_temp)).argmin()
+            bck_rate = bck_ktp_dct[pressure][1][bck_temp_idx]
+            if not numpy.isnan(bck_rate):
+                bck_sum += bck_rate
+                nbck += 1
+        # Average
+        fwd_avg = fwd_sum / nfwd
+        bck_avg = bck_sum / nbck
+
+        return fwd_avg, bck_avg
+
+    rct, prd, tbody = rxn
+    targ_temp = direction_dct['temp']
+    thresh = direction_dct['thresh']
+    fwd_ktp_dct = rxn_ktp_dct[rxn]
+    bck_ktp_dct = rxn_ktp_dct[(prd, rct, tbody)]
+    if fwd_ktp_dct == {} and bck_ktp_dct == {}:
+        print(f'Error: both directions empty for the rxn {rxn}')
+    if fwd_ktp_dct == {}:
+        return False
+    if bck_ktp_dct == {}:
+        return True
+    # Get pressures
+    fwd_pressures = [key for key in fwd_ktp_dct.keys() if key != 'high']
+    bck_pressures = [key for key in bck_ktp_dct.keys() if key != 'high']
+
+    # Determine the molecularity of the reaction
+    unimol_unimol = False
+    bimol_bimol = False
+    unimol_bimol = False
+    if 'W' in rct[0] and 'W' in prd[0]:  # unimol to unimol
+        unimol_unimol = True
+    if 'P' in rct[0] and 'P' in prd[0]:  # bimol to bimol
+        bimol_bimol = True
+
+    # Get the average rate in both directions
+    fwd_avg, bck_avg = get_avgs(fwd_ktp_dct, bck_ktp_dct, targ_temp, 
+                                fwd_pressures, bck_pressures)
+
+    # Finally, determine whether the current direction is desired
+    # If unimol > unimol or bimol > bimol, larger direction is preferred 
+    is_desired = False
+    if unimol_unimol or bimol_bimol:
+        if fwd_avg > bck_avg:
+            is_desired = True
+    # If bimol > unimol (or reverse), consider the threshold value
+    else:
+        if 'W' in rct[0]:  # written as unimol to bimol
+            if bck_avg / phycon.NAVO < thresh:  # if bimol less than thresh
+                is_desired = True
+        else:  # written as bimol to unimol
+            if fwd_avg / phycon.NAVO > thresh:  # if bimol greater than thresh
+                is_desired = True
+        
+    return is_desired
+            
 
 def filter_ktp_dct(_ktp_dct, bimol,
                    tmin=None, tmax=None, pmin=None, pmax=None):
@@ -770,6 +840,7 @@ def filter_ktp_dct(_ktp_dct, bimol,
             (2) k(T) is undefined from Master Equation (i.e. k(T) is None)
             (3) k(T) < some threshold for bimolecular reactions, or
             (4) T is outside the cutoff
+            (5) there are more than 2 oscillations from pos. to neg.
 
             :param temps: temperatures at which rate constants are defined (K)
             :type temps: list(float)
@@ -793,11 +864,13 @@ def filter_ktp_dct(_ktp_dct, bimol,
         # min of input temperatures or
         # if negative kts are found, set min temp to be just above highest neg.
         max_neg_idx = None
+        sing_kts = []  # empty list that won't have any Nones
         for kt_idx, sing_kt in enumerate(kts):
             # find idx for max temperature for which kt is negative, if any
             float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
             if float_sing_kt < 0.0:
                 max_neg_idx = kt_idx
+            sing_kts.append(float_sing_kt) 
 
         #   Otherwise, use requested tmin value or minimum of input temps
         # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
@@ -826,6 +899,13 @@ def filter_ktp_dct(_ktp_dct, bimol,
                 if float(sing_kt) > kthresh and tmin <= temp <= tmax:
                     valid_t.append(temp)
                     valid_k.append(sing_kt)
+
+        # Check for sign changes
+        allowed = 2  # number of allowed changes
+        sing_kts = numpy.array(sing_kts)
+        nsign_chgs = numpy.count_nonzero((numpy.diff(numpy.sign(sing_kts)) != 0) * 1)
+        if nsign_chgs > allowed:
+            valid_t, valid_k = [], []
 
         # Convert the lists to numpy arrays
         valid_t = numpy.array(valid_t, dtype=numpy.float64)
@@ -866,3 +946,41 @@ def convert_units(_ktp_dct, bimol):
         conv_ktp_dct[pressure] = (temps, kts)
 
     return conv_ktp_dct
+
+
+def filter_reactions(rxns,
+                     filter_fake=True,
+                     filter_self=True,
+                     filter_loss=True,
+                     filter_capture=True,
+                     filter_reverse=True):
+    """ Filter the reactions from a ktp dictionary
+        Leaving this function here for the sake of _wellextend.py
+    """
+
+    filt_rxns = ()
+    for rxn in rxns:
+        rct, prd, tbody = rxn
+        if prd == ('Loss',):
+            if filter_loss:
+                continue
+        if prd == ('Capture',):
+            if filter_capture:
+                continue
+        # if (
+        #     any('F' in rgt for rgt in rct+prd)  or
+        #     any('FW' in rgt for rgt in rct+prd)
+        # ):
+        if any('Fake' in rgt for rgt in rct+prd):
+            if filter_fake:
+                continue
+        if rct == prd:
+            if filter_self:
+                continue
+        if filter_reverse:
+            if (prd, rct, tbody) in filt_rxns:
+                continue
+        # If continues not hit, reaction good to be added to new dct
+        filt_rxns += (rxn,)
+
+    return filt_rxns

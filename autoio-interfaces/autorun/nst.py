@@ -122,7 +122,6 @@ def isc_flux_only(run_dir, prog, msx_geo, charge, mults,
     for idx in range(len(mults)):
         _run_dir = os.path.join(run_dir, f'HESS-{idx+1}')
         raw_str = pathtools.read_file(_run_dir, 'run.out', print_debug=True)
-        #print('raw_str:\n', raw_str)
         hessians += (elstruct.reader.hessian(prog, raw_str),)
     if any(hess is None for hess in hessians):
         hessians = None
@@ -223,10 +222,6 @@ def hessians_for_nst(run_dir,
                                 method, basis, orb_label, ini_kwargs[idx])
 
         output_strs = from_input_string(qc_script_str, _run_dir, inp_str)
-        print('output_strs:\n', output_strs)
-        print('type of output_strs:\n', type(output_strs))
-        print('length of output_strs:\n', len(output_strs))
-        print(elstruct.reader.hessian(prog, output_strs[0]))
         hessians += (elstruct.reader.hessian(prog, output_strs[0]),)
 
     if any(hess is None for hess in hessians):
@@ -303,7 +298,8 @@ def _qc_input_str(job, prog, geo, charge, mult,
     else:  # if Gaussian
         _nst_gen_lines = ini_kwargs.get('gen_lines', {})
         _nst_gen_lines_1 = _nst_gen_lines.get(1, ())
-        _nst_gen_lines_1 += ('# fchk NoSym guess=mix',)
+        #_nst_gen_lines_1 += ('# fchk NoSym guess=mix',)
+        _nst_gen_lines_1 += ('# fchk NoSym',)
 
         _nst_kwargs = copy.deepcopy(ini_kwargs)
         _nst_kwargs.update({
