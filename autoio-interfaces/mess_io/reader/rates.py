@@ -770,7 +770,7 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
                 rate_sum += curr_rate
                 nrates += 1
         # Average
-        if nrates == 0:  # if nothing was found
+        if nrates == 0:  # if nothing was found!
             rate_avg = 1e-100
         else:
             rate_avg = rate_sum / nrates
