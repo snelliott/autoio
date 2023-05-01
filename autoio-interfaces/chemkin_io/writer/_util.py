@@ -1,7 +1,6 @@
 """ Format utilities
 """
 
-# import numpy as np
 import automol.geom
 
 
@@ -20,8 +19,14 @@ def max_rxn_length(rxn_param_dct):
     """
 
     max_len = 0 
-    for rxn in rxn_param_dct.keys():
-        rxn_name = format_rxn_name(rxn)
+    for rxn, params in rxn_param_dct.items():
+        # Check if the pdep flag should be True or False
+        forms = params.get_existing_forms()
+        if 'troe' in forms or 'lind' in forms:
+            pdep = True 
+        else:
+            pdep = False 
+        rxn_name = format_rxn_name(rxn, pdep=pdep)
         if len(rxn_name) > max_len:
             max_len = len(rxn_name)
 
@@ -55,7 +60,7 @@ def name_column_length(names):
     return names_len
 
 
-def format_rxn_name(rxn):
+def format_rxn_name(rxn, pdep=False):
     """ Receives a rxn and creates an appropriate string
         to be written in a Chemkin mech. Adds third body if applicable
 
@@ -82,6 +87,9 @@ def format_rxn_name(rxn):
     if thrbdy is not None:
         rct_str += f'{thrbdy}'  # buffer space
         prd_str += f'{thrbdy}'
+    elif pdep:  # if no tbody but pdep, add (+M)
+        rct_str += '(+M)'
+        prd_str += '(+M)'
 
     if len(prds) < 3:
         join_sign = ' = '
