@@ -1,18 +1,18 @@
 # cmd: conda build . -c conda-forge
 package:
     name: autoio-base
-    version: "0.9.3"
+    version: "0.9.5"
 
 source:
     path: .
 
 requirements:
     host:
-        - conda-forge::python=3.7
+        - conda-forge::python=3.10
     run:
-        - conda-forge::python=3.7
-        - conda-forge::numpy=1.15.4
-        - conda-forge::scipy=1.5.0
+        - conda-forge::python=3.10
+        - conda-forge::numpy
+        - conda-forge::scipy
         - conda-forge::more-itertools
         - conda-forge::pyyaml
         - conda-forge::mako
@@ -22,3 +22,4 @@ requirements:
         - conda-forge::flake8
         - conda-forge::pylint
         - conda-forge::qcelemental
+        - conda-forge::pint==0.18
