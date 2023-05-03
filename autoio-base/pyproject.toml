@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "autoio-base"
+version = "0.10.0"
+dependencies = [
+        "numpy",
+        "scipy",
+        "more-itertools",
+        "pyyaml",
+        "mako",
+        "pytest",
+        "pytest-cov",
+        "future",
+        "flake8",
+        "pylint",
+        "qcelemental == 0.25.1",
+        "pint == 0.18",
+        'importlib-metadata; python_version>"3.8"'
+]
