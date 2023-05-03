@@ -819,22 +819,22 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
             is_desired = True
     # If bimol > unimol (or reverse), consider the threshold value
     else:
-        if 'W1' in rct[0] and 'P8' in prd[0]:
-            is_desired = False
-            print('yell at sarah')
-        elif 'P8' in rct[0] and 'W1' in prd[0]:
-            is_desired = True
-            print('yell at sarah')
-        elif 'W4' in rct[0] and 'P1' in prd[0]:
-            is_desired = False
-            print('yell at sarah')
-        elif 'P1' in rct[0] and 'W4' in prd[0]:
-            is_desired = True
-            print('yell at sarah')
-        elif 'W' in rct[0]:  # written as unimol to bimol
-            #if 'W' in rct[0]:  # written as unimol to bimol
+        #if 'W1' in rct[0] and 'P8' in prd[0]:
+        #    is_desired = False
+        #    print('yell at sarah')
+        #elif 'P8' in rct[0] and 'W1' in prd[0]:
+        #    is_desired = True
+        #    print('yell at sarah')
+        #elif 'W4' in rct[0] and 'P1' in prd[0]:
+        #    is_desired = False
+        #    print('yell at sarah')
+        #elif 'P1' in rct[0] and 'W4' in prd[0]:
+        #    is_desired = True
+        #    print('yell at sarah')
+        #elif 'W' in rct[0]:  # written as unimol to bimol
+        if 'W' in rct[0]:  # written as unimol to bimol
             if bck_avg / phycon.NAVO < thresh:  # if bimol less than thresh
-                is_desired = True
+                    is_desired = True
         else:  # written as bimol to unimol
             if fwd_avg / phycon.NAVO > thresh:  # if bimol greater than thresh
                 is_desired = True
