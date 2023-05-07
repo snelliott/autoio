@@ -25,8 +25,13 @@ def call_module_function(prog, function, *args, **kwargs):
         return prog
 
     new_name = _rename_prog(prog)
-    assert new_name in pclass.values(par.Program)
-    assert new_name in program_modules_with_function(function)
+    assert new_name in pclass.values(par.Program), (
+        f"The program '{new_name}' is not in the supported list of programs; "
+        f"options are {pclass.values(par.Program)}")
+    assert new_name in program_modules_with_function(function), (
+        f"The function '{function}' is not in the supported list of functions"
+        f" for the program '{new_name}'; programs with this function are "
+        f"{program_modules_with_function(function)}")
 
     name = f'_{_rename_prog(prog)}'
     module = importlib.import_module(f'elstruct.reader.{name:s}')
@@ -109,7 +114,7 @@ READER_MODULE_DCT = {
     par.Program.MOLPRO2015: (
         Job.ENERGY, Job.GRADIENT,
         Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
-        Job.OPT_GEO, Job.OPT_ZMA,
+        Job.OPT_GEO, Job.OPT_ZMA, Job.INP_ZMA,
         Job.EXIT_MSG, Job.ERR_LST,
         Job.ERR_MSG, Job.CONV_MSG,
         Job.PROG_NAME, Job.PROG_VERS

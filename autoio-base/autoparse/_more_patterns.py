@@ -22,18 +22,18 @@ def block_pattern(begin_pattern, end_pattern):
 
 
 def lpadded(pattern, fill_pattern=_LINESPACE):
-    """ a pattern allowing optional linespaces to the left
+    """ a pattern allowing optional fill patterns to the left
     """
     return _zero_or_more(fill_pattern) + pattern
 
 
 def rpadded(pattern, fill_pattern=_LINESPACE):
-    """ a pattern allowing optional linespaces to the right
+    """ a pattern allowing optional fill patterns to the right
     """
     return pattern + _zero_or_more(fill_pattern)
 
 
 def padded(pattern, fill_pattern=_LINESPACE):
-    """ a pattern allowing optional linespaces to the right
+    """ a pattern allowing optional fill patterns to the right or left
     """
     return _zero_or_more(fill_pattern) + pattern + _zero_or_more(fill_pattern)
