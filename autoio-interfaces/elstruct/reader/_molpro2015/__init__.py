@@ -7,6 +7,7 @@ from elstruct.reader._molpro2015.surface import harmonic_frequencies
 from elstruct.reader._molpro2015.surface import normal_coordinates
 from elstruct.reader._molpro2015.molecule import opt_geometry
 from elstruct.reader._molpro2015.molecule import opt_zmatrix
+from elstruct.reader._molpro2015.molecule import inp_zmatrix
 from elstruct.reader._molpro2015.status import has_normal_exit_message
 from elstruct.reader._molpro2015.status import error_list
 # from elstruct.reader._molpro2015.status import success_list

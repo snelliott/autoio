@@ -1,9 +1,11 @@
 """ molecular geometry and structure readers
 """
+import numbers
 import numpy
 import autoread as ar
 import autoparse.pattern as app
 import automol
+import autoparse.find as apf
 
 
 MOLPRO_ENTRY_START_PATTERN = (
@@ -140,3 +142,69 @@ def opt_zmatrix(output_str):
         zma = None
 
     return zma
+
+
+def inp_zmatrix(inp_str):
+    """ Reads the input z-matrix from the input file string
+        Returns the Z-Matrix in Bohr and Radians.
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: automol molecular geometry data structure
+    """
+
+     # Remove the constants line (not sure if needed, but retaining anyways)
+    inp_str = inp_str.replace('  Constants:\n', '') 
+    
+    # Reads the matrix from the beginning of the input
+    symbs, key_mat, name_mat = ar.vmat.read(
+        inp_str,
+        start_ptt='geometry' + app.padded(app.escape('=')) + app.escape('{') \
+            + app.NEWLINE,
+        symb_ptt=(ar.par.Pattern.ATOM_SYMBOL +
+                  app.not_followed_by(app.SPACES + app.FLOAT) +
+                  app.maybe(app.UNSIGNED_INTEGER)),
+        key_ptt=app.one_of_these([app.UNSIGNED_INTEGER, app.VARIABLE_NAME]),
+        line_end_ptt=app.maybe(app.UNSIGNED_INTEGER),
+        last=False)
+
+    # Reads the values from the input
+    if all(x is not None for x in (symbs, key_mat, name_mat)):
+        if len(symbs) == 1:
+            # val_dct = {}
+            val_mat = ((None, None, None),)
+        else:
+            val_dct = ar.setval.read(
+                inp_str,
+                start_ptt='geometry' + app.padded(app.escape('=')) + \
+                    app.escape('{') + app.NEWLINE + \
+                    app.one_or_more(app.one_or_more(app.WILDCARD2) + \
+                    app.NEWLINE) + app.rpadded(app.escape('}')) + \
+                    app.NEWLINE,
+                entry_sep_ptt=app.maybe(app.escape('=')),  # either '=' or ''
+                entry_start_ptt='',
+                sep_ptt=app.maybe(app.LINESPACES).join([
+                    app.NEWLINE]),
+                last=True)
+            val_mat = ar.setval.convert_dct_to_matrix(val_dct, name_mat)
+
+        # Check for the pattern
+        # For the case when variable names are used instead of integer keys:
+        # (otherwise, does nothing)
+        key_dct = dict(map(reversed, enumerate(symbs)))
+        key_dct[None] = 0 
+        key_mat = [ 
+            [key_dct[val]+1 if not isinstance(val, numbers.Real) else val 
+             for val in row] for row in key_mat]
+        symb_ptt = app.STRING_START + app.capturing(ar.par.Pattern.ATOM_SYMBOL)
+        symbs = [apf.first_capture(symb_ptt, symb) for symb in symbs]
+
+        # Call the automol constructor
+        zma = automol.zmat.from_data(
+            symbs, key_mat, val_mat, name_mat,
+            one_indexed=True, angstrom=True, degree=True)
+    else:
+        zma = None
+
+    return zma
+

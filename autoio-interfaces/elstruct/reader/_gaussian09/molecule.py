@@ -156,7 +156,7 @@ def inp_zmatrix(inp_str):
                 inp_str,
                 start_ptt=app.padded(app.NEWLINE).join([
                     app.padded('Variables:', app.NONNEWLINE), '']),
-                entry_sep_ptt='',
+                entry_sep_ptt=app.maybe(app.escape('=')),  # either '=' or ''
                 entry_start_ptt='',
                 sep_ptt=app.maybe(app.LINESPACES).join([
                     app.NEWLINE]),
