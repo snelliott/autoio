@@ -26,6 +26,7 @@ class Program():
     """ Programs supported in elstruct """
     CFOUR2 = 'cfour2'
     GAUSSIAN09 = 'gaussian09'
+    GAUSSIAN03 = 'gaussian03'
     GAUSSIAN16 = 'gaussian16'
     MOLPRO2021 = 'molpro2021'
     MOLPRO2015 = 'molpro2015'
@@ -78,6 +79,9 @@ class Method():
            Program.GAUSSIAN09: (
                'hf', 'hf',
                ('R',), ('U', 'R')),
+           Program.GAUSSIAN03: (
+               'hf', 'hf',
+               ('R',), ('U', 'R')),
            Program.GAUSSIAN16: (
                'hf', 'hf',
                ('R',), ('U', 'R')),
@@ -104,6 +108,9 @@ class Method():
                    'mp2', 'mp2',
                    ('R',), ('U', 'R')),
                 Program.GAUSSIAN09: (
+                    'mp2', 'mp2',
+                    ('R',), ('U', 'R')),
+                Program.GAUSSIAN03: (
                     'mp2', 'mp2',
                     ('R',), ('U', 'R')),
                 Program.GAUSSIAN16: (
@@ -250,6 +257,9 @@ class Method():
                   Program.GAUSSIAN09: (
                       'b3lyp', 'b3lyp',
                       ('R',), ('U',)),
+                  Program.GAUSSIAN03: (
+                      'b3lyp', 'b3lyp',
+                      ('R',), ('U',)),
                   Program.GAUSSIAN16: (
                       'b3lyp', 'b3lyp',
                       ('R',), ('U',))})
@@ -263,6 +273,9 @@ class Method():
                    Program.GAUSSIAN09: (
                        'wb97xd', 'wb97xd',
                        ('R',), ('U',)),
+                   Program.GAUSSIAN03: (
+                       'wb97xd', 'wb97xd',
+                       ('R',), ('U',)),
                    Program.GAUSSIAN16: (
                        'wb97xd', 'wb97xd',
                        ('R',), ('U',))})
@@ -273,11 +286,17 @@ class Method():
                   Program.GAUSSIAN09: (
                       'm062x', 'm062x',
                       ('R',), ('U',)),
+                  Program.GAUSSIAN03: (
+                      'm062x', 'm062x',
+                      ('R',), ('U',)),
                   Program.GAUSSIAN16: (
                       'm062x', 'm062x',
                       ('R',), ('U',))})
         B2PLYPD3 = ('b2plypd3',
                     {Program.GAUSSIAN09: (
+                        'b2plypd3', 'b2plypd3',
+                        ('R',), ('U',)),
+                     Program.GAUSSIAN03: (
                         'b2plypd3', 'b2plypd3',
                         ('R',), ('U',)),
                      Program.GAUSSIAN16: (
@@ -591,6 +610,7 @@ class Basis():
 
     STO3G = ('sto-3g', {Program.CFOUR2: None,
                         Program.GAUSSIAN09: None,
+                        Program.GAUSSIAN03: None,
                         Program.GAUSSIAN16: None,
                         Program.MOLPRO2015: None,
                         Program.MOLPRO2021: None,
@@ -603,6 +623,7 @@ class Basis():
         """ Pople basis sets """
         P321 = ('3-21g', {Program.CFOUR2: None,
                           Program.GAUSSIAN09: None,
+                          Program.GAUSSIAN03: None,
                           Program.GAUSSIAN16: None,
                           Program.MOLPRO2015: None,
                           Program.MOLPRO2021: None,
@@ -613,6 +634,7 @@ class Basis():
         P321S = ('3-21g*', {Program.PSI4: None})
         P631 = ('6-31g', {Program.CFOUR2: None,
                           Program.GAUSSIAN09: None,
+                          Program.GAUSSIAN03: None,
                           Program.GAUSSIAN16: None,
                           Program.MOLPRO2015: None,
                           Program.MOLPRO2021: None,
@@ -622,6 +644,7 @@ class Basis():
                           Program.PSI4: None})
         P631S = ('6-31g*', {Program.CFOUR2: None,
                             Program.GAUSSIAN09: None,
+                            Program.GAUSSIAN03: None,
                             Program.GAUSSIAN16: None,
                             Program.MOLPRO2015: None,
                             Program.MOLPRO2021: None,
@@ -632,6 +655,7 @@ class Basis():
                             Program.QCHEM5: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
                               Program.GAUSSIAN09: None,
+                              Program.GAUSSIAN03: None,
                               Program.GAUSSIAN16: None,
                               Program.MOLPRO2015: None,
                               Program.MOLPRO2021: None,
@@ -641,6 +665,7 @@ class Basis():
                               Program.PSI4: None})
         P6311SS = ('6-311g**', {Program.CFOUR2: None,
                                 Program.GAUSSIAN09: None,
+                                Program.GAUSSIAN03: None,
                                 Program.GAUSSIAN16: None,
                                 Program.MOLPRO2015: None,
                                 Program.MOLPRO2021: None,
@@ -649,16 +674,18 @@ class Basis():
                                 Program.ORCA4: None,
                                 Program.PSI4: None})
         P6311PSS = ('6-311+g**', {Program.CFOUR2: None,
-                                Program.GAUSSIAN09: None,
-                                Program.GAUSSIAN16: None,
-                                Program.MOLPRO2015: None,
-                                Program.MOLPRO2021: None,
-                                Program.MRCC2018: None,
-                                Program.NWCHEM6: None,
-                                Program.ORCA4: None,
-                                Program.PSI4: None})
+                                  Program.GAUSSIAN09: None,
+                                  Program.GAUSSIAN03: None,
+                                  Program.GAUSSIAN16: None,
+                                  Program.MOLPRO2015: None,
+                                  Program.MOLPRO2021: None,
+                                  Program.MRCC2018: None,
+                                  Program.NWCHEM6: None,
+                                  Program.ORCA4: None,
+                                  Program.PSI4: None})
         P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
                                     Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None,
@@ -671,6 +698,7 @@ class Basis():
         """ Dunning basis sets """
         D = ('cc-pvdz', {Program.CFOUR2: None,
                          Program.GAUSSIAN09: None,
+                         Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
                          Program.MOLPRO2021: None,
@@ -680,6 +708,7 @@ class Basis():
                          Program.PSI4: None})
         T = ('cc-pvtz', {Program.CFOUR2: None,
                          Program.GAUSSIAN09: None,
+                         Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
                          Program.MOLPRO2021: None,
@@ -689,6 +718,7 @@ class Basis():
                          Program.PSI4: None})
         Q = ('cc-pvqz', {Program.CFOUR2: None,
                          Program.GAUSSIAN09: None,
+                         Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
                          Program.MOLPRO2021: None,
@@ -698,6 +728,7 @@ class Basis():
                          Program.PSI4: None})
         P = ('cc-pv5z', {Program.CFOUR2: None,
                          Program.GAUSSIAN09: None,
+                         Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
                          Program.MOLPRO2015: None,
                          Program.MOLPRO2021: None,
@@ -707,6 +738,7 @@ class Basis():
                          Program.PSI4: None})
         CD = ('cc-pcvdz', {Program.CFOUR2: None,
                            Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
                            Program.MOLPRO2015: None,
                            Program.MOLPRO2021: None,
@@ -716,6 +748,7 @@ class Basis():
                            Program.PSI4: None})
         CT = ('cc-pcvtz', {Program.CFOUR2: None,
                            Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
                            Program.MOLPRO2015: None,
                            Program.MOLPRO2021: None,
@@ -725,6 +758,7 @@ class Basis():
                            Program.PSI4: None})
         CQ = ('cc-pcvqz', {Program.CFOUR2: None,
                            Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
                            Program.MOLPRO2015: None,
                            Program.MOLPRO2021: None,
@@ -734,6 +768,7 @@ class Basis():
                            Program.PSI4: None})
         CP = ('cc-pcv5z', {Program.CFOUR2: None,
                            Program.GAUSSIAN09: None,
+                           Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
                            Program.MOLPRO2015: None,
                            Program.MOLPRO2021: None,
@@ -746,6 +781,7 @@ class Basis():
             """ Augmented Dunning basis sets """
             AD = ('aug-cc-pvdz', {Program.CFOUR2: None,
                                   Program.GAUSSIAN09: None,
+                                  Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
                                   Program.MOLPRO2021: None,
@@ -755,6 +791,7 @@ class Basis():
                                   Program.PSI4: None})
             AT = ('aug-cc-pvtz', {Program.CFOUR2: None,
                                   Program.GAUSSIAN09: None,
+                                  Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
                                   Program.MOLPRO2021: None,
@@ -764,6 +801,7 @@ class Basis():
                                   Program.PSI4: None})
             AQ = ('aug-cc-pvqz', {Program.CFOUR2: None,
                                   Program.GAUSSIAN09: None,
+                                  Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
                                   Program.MOLPRO2021: None,
@@ -773,6 +811,7 @@ class Basis():
                                   Program.PSI4: None})
             A5 = ('aug-cc-pv5z', {Program.CFOUR2: None,
                                   Program.GAUSSIAN09: None,
+                                  Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
                                   Program.MOLPRO2015: None,
                                   Program.MOLPRO2021: None,
@@ -782,6 +821,7 @@ class Basis():
                                   Program.PSI4: None})
             CAD = ('aug-cc-pcvdz', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
                                     Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None,
@@ -791,6 +831,7 @@ class Basis():
                                     Program.PSI4: None})
             CAT = ('aug-cc-pcvtz', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
                                     Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None,
@@ -800,6 +841,7 @@ class Basis():
                                     Program.PSI4: None})
             CAQ = ('aug-cc-pcvqz', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
                                     Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None,
@@ -809,6 +851,7 @@ class Basis():
                                     Program.PSI4: None})
             CA5 = ('aug-cc-pcv5z', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
                                     Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None,

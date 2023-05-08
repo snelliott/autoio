@@ -77,7 +77,6 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='=', offset=False):
         """ Change 180.0 to 179.9 and 0.0 to 0.1 to deal with
             breaking symmetry.
         """
-        
         offset_val_dct = {}
         for key, val in val_dct.items():
             _val = round(val, 1)
@@ -108,7 +107,7 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='=', offset=False):
                     if key not in frozen_coordinates}
         cval_dct = {key: val for key, val in val_dct.items()
                     if key in frozen_coordinates}
-    
+
         if offset:
             vval_dct = _offset_planar_vals(vval_dct)
             cval_dct = _offset_planar_vals(cval_dct)
@@ -202,7 +201,7 @@ def update_gen_lines(gen_lines,
                 gen_lines_3 += tuple(lines3)
             else:
                 gen_lines_3 = tuple(lines3)
-                
+
         gen_lines = {}
         for i, gen_line in enumerate([gen_lines_1, gen_lines_2, gen_lines_3]):
             if gen_line is not None:
@@ -299,7 +298,8 @@ def program_method_names(prog, method, basis, mult, orb_restricted):
     if Method.is_casscf(method):
         prog_method = prog_reference
     elif method == Method.HF[0]:
-        if prog in (Program.GAUSSIAN09, Program.GAUSSIAN16):
+        if prog in (Program.GAUSSIAN09, Program.GAUSSIAN03,
+                    Program.GAUSSIAN16):
             prog_method = prog_reference
         else:
             prog_method = program_method_name(prog, method, singlet=singlet)
@@ -344,7 +344,7 @@ def _reference(prog, method, mult, orb_restricted):
 def _dft_reference(prog, orb_restricted):
     """ dft
     """
-    if prog in (Program.GAUSSIAN09, Program.GAUSSIAN16):
+    if prog in (Program.GAUSSIAN09, Program.GAUSSIAN03, Program.GAUSSIAN16):
         reference = ''
     else:
         reference = (Reference.RKS if orb_restricted else
@@ -356,7 +356,7 @@ def _dft_reference(prog, orb_restricted):
 def _hf_reference(prog, mult, orb_restricted):
     """ hf
     """
-    if prog in (Program.GAUSSIAN09, Program.GAUSSIAN16):
+    if prog in (Program.GAUSSIAN09, Program.GAUSSIAN03, Program.GAUSSIAN16):
         reference = ''
     else:
         if mult == 1:

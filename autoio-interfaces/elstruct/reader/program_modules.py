@@ -20,7 +20,7 @@ def call_module_function(prog, function, *args, **kwargs):
         """ Rename a program if number does not match module name """
         if prog in ('molpro2021', 'molpro2021_mppx'):
             prog = 'molpro2015'
-        elif prog == 'gaussian16':
+        elif prog in ('gaussian03', 'gaussian16'):
             prog = 'gaussian09'
         return prog
 
@@ -90,6 +90,17 @@ READER_MODULE_DCT = {
         Job.PROG_NAME, Job.PROG_VERS
     ),
     par.Program.GAUSSIAN09: (
+        Job.ENERGY, Job.GRADIENT,
+        Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
+        Job.IRC_PTS, Job.IRC_PATH,
+        Job.OPT_GEO, Job.OPT_ZMA, Job.INP_ZMA,
+        Job.VPT2,
+        Job.DIP_MOM, Job.POLAR,
+        Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    par.Program.GAUSSIAN03: (
         Job.ENERGY, Job.GRADIENT,
         Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.IRC_PTS, Job.IRC_PATH,

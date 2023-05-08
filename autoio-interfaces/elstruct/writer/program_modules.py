@@ -20,7 +20,7 @@ def call_module_function(prog, function, *args, **kwargs):
         """ Rename a program if number does not match module name """
         if prog in ('molpro2021', 'molpro2021_mppx'):
             prog = 'molpro2015'
-        elif prog == 'gaussian16':
+        elif prog in ('gaussian03', 'gaussian16'):
             prog = 'gaussian09'
         return prog
 
@@ -67,6 +67,9 @@ WRITER_MODULE_DCT = {
     par.Program.CFOUR2: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION),
     par.Program.GAUSSIAN09: (
+        Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
+        Job.MOLPROP, Job.IRC, Job.VPT2),
+    par.Program.GAUSSIAN03: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION,
         Job.MOLPROP, Job.IRC, Job.VPT2),
     par.Program.GAUSSIAN16: (
