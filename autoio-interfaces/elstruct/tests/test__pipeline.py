@@ -10,6 +10,7 @@ import elstruct
 SCRIPT_DCT = {
     'cfour2': None,
     'gaussian09': None,
+    'gaussian03': None,
     'gaussian16': None,
     'molpro2015': None,
     'molpro2021': None,
