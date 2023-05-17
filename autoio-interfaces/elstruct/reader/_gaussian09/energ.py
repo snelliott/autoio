@@ -55,7 +55,7 @@ def _dft_energy(output_str):
         :rtype: float
     """
 
-    e_pattern = app.escape('E(') + app.VARIABLE_NAME + app.escape(')')
+    e_pattern = app.escape('E(') + r'[^\s]+' + app.escape(')')
     ene = ar.energy.read(
         output_str,
         start_ptt=app.LINESPACES.join([
