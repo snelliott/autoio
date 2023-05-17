@@ -88,6 +88,11 @@ G09 = (
     "ulimit -c 0\n"
     "g09 run.inp run.out >> stdout.log &> stderr.log"
 )
+G03 = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "g03 run.inp run.out >> stdout.log &> stderr.log"
+)
 PSI4 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
@@ -166,6 +171,7 @@ SCRIPT_DCT = {
     'varecof_tstchk': VARECOF_TSTCHECK,
     # Electronic Structure
     'gaussian09': G09,
+    'gaussian03': G03,
     'qchem5': QCHEM5,
     'molpro2021': MOLPRO_2021,
     'molpro2021_mppx': MOLPRO_2021_MPPX,
