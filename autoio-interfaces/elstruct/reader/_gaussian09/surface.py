@@ -1,9 +1,11 @@
 """ potential energy surface information readers
 """
 
+import itertools
 import numpy
 from phydat import phycon, ptab
 import automol
+import pyparsing as pp
 import autoread as ar
 import autoparse.pattern as app
 import autoparse.find as apf
@@ -76,17 +78,13 @@ def harmonic_frequencies(output_str):
         :type output_str: str
         :rtype: tuple(float)
     """
+    freq_parser = (
+        pp.Suppress(pp.Literal('Frequencies') + pp.Literal('--')) +
+        pp.OneOrMore(pp.common.real)
+    )
+    rows = freq_parser.searchString(output_str)
 
-    pattern = 'Frequencies --' + app.capturing(app.LINE_FILL)
-    captures = apf.all_captures(pattern, output_str)
-    if captures is not None:
-        freqs = []
-        for capture in captures:
-            vals = capture.split()
-            for val in vals:
-                freqs.append(float(val))
-    else:
-        freqs = None
+    freqs = tuple(itertools.chain(*rows))
     return freqs
 
 
@@ -98,43 +96,32 @@ def normal_coordinates(output_str):
         :type output_str: str
         :rtype: tuple(tuple(float))
     """
-
-    # Set the patterns to read the normal coordinates
-    comp_ptt = app.UNSIGNED_INTEGER + app.SPACES + app.UNSIGNED_INTEGER
-
-    # Gaussian prints freqs/norm coords as columns. Up to 3 columns printed
-    # Three patterns used to handle cases of when 1, 2, or 3 columns printed
-    start_ptt = 'Atom  AN      X      Y      Z'
-    start_ptt2 = '        X      Y      Z'
-    start_ptt_lst = (
-        (start_ptt + start_ptt2 + start_ptt2),  # 3 freq column(s)
-        (start_ptt + start_ptt2),               # 2 freq column(s)
-        (start_ptt),                            # 1 freq column(s)
+    normco_parser = (
+        pp.Suppress(
+            pp.Literal('Atom') + pp.Literal('AN') +
+            pp.OneOrMore(pp.Literal('X') + pp.Literal('Y') + pp.Literal('Z'))
+        ) +
+        pp.Group(
+            pp.OneOrMore(
+                pp.Suppress(pp.common.integer * 2) +
+                # X Y Z floats:
+                pp.Group(pp.OneOrMore(pp.common.real * 3))
+            )
+        )
     )
 
-    # Read the normal coordinate modes
-    nmodes = ()
-    for mode in apf.split('Frequencies', output_str)[1:]:
-        mat = None
-        # Parse out coords by trying all possibilities of nfreq cols printed
-        for start in start_ptt_lst:
-            _ptt = app.padded(app.NEWLINE).join([app.escape(start), ''])
-            mat = ar.matrix.read(
-                mode, start_ptt=_ptt, line_start_ptt=comp_ptt)
-            if mat is not None:
-                # If pattern found, slice 3xN mat into N 3x3 mats
-                # where N/3 corresponds to number of freq columns parsed
-                nmat = numpy.array(mat) * phycon.ANG2BOHR
-                _, ncols = numpy.shape(nmat)
-                for i in range(int(ncols/3)):
-                    nmodes += (nmat[:, i*3:(i+1)*3],)
-                break
+    blocks = normco_parser.searchString(output_str)
+    blocks = map(numpy.squeeze, map(numpy.array, blocks))
+    normcos_lst = ()
+    for block in blocks:
+        for normcos in numpy.hsplit(block, block.shape[1]//3):
+            normcos_lst += (normcos * phycon.ANG2BOHR,)
 
     # Set nmodes to None if nothing found from apf.split command
-    if not nmodes:
-        nmodes = None
+    if not normcos_lst:
+        normcos_lst = None
 
-    return nmodes
+    return normcos_lst
 
 
 def irc_points(output_str):
