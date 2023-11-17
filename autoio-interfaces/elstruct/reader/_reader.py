@@ -237,6 +237,13 @@ def opt_zmatrix_programs():
     return pm.program_modules_with_function(pm.Job.OPT_ZMA)
 
 
+def opt_zmatrices_programs():
+    """ Contucts a list of program modules implementing
+        optimized Z-Matrix output readers.
+    """
+    return pm.program_modules_with_function(pm.Job.OPT_ZMAS)
+
+
 def opt_zmatrix(prog, output_str):
     """ Reads the optimized Z-Matrix from the output string.
         Returns the geometry in Bohr+Radians.
@@ -248,6 +255,21 @@ def opt_zmatrix(prog, output_str):
     """
     return pm.call_module_function(
         prog, pm.Job.OPT_ZMA,
+        # *args
+        output_str)
+
+
+def opt_zmatrices(prog, output_str):
+    """ Reads the optimized Z-Matrix from the output string.
+        Returns the geometry in Bohr+Radians.
+
+        :param prog: electronic structure program to use as a backend
+        :type prog: str
+        :param output_str: string of the program's output file
+        :type output_str: str
+    """
+    return pm.call_module_function(
+        prog, pm.Job.OPT_ZMAS,
         # *args
         output_str)
 

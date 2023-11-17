@@ -67,6 +67,7 @@ class Job():
     IRC_PATH = 'irc_path'
     OPT_GEO = 'opt_geometry'
     OPT_ZMA = 'opt_zmatrix'
+    OPT_ZMAS = 'opt_zmatrices'
     INP_ZMA = 'inp_zmatrix'
     VPT2 = 'vpt2'
     DIP_MOM = 'dipole_moment'
@@ -93,7 +94,7 @@ READER_MODULE_DCT = {
         Job.ENERGY, Job.GRADIENT,
         Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.IRC_PTS, Job.IRC_PATH,
-        Job.OPT_GEO, Job.OPT_ZMA, Job.INP_ZMA,
+        Job.OPT_GEO, Job.OPT_ZMA, Job.OPT_ZMAS, Job.INP_ZMA,
         Job.VPT2,
         Job.DIP_MOM, Job.POLAR,
         Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
