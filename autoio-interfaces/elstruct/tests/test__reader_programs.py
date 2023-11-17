@@ -44,6 +44,13 @@ def test__opt_zmatrix_programs():
         'psi4'}
 
 
+def test__opt_zmatrix_programs():
+    """ test elstruct.reader.opt_zmatrix_programs
+    """
+    assert set(reader.opt_zmatrices_programs()) >= {
+       'gaussian09'}
+
+
 def test__irc_programs():
     """ test elstruct.reader.irc_programs
     """

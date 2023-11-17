@@ -770,7 +770,7 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
                 rate_sum += curr_rate
                 nrates += 1
         # Average
-        if nrates == 0:  # if nothing was found
+        if nrates == 0:  # if nothing was found!
             rate_avg = 1e-100
         else:
             rate_avg = rate_sum / nrates
@@ -821,7 +821,7 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
     else:
         if 'W' in rct[0]:  # written as unimol to bimol
             if bck_avg / phycon.NAVO < thresh:  # if bimol less than thresh
-                is_desired = True
+                    is_desired = True
         else:  # written as bimol to unimol
             if fwd_avg / phycon.NAVO > thresh:  # if bimol greater than thresh
                 is_desired = True
@@ -858,6 +858,8 @@ def filter_ktp_dct(_ktp_dct, bimol,
             :rtype: (numpy.ndarray, numpy.ndarray)
             """
 
+        print('sarah lazily overrides bimolthresh here')
+        bimolthresh = 1.0e-60
         # Set max temperature
         if tmax is None:
             tmax = max(temps)

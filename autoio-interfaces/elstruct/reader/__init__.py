@@ -25,6 +25,8 @@ from elstruct.reader._reader import opt_zmatrix_programs
 from elstruct.reader._reader import opt_zmatrix
 from elstruct.reader._reader import inp_zmatrix_programs
 from elstruct.reader._reader import inp_zmatrix
+from elstruct.reader._reader import opt_zmatrices_programs
+from elstruct.reader._reader import opt_zmatrices
 # vpt2
 from elstruct.reader._reader import vpt2_programs
 from elstruct.reader._reader import vpt2
@@ -69,6 +71,8 @@ __all__ = [
     'opt_zmatrix',
     'inp_zmatrix_programs',
     'inp_zmatrix',
+    'opt_zmatrices_programs',
+    'opt_zmatrices',
     # vpt2
     'vpt2_programs',
     'vpt2',
