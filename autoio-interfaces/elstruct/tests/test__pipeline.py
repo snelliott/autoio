@@ -179,6 +179,7 @@ def test__optimization():
                 elstruct.reader.energy,
                 elstruct.reader.opt_geometry,
                 elstruct.reader.opt_zmatrix,
+                elstruct.reader.opt_zmatrices,
             ),
             args=(prog, geo, charge, mult, method, basis),
             kwargs=opt_kwargs,
@@ -216,9 +217,9 @@ def _test_pipeline(script_str, writer, readers,
     if script_str is not None:
         script_str = SCRIPT_DCT[prog]
         run_dir = tempfile.mkdtemp()
+        run_dir = 'tmp'
         inp_str, out_str = elstruct.run.direct(
             writer, script_str, run_dir, *args, **kwargs)
-        print(inp_str)
         assert elstruct.reader.has_normal_exit_message(prog, out_str)
 
         for i, reader in enumerate(readers):
