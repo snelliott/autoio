@@ -88,7 +88,7 @@ def fragment_geometries(ts_zma, rct_zmas, bnd_keys):
         """
         gra = automol.geom.graph(geo)
         chain_idxs = atom_sorted_neighbor_atom_keys(
-            gra, idx, excl_atm_keys=excl_idxs, symbs_last=('H',))
+            gra, idx, excl_keys=excl_idxs, symbs_last=('H',))
         return chain_idxs[0]
 
     # Group the forming bond where higher value is first (MAX, MIN)
