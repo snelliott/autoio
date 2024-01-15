@@ -16,7 +16,10 @@ SPECIES_PATH = os.path.join(TEMPLATE_PATH, 'species')
 SPEC_INFO_PATH = os.path.join(SPECIES_PATH, 'info')
 
 
-def core_rigidrotor(geo, sym_factor, interp_emax=None):
+def core_rigidrotor(
+        geo, sym_factor,
+        xmat=(), freqs=(), rovib_coups=(),
+        rot_dists=(), interp_emax=None):
     """ Writes the string that defines the 'Core' section for a
         rigid-rotor model of a species for a MESS input file by
         formatting input information into strings a filling Mako template.
@@ -33,12 +36,34 @@ def core_rigidrotor(geo, sym_factor, interp_emax=None):
     # Format the geometry section
     natom, geo = messformat.geometry_format(geo)
 
+    if xmat:
+        anharm = messformat.format_xmat(xmat)
+        interp_emax = 500
+        nfreqs, freqs = messformat.freqs_format(freqs)
+    else:
+        anharm = ''
+        freqs = ''
+        nfreqs = ''
+    if rovib_coups:
+        rovib_coups = messformat.format_rovib_coups(rovib_coups)
+        interp_emax = 500
+    else:
+        rovib_coups = ''
+    if rot_dists:
+        rot_dists = messformat.format_rot_dist_consts(rot_dists)
+    else:
+        rot_dists = ''
     # Create dictionary to fill template
     core_keys = {
         'sym_factor': sym_factor,
         'natom': natom,
         'geo': geo,
-        'interp_emax': interp_emax
+        'interp_emax': interp_emax,
+        'anharm': anharm,
+        'nfreqs': nfreqs,
+        'freqs': freqs,
+        'rovib_coups': rovib_coups,
+        'rot_dists': rot_dists,
     }
 
     return build_mako_str(

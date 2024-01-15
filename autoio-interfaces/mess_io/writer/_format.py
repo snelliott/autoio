@@ -226,10 +226,12 @@ def format_rovib_coups(rovib_coups):
     """
 
     # Join the values into a string
-    rovib_coups_str = '  '.join(str(val) for val in rovib_coups)
+    rovib_coups_lst = []
+    for line in rovib_coups:
+        rovib_coups_lst.append(
+            indent('\t'.join(str(val) for val in line), 4))
 
-    # Indent the lines
-    rovib_coups_str = indent(rovib_coups_str, 4)
+    rovib_coups_str = '\n'.join(rovib_coups_lst)
 
     return rovib_coups_str
 
@@ -273,8 +275,8 @@ def format_xmat(xmat):
     xmat_str = ''
     for i in range(xmat.shape[0]):
         xmat_str += ' '.join(
-            [f'{val:>12.5f}' for val in list(xmat[i, :i+1])
-             if val != 0.0]
+            [f'{val:>12.5f}' for val in list(xmat[i, :i+1])]
+            # if val != 0.0]
         )
         if (i+1) != xmat.shape[0]:
             xmat_str += '\n'
