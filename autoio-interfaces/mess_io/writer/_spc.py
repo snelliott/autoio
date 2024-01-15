@@ -80,10 +80,11 @@ def molecule(core, elec_levels,
     nfreqs, freqs = messformat.freqs_format(freqs)
     nintens, intens = messformat.intensities_format(inf_intens)
     nlevels, levels = messformat.elec_levels_format(elec_levels)
-
+    interp_emax = None
     # Format the rovib couplings and rotational distortions if needed
     if rovib_coups:
         rovib_coups = messformat.format_rovib_coups(rovib_coups)
+        interp_emax = 500
     else:
         rovib_coups = ''
     if rot_dists:
@@ -92,6 +93,7 @@ def molecule(core, elec_levels,
         rot_dists = ''
     if xmat:
         anharm = messformat.format_xmat(xmat)
+        interp_emax = 500
     else:
         anharm = ''
 
@@ -112,6 +114,7 @@ def molecule(core, elec_levels,
         'intens': intens,
         'rovib_coups': rovib_coups,
         'rot_dists': rot_dists,
+        'interp_emax': interp_emax,
         'freq_scale_factor': freq_scale_factor,
         'use_harmfreqs_key': use_harmfreqs_key
     }

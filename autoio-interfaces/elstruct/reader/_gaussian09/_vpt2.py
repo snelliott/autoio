@@ -24,7 +24,10 @@ def anharmonic_frequencies(output_str):
 
     pattern = (
         app.INTEGER +
-        app.escape('(1)') +
+        #app.escape('(1)') +
+        app.escape('(1') + app.maybe(app.escape(',')) +
+        app.maybe(app.SIGN) +
+        app.maybe(app.INTEGER) + app.escape(')') +
         app.SPACE +
         app.maybe(app.one_or_more(app.LOWERCASE_LETTER)) +
         app.one_or_more(app.SPACE) +
@@ -125,7 +128,7 @@ def vibrorot_alpha_matrix(output_str):
     """
 
     begin_string = 'Vibro-Rot alpha Matrix (in cm^-1)'
-    end_string = app.escape('Q( ') + app.UNSIGNED_INTEGER + app.escape(')')
+    end_string = app.escape('Q(') + app.maybe(app.SPACE) + app.UNSIGNED_INTEGER + app.escape(')')
 
     vib_rot_mat = ar.matrix.read(
         output_str,
