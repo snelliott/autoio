@@ -114,8 +114,6 @@ def anharmonicity_matrix(output_str):
 
     mat = tuple(tuple(float(val) for val in row)
                 for row in mat)
-    # mat = tuple(tuple(float(val.replace('D', 'E')) for val in row)
-    #             for row in mat)
 
     return mat
 
