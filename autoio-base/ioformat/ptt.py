@@ -30,7 +30,7 @@ def keyword_value_ptt(key=None):
     """
     keywrd = key if key is not None else app.one_or_more(app.NONSPACE)
     return (app.capturing(keywrd) +
-            app.ZSPACES + app.escape('=') + app.ZSPACES +
+            app.ZSPACES + app.not_preceded_by('ChI') +  app.escape('=') + app.ZSPACES +
             GEN_PTT)
 
 
@@ -182,7 +182,7 @@ def keyword_dct_from_paren_blocks(block):
             if key_dct is not None:
                 ret[pblock[0]] = key_dct
             else:
-                vals = values_from_block(pblock[1])
+                vals = values_from_block(pblock[1], non_val_ptt=app.LETTER)
                 if vals:
                     ret[pblock[0]] = vals
     else:
@@ -210,18 +210,21 @@ def keyword_dct_from_block(block, formatvals=True):
                     key_dct[formtd_key] = formtd_val
                 else:
                     key_dct[key] = val
-
     return key_dct
 
 
 # Build various objects containing keyword and value information
-def values_from_block(block, val_ptt=app.NUMBER):
+def values_from_block(block, val_ptt=app.NUMBER, non_val_ptt=None):
     """ Takes a multiline string that consists solely of floats and
         converts this block into a list of numbers
         could call set_value_type for generality I guess
         prob just do a capture of nums (floats, int, etc)
     """
     caps = apf.all_captures(val_ptt, block)
+    if non_val_ptt is not None:
+        non_caps = apf.all_captures(non_val_ptt, block)
+        if non_caps:
+            caps = ()
     if caps:
         vals = tuple(set_value_type(cap) for cap in caps)
     else:
@@ -280,7 +283,14 @@ def format_keyword_values(keyword, value):
             frmtd_value = tuple(tuple(x) for x in frmtd_value)
     elif all(sym in value for sym in ('[', ']')):
         value = value.replace('[', '').replace(']', '')
-        value = value.split(',')
+        value = value.split('"')
+        flat_value = []
+        for i, val in enumerate(value):
+            if i%2 == 0 and val:
+                flat_value.extend(val.split(','))
+            elif val:
+                flat_value.append(val)
+        value = flat_value
         frmtd_value = ()
         # Set string in list to boolean or integer if needed
         for elm in value:
