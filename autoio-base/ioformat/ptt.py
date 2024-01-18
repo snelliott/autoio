@@ -287,7 +287,8 @@ def format_keyword_values(keyword, value):
         flat_value = []
         for i, val in enumerate(value):
             if i%2 == 0 and val:
-                flat_value.extend(val.split(','))
+                flat_value.extend(
+                    va for va in val.split(',') if va.replace(' ','') != '')
             elif val:
                 flat_value.append(val)
         value = flat_value
