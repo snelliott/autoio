@@ -858,7 +858,7 @@ def filter_ktp_dct(_ktp_dct, bimol,
             :rtype: (numpy.ndarray, numpy.ndarray)
             """
 
-        print('sarah lazily overrides bimolthresh here')
+        # print('sarah lazily overrides bimolthresh here')
         bimolthresh = 1.0e-60
         # Set max temperature
         if tmax is None:
