@@ -15,7 +15,7 @@ from autoreact.params import RxnParams
 # gearing up to replace autoparse with pyparsing
 PP_ARROW = pp.Combine(pp.Opt('<') + pp.Char('=') + pp.Opt('>'))
 PP_THIRD_BODY = pp.Group(
-    pp.Opt('(') + pp.Char('+') + pp.Char('M') + pp.Opt(')'))
+        '(' + pp.Word(pp.printables + '+', excludeChars=')') + ')')
 PP_SPECIES_NAME = pp.Combine(
     pp.Char(pp.printables, excludeChars=(pp.nums+'+=.')) +
     pp.ZeroOrMore(
@@ -56,8 +56,8 @@ SPECIES_NAMES_PATTERN = (app.series(
     app.maybe(app.padded(CHEMKIN_PAREN_PLUS_EM))
 )
 
-REACTION_PATTERN = (SPECIES_NAMES_PATTERN + app.padded(CHEMKIN_ARROW) +
-                    SPECIES_NAMES_PATTERN)
+# REACTION_PATTERN = (SPECIES_NAMES_PATTERN + app.padded(CHEMKIN_ARROW) +
+#                    SPECIES_NAMES_PATTERN)
 COEFF_PATTERN = (app.NUMBER + app.LINESPACES + app.NUMBER +
                  app.LINESPACES + app.NUMBER)
 COMMENTS_PATTERN = app.escape(
@@ -170,6 +170,7 @@ def get_rxn_name(rxn_str):
         thd_bod = (None,)
 
     rxn = (tuple(rcts), tuple(prds), thd_bod)
+
     return rxn
 
 
