@@ -2,7 +2,7 @@
     species block and the elements block
 """
 
-
+from automol.chi import formula
 def write_species(mech_spc_dct):
     """ Writes the contents of a mech_spc_dct in Chemkin format, with notes
 
@@ -53,7 +53,10 @@ def write_elements(mech_spc_dct):
         # Build a non-unique list of all elements in the set
         all_elems = []
         for spc, spc_dct in mech_spc_dct.items():
-            fml = spc_dct['fml']  # assumes that the fml exists!
+            if 'fml' in spc_dct:
+                fml = spc_dct['fml']  # assumes that the fml exists!
+            else:
+                fml = formula(spc_dct['inchi'])
             all_elems.extend(list(fml.keys()))
     
         # Get the unique elements via a set

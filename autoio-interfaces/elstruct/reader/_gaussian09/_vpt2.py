@@ -24,7 +24,6 @@ def anharmonic_frequencies(output_str):
 
     pattern = (
         app.INTEGER +
-        #app.escape('(1)') +
         app.escape('(1') + app.maybe(app.escape(',')) +
         app.maybe(app.SIGN) +
         app.maybe(app.INTEGER) + app.escape(')') +
@@ -36,7 +35,8 @@ def anharmonic_frequencies(output_str):
         app.capturing(app.FLOAT)
     )
 
-    # Get list of values
+    # Get list of anharmonic frequency values
+
     anharm_freq = [float(val)
                    for val in apf.all_captures(pattern, block)]
 
@@ -112,7 +112,7 @@ def anharmonicity_matrix(output_str):
         line_start_ptt=comp_ptt,
         tril=True)
 
-    mat = tuple(tuple(float(val.replace('D', 'E')) for val in row)
+    mat = tuple(tuple(float(val) for val in row)
                 for row in mat)
 
     return mat
