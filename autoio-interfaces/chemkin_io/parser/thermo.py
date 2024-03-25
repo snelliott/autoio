@@ -22,7 +22,7 @@ def create_spc_nasa7_dct(block_str):
     # Get the list of entries; at least four lines each
     # (possibly more for comment lines)
     entry_lst = create_entry_list(block_str)
-
+    
     # Get the default midpoint temp
     default_temp_limits = get_default_temp_limits(block_str)
     default_midpoint = default_temp_limits[1]
@@ -336,10 +336,14 @@ def fix_lines(entry_lst):
         for idx2, line in enumerate(entry):
             if line:  # if the line is not empty
                 first_char = line[0]
-                # for now, just check if the first character is a digit
-                if first_char.isdigit():
+                # check if the first character is a digit
+                # or a dot
+                if first_char.isdigit() or first_char == '.':
                     line = ' ' + line
-                    entry[idx2] = line
+                if len(line) < 80: # for lines that start with more than one blank character
+                    line = ' '*(80 - len(line)) + line
+                entry[idx2] = line
         entry_lst[idx1] = entry
+        
 
     return entry_lst

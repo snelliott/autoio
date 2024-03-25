@@ -28,13 +28,13 @@ def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None):
     for rxn, params in rxn_param_dct.items():
         cmts_dct = rxn_cmts_dct.get(rxn)
         sing_rxn_str = single_rxn(rxn, params, cmts_dct=cmts_dct,
-                                  max_len=max_len)
+                                  max_len=max_len, rxnkeys= rxn_param_dct.keys())
         ckin_str += sing_rxn_str
 
     return ckin_str
 
 
-def single_rxn(rxn, params, cmts_dct=None, max_len=45):
+def single_rxn(rxn, params, cmts_dct=None, max_len=45, rxnkeys = []):
     """ Writes a reaction string from a RxnParams object
 
         :param rxn: tuple describing reactants, products, and third body
@@ -49,6 +49,8 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45):
         :rtype: str
     """
 
+    # Get the Chemkin string for the chemical reaction
+    rxn = util.format_rxn_name(rxn, fullset_rxns = rxnkeys)
     # Get the functional forms to write (usually will only be one)
     forms = params.get_existing_forms()
     # Get the comment strings

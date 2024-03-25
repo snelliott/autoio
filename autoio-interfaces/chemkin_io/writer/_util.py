@@ -60,12 +60,14 @@ def name_column_length(names):
     return names_len
 
 
-def format_rxn_name(rxn, pdep=False):
+def format_rxn_name(rxn, pdep=False, fullset_rxns = []):
     """ Receives a rxn and creates an appropriate string
         to be written in a Chemkin mech. Adds third body if applicable
 
         :param rxn: reaction names and third body
         :type rxn: tuple ((rct1, rct2), (prd1, prd2), (third_bod1,))
+        :param fullset_rxns: full set of reactions
+        :type fullset_rxns: list of rxn names and third body
         :return rxn_name: formatted reaction name for writing in the mech
         :rtype: str
     """
@@ -92,7 +94,11 @@ def format_rxn_name(rxn, pdep=False):
         prd_str += '(+M)'
 
     if len(prds) < 3:
-        join_sign = ' = '
+        # check if backward reaction is also present
+        if (rxn[1], rxn[0], rxn[2]) in fullset_rxns:
+            join_sign = ' => '  # if backward reaction found: write as irreversible
+        else:
+            join_sign = ' = '
     else:
         join_sign = ' => '
 
