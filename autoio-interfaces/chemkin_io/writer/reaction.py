@@ -50,7 +50,10 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45, rxnkeys = []):
     """
 
     # Get the Chemkin string for the chemical reaction
-    rxn = util.format_rxn_name(rxn, fullset_rxns = rxnkeys)
+    # rxn = util.format_rxn_name(rxn, fullset_rxns = rxnkeys)
+    # ^ AVC: this doesn't work, because the arr, plog, etc. functions format their own reactions
+    # (Also, TROE needs to add +Ms if missing)
+
     # Get the functional forms to write (usually will only be one)
     forms = params.get_existing_forms()
     # Get the comment strings
