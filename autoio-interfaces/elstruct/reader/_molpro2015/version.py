@@ -30,8 +30,10 @@ def program_version(output_str):
     """
 
     prog_string = _get_prog_string(output_str)
-    prog_version = prog_string[1].strip()
-
+    if prog_string:
+        prog_version = prog_string[1].strip()
+    else:
+        prog_version = None
     return prog_version
 
 

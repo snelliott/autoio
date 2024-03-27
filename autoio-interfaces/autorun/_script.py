@@ -16,7 +16,8 @@ MESSPF = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=10\n"
     "ulimit -c 0\n"
-    "messpf pf.inp >& pf.out"
+    #"messpf pf.inp >& pf.out"
+    "/home/ygeorgievski/build/crossrate/partition_function pf.inp >& pf.out"
 )
 MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
@@ -89,6 +90,11 @@ PAC99 = (
     "pac99 << EOF >& pacc.out\n"
     "{}\n"
     "EOF"
+)
+G16 = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "g16 run.inp run.out >> stdout.log &> stderr.log"
 )
 G09 = (
     "#!/usr/bin/env bash\n"
@@ -177,6 +183,7 @@ SCRIPT_DCT = {
     'varecof_mcflux': VARECOF_MCFLUX,
     'varecof_tstchk': VARECOF_TSTCHECK,
     # Electronic Structure
+    'gaussian16': G16,
     'gaussian09': G09,
     'gaussian03': G03,
     'qchem5': QCHEM5,

@@ -116,7 +116,7 @@ READER_MODULE_DCT = {
         Job.ENERGY, Job.GRADIENT,
         Job.HESSIAN, Job.HARM_FREQS, Job.NORM_COORDS,
         Job.IRC_PTS, Job.IRC_PATH,
-        Job.OPT_GEO, Job.OPT_ZMA,
+        Job.OPT_GEO, Job.OPT_ZMA, Job.INP_ZMA,
         Job.VPT2,
         Job.DIP_MOM, Job.POLAR,
         Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
