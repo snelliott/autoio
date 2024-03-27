@@ -65,8 +65,9 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
         rand_objs[:] = random.sample(objs, num_obj)
         print('Begin parallel job array on {:g} processors'.format(nprocs))
     else:
-        rand_objs[:] = objs
-
+        # rand_objs[:] = objs
+        rand_objs = objs
+    rand_objs = numpy.array(rand_objs, dtype=object)
     rand_objs_splt = numpy.array_split(rand_objs, nprocs)
 
     # Loop over each processor and launch the process
