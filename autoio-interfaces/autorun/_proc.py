@@ -55,15 +55,18 @@ def execute_function_in_parallel(fxn, objs, args, nprocs='auto'):
 
     # Allot number of objects for each processor
     num_obj = len(objs)
+    rand_objs = numpy.empty((num_obj,), dtype=object)
+
     nprocs = set_nprocs(num_obj, nprocs=nprocs)
     # Randomize objects the objects (for distributing workload?)
     # This function may it very hard to debug - removed for now
     # obj_per_proc = math.ceiling(num_obj / nprocs)
     if nprocs > 1:
-        rand_objs = random.sample(objs, num_obj)
+        rand_objs[:] = random.sample(objs, num_obj)
         print('Begin parallel job array on {:g} processors'.format(nprocs))
     else:
-        rand_objs = objs
+        rand_objs[:] = objs
+
     rand_objs_splt = numpy.array_split(rand_objs, nprocs)
 
     # Loop over each processor and launch the process
