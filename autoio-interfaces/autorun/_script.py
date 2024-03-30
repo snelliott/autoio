@@ -37,35 +37,41 @@ MESSRATEV2 = (
 VARECOF_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "MPI=`which mpirun`\n"
+    "MPI=/soft/oneAPI/2021.4.0.3422/intelpython/latest/bin/mpiexec.hydra"
+    # "MPI=`which mpirun`\n"
     # 'MPI_OPTIONS="-machinefile machines"'
     # 'MPI_OPTIONS="-host b460"'
     'MPI_OPTIONS="-n {}"\n'
-    "VARECOFEXE=/home/mulvihcr/automech/VaReCoF/build/multi\n\n"
+    "VARECOFEXE=/home/ygeorgievski/build/rotd/IntelMPI/multi\n\n"
+    # "VARECOFEXE=/home/ac.mulvihill/automech/VaReCoF/bkup_build/multi\n\n"
     "$MPI $MPI_OPTIONS $VARECOFEXE tst.inp >& varecof.out"
 )
 VARECOF_MCFLUX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/mulvihcr/automech/VaReCoF/build/mc_flux "
+    "/home/ygeorgievski/build/rotd/IntelMPI/mc_flux "
+    # "/home/ac.mulvihill/automech/VaReCoF/bkup_build/mc_flux "
     "mc_flux.inp >& mc_flux.out"
 )
 VARECOF_CONV_STRUCT = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/mulvihcr/automech/VaReCoF/build/convert_struct "
+    "/home/ygeorgievski/build/rotd/IntelMPI/convert_struct "
+    # "/home/ac.mulvihill/automech/VaReCoF/bkup_build/convert_struct "
     "tst.inp >& varecof_struct_conv.out"
 )
 VARECOF_CONV_MULTI = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/mulvihcr/automech/VaReCoF/build/convert_multi "
+    "/home/ygeorgievski/build/rotd/IntelMPI/convert_multi "
+    # "/home/ac.mulvihill/automech/VaReCoF/bkup_build/convert_multi "
     "convert.inp >& varecof_multi_conv.out"
 )
 VARECOF_TSTCHECK = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgi/build/rotd/tst_check >& tst_check.out"
+    "/home/ygeorgievski/build/rotd/IntelMPI/tst_test >& tst_test.out"
+    # "/home/ygeorgievski/build/rotd/tst_check >& tst_check.out"
 )
 INTDER = (
     "#!/usr/bin/env bash\n"

@@ -158,6 +158,8 @@ def run_script(script_str, run_dir, script_name=SCRIPT_NAME):
                   stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH))
 
         # Call the program
+        # print('run test',run_dir,script_name)
+        # print('script',script_str)
         try:
             subprocess.check_call(f'./{script_name:s}')
         except subprocess.CalledProcessError:
