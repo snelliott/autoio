@@ -262,7 +262,7 @@ def _qc_input_str(job, prog, geo, charge, mult,
     prog = prog.replace('_mppx', '')
     if 'molpro' in prog:
         if 'f12' in method and 'mrci' not in method:
-            ene_line = 'molpro_energy=energy(1)\nshow[1,e25.15],molpro_energy'
+            ene_line = 'molpro_energy=energy(2)\nshow[1,e25.15],molpro_energy'  # 2: F12(b) instead of F12(a)
         elif 'mrci' in method:
             ene_line = 'molpro_energy=energd\nshow[1,e25.15],molpro_energy'
         else:

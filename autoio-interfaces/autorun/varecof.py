@@ -58,8 +58,8 @@ VRC_DCT = {
     'r1dists_lr': [8., 6., 5., 4.5, 4.],
     'r1dists_sr': [4., 3.8, 3.6, 3.4, 3.2, 3., 2.8, 2.6, 2.4, 2.2],
     'r2dists_sr': [4., 3.8, 3.6, 3.4, 3.2, 3., 2.8, 2.6, 2.4, 2.2],
-    'd1dists': [0.01, 0.5, 1.],
-    'd2dists': [0.01, 0.5, 1.],
+    'd1dists': [0.5 * 0.529177, 0.529177],
+    'd2dists': [0.5 * 0.529177, 0.529177],
     'conditions': {},
     'nsamp_max': 2000,
     'nsamp_min': 50,
@@ -231,6 +231,9 @@ def write_input(run_dir,
         isol_fgeos, frames)
     pivot_xyzs = varecof_io.writer.calc_pivot_xyzs(
         tot_geo, isol_fgeos, (min_idx, max_idx))
+    print('here are locals in varecof.py')
+    for key, val in locals().items():
+        print(f'{key}:\n{val}')
 
     # Write the long- and short-range divsur input files
     lrdivsur_inp_str = varecof_io.writer.input_file.divsur(

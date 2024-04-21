@@ -15,7 +15,7 @@ TEMPLATE_PATH = os.path.join(SRC_PATH, 'templates')
 def input_file(job_type, geo, zero_ene,
                ene_grid=100.0, ene_max=50000.0,
                ang_grid=6, ang_max=300,
-               h_so=70.0, qe_scale_factor=1.0,
+               h_so=84.0, qe_scale_factor=1.0,
                cuts=False,
                comment=None):
     """ Writes a string for the input file for NST.
