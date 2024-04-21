@@ -33,7 +33,7 @@ def opt_geometry(output_str):
             start_ptt=app.padded(app.NEWLINE).join([
                 app.escape('Z-Matrix orientation:'),
                 app.LINE, app.LINE, app.LINE, app.LINE, '']),
-            symb_ptt=app.UNSIGNED_INTEGER,
+            symb_ptt=app.INTEGER,
             line_start_ptt=app.UNSIGNED_INTEGER,
             line_sep_ptt=app.UNSIGNED_INTEGER,)
 

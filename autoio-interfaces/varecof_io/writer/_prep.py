@@ -280,12 +280,12 @@ def build_pivot_frames(frag_geos_wdummy, frag_a1_idxs):
             # Set up the frame indices for the divsur file
             if i == 0:
                 pivot_idx = len(geom)
-                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
+                frame = (a1_idx, pivot_idx, bond_neighbor_idx, a1_idx)
             else:
                 pivot_idx = 0
                 a1_idx += 1
                 bond_neighbor_idx += 1
-                frame = (a1_idx, bond_neighbor_idx, pivot_idx, a1_idx)
+                frame = (a1_idx, pivot_idx, bond_neighbor_idx, a1_idx)
             frame = tuple(val+1 for val in frame)
 
         # Append to lists

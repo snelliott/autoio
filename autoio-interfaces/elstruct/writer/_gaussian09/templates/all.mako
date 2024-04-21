@@ -45,6 +45,7 @@ ${gen_lines}
 % if mol_options != '':
 # ${mol_options}
 % endif
+Symmetry=None
 
 comment: ${comment}
 
