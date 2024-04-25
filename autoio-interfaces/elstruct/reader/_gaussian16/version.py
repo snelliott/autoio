@@ -1,5 +1,4 @@
-"""
-Reads the program name and version number from the output file
+""" Reads the program name and version number from the output file
 """
 
 import autoparse.pattern as app
@@ -15,8 +14,8 @@ def program_name(output_str):
     """
 
     prog_string = _get_prog_string(output_str)
-    prog_name = prog_string[0].strip()
-    prog_name = 'molpro' + prog_name
+    prog_name = prog_string.split(':')[0]
+    prog_name = prog_name.replace(' ', '').lower()
 
     return prog_name
 
@@ -30,10 +29,9 @@ def program_version(output_str):
     """
 
     prog_string = _get_prog_string(output_str)
-    if prog_string:
-        prog_version = prog_string[1].strip()
-    else:
-        prog_version = None
+    prog_version = prog_string.split('Rev')[1]
+    prog_version = prog_version[:4].lower()
+
     return prog_version
 
 
@@ -45,13 +43,9 @@ def _get_prog_string(output_str):
         :rtype: str
     """
 
-    pattern = ('Version' +
-               app.SPACES +
-               app.capturing(app.INTEGER) +
-               app.escape('.') +
-               app.capturing(app.INTEGER) +
-               app.SPACES +
-               'linked')
+    pattern = app.capturing(
+                ('Gaussian ' + app.one_or_more(app.INTEGER) + ':' +
+                 app.SPACES + app.one_or_more(app.NONNEWLINE)))
 
     prog_string = apf.first_capture(pattern, output_str)
 
