@@ -94,31 +94,35 @@ def test__global_rates_input():
     """ test mess_io.writer.global_rates_input
     """
 
-    glob1_str = mess_io.writer.global_rates_input(
+    glob1_str_v1 = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES)
-    glob2_str = mess_io.writer.global_rates_input(
+    glob1_str_v2 = mess_io.writer.global_rates_input_v2(
+        TEMPS, PRESSURES)
+    glob2_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES, well_extension=None)
-    glob3_str = mess_io.writer.global_rates_input(
+    glob3_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         excess_ene_temp=EXCESS_ENE_TEMP,
+        chem_eig_max=0.2,
         well_extension=WELL_EXTEND)
-    glob4_str = mess_io.writer.global_rates_input(
+    glob4_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         calculation_method='direct')
-    glob5_str = mess_io.writer.global_rates_input(
+    glob5_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         float_type='quadruple')
-    glob6_str = mess_io.writer.global_rates_input(
+    glob6_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         ped_spc_lst=('RH_R1', 'RH_R2'))
-    glob7_str = mess_io.writer.global_rates_input(
+    glob7_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         hot_enes_dct={'W1': (10.0, 20.0, 30.0), 'W2': (40.0, 50.0, 60.0)})
-    glob8_str = mess_io.writer.global_rates_input(
+    glob8_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         micro_out_params=(0.0, 140.0, 0.1))
 
-    assert glob1_str == pathtools.read_file(INP_PATH, 'glob_rxn1.inp')
+    assert glob1_str_v1 == pathtools.read_file(INP_PATH, 'glob_rxn1.inp')
+    assert glob1_str_v2 == pathtools.read_file(INP_PATH, 'glob_rxn1_v2.inp')
     assert glob2_str == pathtools.read_file(INP_PATH, 'glob_rxn2.inp')
     assert glob3_str == pathtools.read_file(INP_PATH, 'glob_rxn3.inp')
     assert glob4_str == pathtools.read_file(INP_PATH, 'glob_rxn4.inp')
