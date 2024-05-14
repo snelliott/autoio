@@ -209,6 +209,7 @@ def opt_geometry(prog, output_str):
     """
     try:
         geo = _opt_geometry(prog, output_str)
+        geo = automol.geom.without_dummy_atoms(geo)
     except TypeError:
         zma = opt_zmatrix(prog, output_str)
         geo = automol.zmat.geometry(zma)
