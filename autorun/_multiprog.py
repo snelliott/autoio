@@ -54,6 +54,22 @@ def projected_frequencies(mess_script_str, projrot_script_str, run_dir,
         projrot_script_str, run_dir_2, [projrot_geo], [[]], [hess],
         rotors_str=projrot_hr_str, aux_dct=aux_dct2)
 
+    if not rth_freqs2:
+        dist_cutoff_dct3 = {('H', 'O'): 3.401506, ('H', 'C'): 3.779451,
+                                ('C', 'O'): 4.53534}
+        rotor_dist3_str = projrot_io.writer.projection_distance_aux(
+            dist_cutoff_dct=dist_cutoff_dct3)
+        aux_dct3 = {'dist_rotpr.dat': rotor_dist3_str}
+
+        print('running projrot a third time:')
+        run_dir_3 = os.path.join(run_dir, '3')
+        _, rth_freqs2, rt_imag2, _ = frequencies(
+            projrot_script_str, run_dir_3, [projrot_geo], [[]], [hess],
+            rotors_str=projrot_hr_str, aux_dct=aux_dct3)
+        if rth_freqs2:
+            print(
+                'it did work, make sure these frequencies look alright:',
+                rth_freqs2)
     # Calculate ZPVEs from all harmonic freqs and torsional freqs
     tors_zpe = (sum(tors_freqs) / 2.0) * phycon.WAVEN2EH
     harm_zpe = (sum(rt_freqs1) / 2.0) * phycon.WAVEN2EH
