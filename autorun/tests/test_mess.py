@@ -16,11 +16,11 @@ GEO = automol.geom.from_string(
     pathtools.read_file(DAT_PATH, 'c2h5oh.xyz'))
 MESS_ROT_STR = pathtools.read_file(DAT_PATH, 'c2h5oh.mrot')
 
-MESS_INP_STR = pathtools.read_file(DAT_PATH, 'mess_rate.inp')
-MESS_AUX = {
-    'mess_rotd1.dat': pathtools.read_file(DAT_PATH, 'mess_rotd1.dat'),
-    'mess_rotd2.dat': pathtools.read_file(DAT_PATH, 'mess_rotd2.dat')
-}
+# MESS_INP_STR = pathtools.read_file(DAT_PATH, 'mess_rate.inp')
+# MESS_AUX = {
+#     'mess_rotd1.dat': pathtools.read_file(DAT_PATH, 'mess_rotd1.dat'),
+#     'mess_rotd2.dat': pathtools.read_file(DAT_PATH, 'mess_rotd2.dat')
+# }
 
 
 def test__torsion():

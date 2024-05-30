@@ -34,19 +34,18 @@ def test__merge():
 def test__energies():
     """ test mess_io.reader._wells.well_average_energy
     """
-
     assert numpy.isclose(
-        mess_io.reader.well_average_energy(LOG_STR, 'W1', TEMP1),
+        mess_io.reader.well_thermal_energy(LOG_STR, 'W1', TEMP1),
         0.009402248486357753)
     assert numpy.isclose(
-        mess_io.reader.well_average_energy(LOG_STR, 'W1', TEMP2),
+        mess_io.reader.well_thermal_energy(LOG_STR, 'W1', TEMP2),
         0.027091224452217254)
     assert numpy.isclose(
-        mess_io.reader.well_average_energy(LOG_STR, 'W1', TEMP3),
+        mess_io.reader.well_thermal_energy(LOG_STR, 'W1', TEMP3),
         0.055776050342800226)
     assert numpy.isclose(
-        mess_io.reader.well_average_energy(LOG_STR, 'W3', TEMP1),
+        mess_io.reader.well_thermal_energy(LOG_STR, 'W3', TEMP1),
         0.07330566616482315)
     assert numpy.isclose(
-        mess_io.reader.well_average_energy(LOG_STR, 'W3', TEMP3),
+        mess_io.reader.well_thermal_energy(LOG_STR, 'W3', TEMP3),
         0.11904202744591934)

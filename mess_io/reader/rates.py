@@ -97,9 +97,9 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
 
     # Get the MESS output lines
     out_lines = output_str.splitlines()
-
     # Initialize dictionary with high-pressure rate constants
     _highp = _highp_kts(out_lines, reactant, product)
+    print('hihp', _highp)
     if _highp is not None:
         _ktp_dct = {'high': _highp_kts(out_lines, reactant, product)}
     else:
@@ -111,7 +111,6 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     # Update the dictionary with the pressure-dependent rate constants
     for pressure in (_press for _press in _pressures if _press != 'high'):
         _ktp_dct.update(_pdep_kts(out_lines, reactant, product, pressure))
-
     bimol = (reactant[0] == 'P') or ('+' in reactant)
 
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
@@ -150,7 +149,6 @@ def _highp_kts(out_lines, reactant, product):
                     break
             break
     block_lines = out_lines[block_start: block_end]
-
     # Get the high-pressure rate constants
     rate_constants = None
     for i, line in enumerate(block_lines):
