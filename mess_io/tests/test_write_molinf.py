@@ -165,9 +165,9 @@ def test__core_rigidrotor_writer():
         interp_emax=INTERP_EMAX)
 
     assert core_rigrot1_str == pathtools.read_file(
-        INP_PATH, 'core_rigrot1.inp').rstrip()
+        INP_PATH, 'core_rigrot1.inp')
     assert core_rigrot2_str == pathtools.read_file(
-        INP_PATH, 'core_rigrot2.inp').rstrip()
+        INP_PATH, 'core_rigrot2.inp')
 
 
 def test__core_multirotor_writer():

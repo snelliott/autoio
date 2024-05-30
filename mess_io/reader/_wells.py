@@ -100,5 +100,20 @@ def well_thermal_energy(log_str, well, temp):
         cap = apf.first_capture(ptt, blocks[block_idx])
         if cap is not None:
             ene = float(cap) * phycon.KCAL2EH
-
+        else:
+            # check if user is using old version off MESS, which
+            # uses 'average' instead of 'thermal'
+            ptt = (
+                app.escape(well) + app.SPACES +
+                app.escape('Well:') + app.SPACES +
+                'average energy =' + app.SPACES +
+                app.capturing(app.NUMBER) + app.SPACES +
+                app.escape('kcal/mol')
+            )
+            cap = apf.first_capture(ptt, blocks[block_idx])
+            if cap is not None:
+                ene = float(cap) * phycon.KCAL2EH
+                print(
+                    "WARNING: old version of MESS detected from" +
+                    "use of 'average' instead of 'thermal' energy")
     return ene

@@ -9,19 +9,19 @@ ${geo}
 % if anharm != '':
     % if nfreqs > 0:
     Frequencies[1/cm]         ${nfreqs}
-    ${freqs}
+${freqs}
     % endif
     Anharmonicities[1/cm]
-    ${anharm}
+${anharm}
     ## Rovibrational Coupling Section
     % if rovib_coups != '':
     RovibrationalCouplings[1/cm]
-    ${rovib_coups}
+${rovib_coups}
     % endif
     ## Rotational Distortion Section
     % if rot_dists != '':
     RotationalDistortion[1/cm]
-    ${rot_dists}
+${rot_dists}
     End
     % endif
 % endif 

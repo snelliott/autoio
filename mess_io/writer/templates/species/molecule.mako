@@ -4,8 +4,8 @@ ${core}
 ## Frequencies Section
 % if anharm == '':
     % if nfreqs > 0:
-        Frequencies[1/cm]         ${nfreqs}
-    ${freqs}
+  Frequencies[1/cm]         ${nfreqs}
+${freqs}
     % endif
 % endif
 ## Electronic Levels Section
