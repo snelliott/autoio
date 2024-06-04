@@ -1,0 +1,34 @@
+package:
+  name: autoio
+  version: "2024.6.4"
+
+about:
+  license: MIT
+  description: I/O interfaces for external codes used by AutoMech
+  repository: https://github.com/Auto-Mech/autoio
+
+source:
+  path: .
+
+build:
+  noarch: python
+  script: pip install . -v --no-deps
+
+requirements:
+  host:
+    - pip
+    - python >=3.10
+    - poetry
+    - wheel
+  run:
+    - python >=3.10
+    - pip
+    - more-itertools
+    - numpy
+    - pylint
+    - pyparsing
+    - pytest
+    - pyyaml
+    - qcelemental
+    - mako
+    - auto-mech::autochem
