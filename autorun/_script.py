@@ -16,24 +16,19 @@ MESSPF = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=10\n"
     "ulimit -c 0\n"
-    #"messpf pf.inp >& pf.out"
-    "/home/ygeorgievski/build/crossrate/partition_function pf.inp >& pf.out"
+    "messpf pf.inp >& pf.out"
 )
 MESSRATEV1 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    #"/home/ygeorgievski/build/crossrate/DD/mess mess.inp >> stdout.log &> stderr.log"
-    "/home/ygeorgievski/build/crossrate/mess mess.inp >> stdout.log &> stderr.log"
-    # "mess mess.inp >> stdout.log &> stderr.log"
+    "mess mess.inp >> stdout.log &> stderr.log"
 )
 MESSRATEV2 = (
     "#!/usr/bin/env bash\n"
     "export OMP_NUM_THREADS=8\n"
     "ulimit -c 0\n"
-    #"/home/ygeorgievski/build/crossrate/mess_test mess.inp >> stdout.log &> stderr.log"
-    "/home/ygeorgievski/build/crossrate/mess mess.inp >> stdout.log &> stderr.log"
-    # "mess-v2 mess.inp >> stdout.log &> stderr.log"
+    "mess mess.inp >> stdout.log &> stderr.log"
 )
 VARECOF_MULTI = (
     "#!/usr/bin/env bash\n"
