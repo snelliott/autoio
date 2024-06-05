@@ -1,6 +1,6 @@
 package:
   name: autoio
-  version: "2024.6.4"
+  version: "2024.6.5"
 
 about:
   license: MIT
@@ -8,7 +8,7 @@ about:
   repository: https://github.com/Auto-Mech/autoio
 
 source:
-  path: .
+  path: ..
 
 build:
   noarch: python
@@ -31,4 +31,5 @@ requirements:
     - pyyaml
     - qcelemental
     - mako
+    - auto-mech::automech-toolbox
     - auto-mech::autochem
