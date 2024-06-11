@@ -1,10 +1,12 @@
 """ orca4 writer module """
 
+import re
 import os
 from ioformat import build_mako_str
 import elstruct.par
 import elstruct.option
 from elstruct.writer import fill
+import automol
 
 
 PROG = elstruct.par.Program.ORCA4
@@ -72,6 +74,24 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     prog_method, prog_reference, prog_basis = fill.program_method_names(
         PROG, method, basis, mult, orb_restricted)
 
+    has_corr = True
+    if automol.geom.electron_count(geo) <= 1:
+        has_corr = False
+
+    prog_bases = [prog_basis]
+    # Add CABS basis for F12 methods
+    if 'f12' in prog_method.lower() and has_corr:
+        cabs_basis = f"{prog_basis}-cabs"
+        prog_bases.append(cabs_basis)
+
+    # Add RI basis for RI methods
+    if 'ri' in prog_method.lower() and has_corr:
+        # It is recommended to increase the basis set cardinality by 1
+        bump_card_ = lambda m: m.group().translate(str.maketrans('dtq5', 'tq56'))
+        ri_basis = prog_basis.replace('-f12', '') + '/c'
+        ri_basis = re.sub('[dtq5](?=z)', bump_card_, ri_basis)
+        prog_bases.append(ri_basis)
+
     geo_str, zmat_var_val_str, zmat_const_val_str = fill.geometry_strings(
         geo, frozen_coordinates)
 
@@ -100,8 +120,8 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
         fill.TemplateKey.COORD_SYS: coord_sys,
         fill.TemplateKey.MEMORY: memory,
         fill.TemplateKey.REFERENCE: prog_reference,
-        fill.TemplateKey.METHOD: prog_method,
-        fill.TemplateKey.BASIS: prog_basis,
+        fill.TemplateKey.METHOD: prog_method if has_corr else '',
+        fill.TemplateKey.BASIS: " ".join(prog_bases),
         fill.TemplateKey.SCF_OPTIONS: ','.join(scf_options),
         fill.TemplateKey.MOL_OPTIONS: ','.join(mol_options),
         fill.TemplateKey.COMMENT: comment,

@@ -1,6 +1,7 @@
 """ electronic energy readers
 """
-
+import pyparsing as pp
+from pyparsing import pyparsing_common as ppc
 import autoread as ar
 import autoparse.pattern as app
 from elstruct.par import Program, Method, program_methods
@@ -82,12 +83,29 @@ def _ccsd_t_energy(output_str):
     return ene
 
 
+def _ccsd_t_f12_ri_energy(output_str):
+    """ Reads the CCSD(T) energy from the output file string.
+        Returns the energy in Hartrees.
+
+        :param output_str: string of the program's output file
+        :type output_str: str
+        :rtype: float
+    """
+    label = pp.Literal("F12-ECCSD(T) with (T) scaled through CCSD")
+    separator = pp.Literal("...")
+    energy = ppc.number
+    parser = ... + label + separator + energy("energy")
+    ene = parser.parseString(output_str).get("energy")
+    return ene
+
+
 # A dictionary of functions for reading the energy from the output, by method
 ENERGY_READER_DCT = {
     (Method.HF[0], frozenset({})): _scf_energy,
     (Method.Corr.MP2[0], frozenset({})): _mp2_energy,
     (Method.Corr.CCSD[0], frozenset({})): _ccsd_energy,
     (Method.Corr.CCSD_T[0], frozenset({})): _ccsd_t_energy,
+    (Method.Corr.CCSD_T_F12_RI[0], frozenset({})): _ccsd_t_f12_ri_energy,
 }
 
 # Add DFT methods to the reader dictionary

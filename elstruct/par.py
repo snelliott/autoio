@@ -201,6 +201,10 @@ class Method():
                        Program.MOLPRO2021: (
                           'ccsd(t)-f12', 'uccsd(t)-f12',
                           ('R',), ('R',))})
+        CCSD_T_F12_RI = ('ccsd(t)-f12-ri',
+                         {Program.ORCA4: (
+                            'ccsd(t)-f12/ri', 'ccsd(t)-f12/ri',
+                            ('R',), ('U',))})
 
     class MultiRef():
         """ Multireference electronic structure methods
@@ -864,11 +868,14 @@ class Basis():
         class F12():
             """ Dunning F12 basis sets """
             DF = ('cc-pvdz-f12', {Program.MOLPRO2015: None,
-                                  Program.MOLPRO2021: None})
+                                  Program.MOLPRO2021: None,
+                                  Program.ORCA4: None})
             TF = ('cc-pvtz-f12', {Program.MOLPRO2015: None,
-                                  Program.MOLPRO2021: None})
+                                  Program.MOLPRO2021: None,
+                                  Program.ORCA4: None})
             QF = ('cc-pvqz-f12', {Program.MOLPRO2015: None,
-                                  Program.MOLPRO2021: None})
+                                  Program.MOLPRO2021: None,
+                                  Program.ORCA4: None})
             CDF = ('cc-pcvdz-f12', {Program.MOLPRO2015: None,
                                     Program.MOLPRO2021: None})
             CTF = ('cc-pcvtz-f12', {Program.MOLPRO2015: None,
