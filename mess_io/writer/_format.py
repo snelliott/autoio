@@ -194,6 +194,9 @@ def format_rotor_potential(potential):
         :return potential_str: values of potential in a MESS-format string
         :rtype str
     """
+    assert not any(map(numpy.isnan, potential.values())), (
+        f"potential has nans: {potential}"
+    )
 
     # Get the number of the terms in the potential
     npot = len(potential)
