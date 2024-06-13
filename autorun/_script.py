@@ -113,6 +113,11 @@ QCHEM5 = (
     "export QCSCRATCH=/scratch/$USER\n"
     "qchem -nt {} run.inp run.out"
 )
+ORCA4 = (
+    "#!/usr/bin/env bash\n"
+    "ulimit -c 0\n"
+    "orca run.inp > run.out"
+)
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
@@ -181,12 +186,13 @@ SCRIPT_DCT = {
     'gaussian16': G16,
     'gaussian09': G09,
     'gaussian03': G03,
+    'psi4': PSI4,
     'qchem5': QCHEM5,
+    'orca4': ORCA4,
     'molpro2021': MOLPRO_2021,
     'molpro2021_mppx': MOLPRO_2021_MPPX,
     'molpro2015': MOLPRO,
     'molpro2015_mppx': MOLPRO_MPPX,
     'molpro2015_mr': MOLPRO_MREF,
     'molpro2015_mr_mppx': MOLPRO_MREF_MPPX,
-    'psi4': PSI4
 }
