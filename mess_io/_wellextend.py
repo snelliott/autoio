@@ -22,7 +22,7 @@ def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
     if lump == True and len(well_enes_dct.keys()) > 1:
         # need to have at least 2 wells for merging
         well_lump_str = well_lumping_scheme(
-            aux_str, lump_pressure, lump_temp)
+            aux_str, out_str, lump_pressure, lump_temp)
         
     # Write a new string containing the parsed information
     well_extend_str = _format_well_extension_inp(
@@ -32,13 +32,21 @@ def well_lumped_input_file(inp_str, out_str, aux_str, log_str,
 
 
 # Build the lumping scheme used for the well extension
-def well_lumping_scheme(mess_aux_str, pressure, temp):
+def well_lumping_scheme(mess_aux_str, out_str, pressure, temp):
     """ Parse lumped wells from aux output; write into string for new input
     """
-    # CURRENTLY NOT WORKING
+    # CURRENTLY NOT WORKING 
+    # ^I, Sarah, didn't write the comment above
+    # but I have implemented a fix so that the the names are correct
+    # was this what the comment above was refering to or is 
+    # it broken in some other way that I haven't found yet?
     well_lump_lst = mess_io.reader.merged_wells(mess_aux_str, pressure, temp)
     if well_lump_lst is not None:
-        well_lump_str = mess_io.writer.well_lump_scheme(well_lump_lst)
+        lbl_dct = mess_io.reader._label.name_label_dct(out_str)
+        well_lump_lst = [
+            tuple(lbl_dct.get(lbl, lbl) for lbl in lump_set) for lump_set in well_lump_lst
+        ]
+        well_lump_str = mess_io.writer.well_lump_scheme(well_lump_lst, separator='&')
     else:
         print(f'No wells are merged at P = {pressure} atm and T = {temp} K')
         well_lump_str = None
