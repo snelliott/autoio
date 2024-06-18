@@ -36,11 +36,11 @@ def _has_opt_nonconvergence_error_message(output_str):
 
 ERROR_READER_DCT = {
     elstruct.par.Error.SCF_NOCONV: _has_scf_nonconvergence_error_message,
-    elstruct.par.Error.MCSCF_NOCONV: False,
-    elstruct.par.Error.CC_NOCONV: False,  # not checked
+    elstruct.par.Error.MCSCF_NOCONV: (lambda _: False),
+    elstruct.par.Error.CC_NOCONV: _has_cc_nonconvergence_error_message,
     elstruct.par.Error.OPT_NOCONV: _has_opt_nonconvergence_error_message,
-    elstruct.par.Error.IRC_NOCONV: False,
-    elstruct.par.Error.LIN_DEP_BASIS: False
+    elstruct.par.Error.IRC_NOCONV: (lambda _: False),
+    elstruct.par.Error.LIN_DEP_BASIS: (lambda _: False),
 }
 
 

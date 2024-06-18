@@ -1,7 +1,7 @@
 """
 Reads the program name and version number from the output file
 """
-
+import pyparsing as pp
 import autoparse.pattern as app
 import autoparse.find as apf
 
@@ -43,11 +43,7 @@ def _check_name_string(output_string):
 def _get_version_string(output_string):
     """ obtains the string containing the version number
     """
+    version = pp.DelimitedList(pp.Word(pp.nums), '.', combine=True)
+    parser = ... + pp.Literal("Program Version") + version("version")
 
-    pattern = ('Program Version ' +
-               app.capturing(app.one_or_more(app.NONNEWLINE)) +
-               app.escape(' - RELEASE -'))
-
-    version_string = apf.first_capture(pattern, output_string)
-
-    return version_string
+    return parser.parseString(output_string).get("version")
