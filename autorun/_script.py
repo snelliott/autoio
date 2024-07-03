@@ -121,7 +121,7 @@ ORCA4 = (
 MOLPRO_2021 = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "/home/ygeorgievski/molpro/molpro_2024.1/bin/molpro "
     "-n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
@@ -129,7 +129,7 @@ MOLPRO_2021 = (
 MOLPRO_2021_MPPX = (
     "#!/usr/bin/env bash\n"
     "ulimit -c 0\n"
-    "/home/ygeorgievski/molpro_2021.2/bin/molpro "
+    "/home/ygeorgievski/molpro/molpro_2024.1/bin/molpro "
     "--mppx -n {} run.inp -o run.out "
     "--nouse-logfile --no-xml-output >> "
     "stdout.log &> stderr.log"
