@@ -187,6 +187,14 @@ class Method():
                     Program.MOLPRO2021: (
                        'mp2-f12', 'ump2-f12',
                        ('R',), ('R',))})
+        MP2_F12_RI = ('mp2-f12-ri',
+                      {Program.ORCA4: (
+                        'mp2-f12-ri', 'mp2-f12-ri',
+                        ('R',), ('U',))})
+        MP2_F12D_RI = ('mp2-f12d-ri',
+                       {Program.ORCA4: (
+                        'mp2-f12d-ri', 'mp2-f12d-ri',
+                        ('R',), ('U',))})
         CCSD_F12 = ('ccsd-f12',
                     {Program.MOLPRO2015: (
                         'ccsd-f12', 'uccsd-f12',
@@ -254,6 +262,19 @@ class Method():
 
     class Dft():
         """ Density functional theory method names """
+        BP86 = ('bp86',
+                 {Program.PSI4: (
+                     'BP86', 'BP86',
+                     ('R',), ('U',)),
+                  Program.GAUSSIAN09: (
+                      'bp86', 'bp86',
+                      ('R',), ('U',)),
+                  Program.GAUSSIAN03: (
+                      'bp86', 'bp86',
+                      ('R',), ('U',)),
+                  Program.GAUSSIAN16: (
+                      'bp86', 'bp86',
+                      ('R',), ('U',))})
         B3LYP = ('b3lyp',
                  {Program.PSI4: (
                      'B3LYP', 'B3LYP',
@@ -622,6 +643,39 @@ class Basis():
                         Program.NWCHEM6: None,
                         Program.ORCA4: None,
                         Program.PSI4: None})
+
+    DEF2SV_P = ('def2-sv(p)', {Program.CFOUR2: None,
+                               Program.GAUSSIAN09: 'def2svpp',
+                               Program.GAUSSIAN03: 'def2svpp',
+                               Program.GAUSSIAN16: 'def2svpp',
+                               Program.MOLPRO2015: None,
+                               Program.MOLPRO2021: None,
+                               Program.MRCC2018: None,
+                               Program.NWCHEM6: None,
+                               Program.ORCA4: None,
+                               Program.PSI4: None})
+
+    DEF2SVP = ('def2-svp', {Program.CFOUR2: None,
+                            Program.GAUSSIAN09: 'def2svp',
+                            Program.GAUSSIAN03: 'def2svp',
+                            Program.GAUSSIAN16: 'def2svp',
+                            Program.MOLPRO2015: None,
+                            Program.MOLPRO2021: None,
+                            Program.MRCC2018: None,
+                            Program.NWCHEM6: None,
+                            Program.ORCA4: None,
+                            Program.PSI4: None})
+
+    DEF2TZVP = ('def2-tzvp', {Program.CFOUR2: None,
+                              Program.GAUSSIAN09: 'def2tsvp',
+                              Program.GAUSSIAN03: 'def2tsvp',
+                              Program.GAUSSIAN16: 'def2tsvp',
+                              Program.MOLPRO2015: None,
+                              Program.MOLPRO2021: None,
+                              Program.MRCC2018: None,
+                              Program.NWCHEM6: None,
+                              Program.ORCA4: None,
+                              Program.PSI4: None})
 
     class Pople:
         """ Pople basis sets """
