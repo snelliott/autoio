@@ -667,9 +667,9 @@ class Basis():
                             Program.PSI4: None})
 
     DEF2TZVP = ('def2-tzvp', {Program.CFOUR2: None,
-                              Program.GAUSSIAN09: 'def2tsvp',
-                              Program.GAUSSIAN03: 'def2tsvp',
-                              Program.GAUSSIAN16: 'def2tsvp',
+                              Program.GAUSSIAN09: 'def2tzvp',
+                              Program.GAUSSIAN03: 'def2tzvp',
+                              Program.GAUSSIAN16: 'def2tzvp',
                               Program.MOLPRO2015: None,
                               Program.MOLPRO2021: None,
                               Program.MRCC2018: None,
