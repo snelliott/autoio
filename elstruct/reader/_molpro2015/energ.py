@@ -156,7 +156,8 @@ def _ccsd_t_f12_energy(output_str):
         output_str,
         app.one_of_these([
             app.escape('!CCSD(T)-F12b total energy') + app.maybe(':'),
-            app.escape('!RHF-UCCSD(T)-F12b energy'),
+            app.escape('!RHF-UCCSD(T)-F12b energy'), #Open shell, Molpro old
+            app.escape('!RHF-UCCSD(T)-F12 energy') + app.maybe(':'), #Molpro 2024
         ]))
     return ene
 
