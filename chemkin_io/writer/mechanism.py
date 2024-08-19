@@ -8,7 +8,7 @@ from chemkin_io.writer import spc
 
 
 def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
-                       rxn_param_dct=None, rxn_cmts_dct=None):
+                       rxn_param_dct=None, rxn_cmts_dct=None, sortrxns=False):
     """ Writes a Chemkin-formatted mechanism and/or thermo file as a string
 
         :param elem_tuple: tuple containing the element names
@@ -23,6 +23,9 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
         :type rxn_cmts_dct: dict {rxn: cmts_dct}
         :return total_str: the raw text for the Chemkin-formatted file
         :rtype: str
+        :param sortrxns: reorder dict keys alphabetically 
+                        (otherwise, order may change every time if other operations have been done before)
+        :type sortrxns: bool
     """
 
     total_str = ''
@@ -36,7 +39,7 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
         thermo_str = thermo_block(spc_nasa7_dct)
         total_str += thermo_str
     if rxn_param_dct:
-        rxn_str = reactions_block(rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct)
+        rxn_str = reactions_block(rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct, sortrxns=sortrxns)
         total_str += rxn_str
 
     return total_str
@@ -89,7 +92,7 @@ def thermo_block(spc_nasa7_dct):
     return thermo_str
 
 
-def reactions_block(rxn_param_dct, rxn_cmts_dct=None):
+def reactions_block(rxn_param_dct, rxn_cmts_dct=None, sortrxns=False):
     """ Writes the reaction block of the mechanism file, with optional comments
 
         :param rxn_param_dct: dct containing the reaction parameters
@@ -113,7 +116,7 @@ def reactions_block(rxn_param_dct, rxn_cmts_dct=None):
     rxn_str = 'REACTIONS     CAL/MOLE     MOLES\n\n'
     rxn_str += block_cmt
     rxn_str += reaction.write_rxn_param_dct(
-        rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct)
+        rxn_param_dct, rxn_cmts_dct=rxn_cmts_dct, sortrxns=sortrxns)
     rxn_str += '\n\nEND\n\n'
 
     return rxn_str

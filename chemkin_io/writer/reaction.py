@@ -9,14 +9,19 @@ INLINE_BUFFER = 2  # buffer between Arr params and inline comment
 INDENT = 2  # indent for things like TROE, PLOG
 
 
-def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None):
+def write_rxn_param_dct(rxn_param_dct, rxn_cmts_dct=None, sortrxns=False):
     """ Write all reactions in a rxn_param_dct to a Chemkin string
 
         :param rxn_param_dct: fitting parameters for all reactions
         :type rxn_param_dct: dict {rxn: params}
         :param rxn_cmts_dct: comments for all reactions
         :type rxn_cmts_dct: dict {rxn: cmts_dct}
+        :param sortrxns: reorder dict keys alphabetically 
+                        (otherwise, order may change every time if other operations have been done before)
+        :type sortrxns: bool
     """
+    if sortrxns:
+        rxn_param_dct = dict(sorted(rxn_param_dct.items()))
 
     rxn_cmts_dct = rxn_cmts_dct or {}  # sets to empty dict if None
 
@@ -45,6 +50,8 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45, rxnkeys = []):
         :type cmt_dct: dict {'header': cmt, 'inline': cmt, 'footer': cmt}
         :param max_len: length of the longest reaction name in the mechanism
         :type max_len: int
+        :param rxnkeys: all keys of the reaction dictionary to be fitted (needed to assing "=" or "=>" sign in header)
+        :type rxnkeys: list(tuple)
         :return ckin_str: Chemkin-formatted string describing the reaction
         :rtype: str
     """
@@ -73,40 +80,40 @@ def single_rxn(rxn, params, cmts_dct=None, max_len=45, rxnkeys = []):
     for form in forms:
         if form == 'arr':
             ckin_str += arr(rxn, params.arr, colliders=params.arr_collid,
-                            max_len=max_len, inline_cmt=inline_cmt)
+                            max_len=max_len, inline_cmt=inline_cmt, rxnkeys=rxnkeys)
         elif form == 'plog':
             ckin_str += plog(rxn, params.plog, max_len=max_len,
-                             inline_cmt=inline_cmt)
+                             inline_cmt=inline_cmt, rxnkeys=rxnkeys)
         elif form == 'cheb':
             ckin_str += cheb(rxn, params.cheb['alpha'],
                              params.cheb['tlim'], params.cheb['plim'],
                              params.cheb['one_atm_arr'], max_len=max_len,
-                             inline_cmt=inline_cmt)
+                             inline_cmt=inline_cmt, rxnkeys=rxnkeys)
         elif form == 'troe':
             ckin_str += troe(rxn, params.troe['highp_arr'],
                              params.troe['lowp_arr'],
                              params.troe['troe_params'],
                              colliders=params.troe['collid'], max_len=max_len,
-                             inline_cmt=inline_cmt)
+                             inline_cmt=inline_cmt, rxnkeys=rxnkeys)
         elif form == 'lind':
             ckin_str += lind(rxn, params.lind['highp_arr'],
                              params.lind['lowp_arr'],
                              colliders=params.lind['collid'], max_len=max_len,
-                             inline_cmt=inline_cmt)
+                             inline_cmt=inline_cmt, rxnkeys=rxnkeys)
         if dups:
             ckin_str += '  DUP\n'
 
     ckin_str += footer_cmt
 
     # Handle any duplicates that may exist (this is not usual)
-    dup_ckin_str = handle_duplicates(rxn, params, dup_counts, max_len)
+    dup_ckin_str = handle_duplicates(rxn, params, dup_counts, max_len, rxnkeys=rxnkeys)
     ckin_str += dup_ckin_str
     ckin_str += '\n'
 
     return ckin_str
 
 
-def handle_duplicates(rxn, params, dup_counts, max_len):
+def handle_duplicates(rxn, params, dup_counts, max_len, rxnkeys=[]):
     """ Writes any unusual duplicate cases. These only occur in strange cases when
         duplicates of a functional form (e.g., two PLOGs) are described for
         the same reaction. These should not really occur, but are nonetheless
@@ -131,7 +138,7 @@ def handle_duplicates(rxn, params, dup_counts, max_len):
         if form == 'plog':
             for dup_idx in range(dup_count):
                 ckin_str += plog(rxn, params.plog_dups[dup_idx],
-                                 max_len=max_len)
+                                 max_len=max_len, rxnkeys=rxnkeys)
                 ckin_str += '  DUP\n'
         elif form == 'cheb':
             for dup_idx in range(dup_count):
@@ -139,7 +146,7 @@ def handle_duplicates(rxn, params, dup_counts, max_len):
                                  params.cheb_dups[dup_idx]['tlim'],
                                  params.cheb_dups[dup_idx]['plim'],
                                  params.cheb_dups[dup_idx]['one_atm_arr'],
-                                 max_len=max_len)
+                                 max_len=max_len, rxnkeys=rxnkeys)
                 ckin_str += '  DUP\n'
         elif form == 'troe':
             for dup_idx in range(dup_count):
@@ -148,7 +155,7 @@ def handle_duplicates(rxn, params, dup_counts, max_len):
                                  params.troe_dups[dup_idx]['lowp_arr'],
                                  params.troe_dups[dup_idx]['troe_params'],
                                  colliders=params.troe_dups[dup_idx]['collid'],
-                                 max_len=max_len)
+                                 max_len=max_len, rxnkeys=rxnkeys)
                 ckin_str += '  DUP\n'
         elif form == 'lind':
             for dup_idx in range(dup_count):
@@ -156,13 +163,13 @@ def handle_duplicates(rxn, params, dup_counts, max_len):
                                  params.lind_dups[dup_idx]['highp_arr'],
                                  params.lind_dups[dup_idx]['lowp_arr'],
                                  colliders=params.lind_dups[dup_idx]['collid'],
-                                 max_len=max_len)
+                                 max_len=max_len, rxnkeys=rxnkeys)
                 ckin_str += '  DUP\n'
 
     return ckin_str
 
 
-def arr(rxn, arr_tuples, colliders=None, max_len=45, inline_cmt=None):
+def arr(rxn, arr_tuples, colliders=None, max_len=45, inline_cmt=None, rxnkeys=[]):
     """ Writes a reaction in the Arrhenius form
 
         :param rxn: tuple describing reactants, products, and third body
@@ -175,7 +182,7 @@ def arr(rxn, arr_tuples, colliders=None, max_len=45, inline_cmt=None):
         :rtype: str
     """
 
-    reaction = util.format_rxn_name(rxn)
+    reaction = util.format_rxn_name(rxn, rxnkeys=rxnkeys)
 
     # Write the Arrhenius parameter string
     arr_str = ''
@@ -194,7 +201,7 @@ def arr(rxn, arr_tuples, colliders=None, max_len=45, inline_cmt=None):
     return arr_str
 
 
-def plog(rxn, plog_dct, max_len=45, inline_cmt=None):
+def plog(rxn, plog_dct, max_len=45, inline_cmt=None, rxnkeys=[]):
     """ Writes a reaction in the PLOG form
 
         :param rxn: tuple describing reactants, products, and third body
@@ -241,7 +248,7 @@ def plog(rxn, plog_dct, max_len=45, inline_cmt=None):
     pressures = sorted(unsorted_pressures)
 
     # Write the header for the reaction
-    reaction = util.format_rxn_name(rxn)
+    reaction = util.format_rxn_name(rxn, rxnkeys=rxnkeys)
     if 1 in pressures:
         header_params = plog_dct[1][0]  # 1 atm fit if available
     else:
@@ -269,7 +276,7 @@ def plog(rxn, plog_dct, max_len=45, inline_cmt=None):
 
 
 def cheb(rxn, alpha, tlim, plim, one_atm_arr=None, max_len=45,
-         inline_cmt=None):
+         inline_cmt=None, rxnkeys=[]):
     """ Writes a reaction in the Chebyshev form
 
         :param rxn: tuple describing reactants, products, and third body
@@ -289,7 +296,7 @@ def cheb(rxn, alpha, tlim, plim, one_atm_arr=None, max_len=45,
     """
 
     # Write reaction header
-    reaction = util.format_rxn_name(rxn)
+    reaction = util.format_rxn_name(rxn, rxnkeys=rxnkeys)
     if one_atm_arr is None:
         one_atm_arr = [[1, 0, 0]]
     cheb_str = _highp_str(reaction, one_atm_arr[0], max_len=max_len,
@@ -313,7 +320,7 @@ def cheb(rxn, alpha, tlim, plim, one_atm_arr=None, max_len=45,
 
 
 def troe(rxn, high_params, low_params, troe_params, colliders=None,
-         max_len=45, inline_cmt=None):
+         max_len=45, inline_cmt=None, rxnkeys=[]):
     """ Writes a reaction in the Troe form
 
         :param rxn: tuple describing reactants, products, and third body
@@ -333,7 +340,7 @@ def troe(rxn, high_params, low_params, troe_params, colliders=None,
         :rtype: str
     """
 
-    reaction = util.format_rxn_name(rxn, pdep=True)  # pdep: add (+M) if absent
+    reaction = util.format_rxn_name(rxn, pdep=True, rxnkeys=rxnkeys)  # pdep: add (+M) if absent
 
     assert len(high_params[0]) == 3, (
         f'{len(high_params)} highP params for {reaction}, should be 3')
@@ -355,7 +362,7 @@ def troe(rxn, high_params, low_params, troe_params, colliders=None,
 
 
 def lind(rxn, high_params, low_params, colliders=None, max_len=45,
-         inline_cmt=None):
+         inline_cmt=None, rxnkeys=[]):
     """ Writes a reaction in the Lindemann form
 
         :param rxn: tuple describing reactants, products, and third body
@@ -372,7 +379,7 @@ def lind(rxn, high_params, low_params, colliders=None, max_len=45,
         :rtype: str
     """
 
-    reaction = util.format_rxn_name(rxn, pdep=True)  # pdep: add (+M) if absent
+    reaction = util.format_rxn_name(rxn, pdep=True, rxnkeys=rxnkeys)  # pdep: add (+M) if absent
     lind_str = _highp_str(reaction, high_params[0], max_len=max_len,
                           inline_cmt=inline_cmt)
     lind_str += _lowp_str(low_params[0], max_len=max_len)
