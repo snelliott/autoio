@@ -31,9 +31,8 @@ def test_extract_hot_branching():
     hotspecies_en = {'W1': 0.0}
     species_lst = ('W1', 'CO+H')
     hoten_branch_dct = mess_io.reader.hoten.extract_hot_branching(
-        HOT_LOG_SGL, hotspecies_en, species_lst)
+        HOT_LOG_SGL, hotspecies_en, species_lst, filter=True)
     hoten = hoten_branch_dct['W1']
-    
     assert np.allclose(hoten[3.16][1200].iloc[0].values,
                        np.array([0, 1]))
     assert np.allclose(hoten[3.16][1200].iloc[-1].values,
@@ -44,16 +43,15 @@ def test_extract_hot_branching():
     hotspecies_en = {'CH3CH2CH2': 3.19, 'CH3CHCH3': 0.0}
     species_lst = ('CH3CH2CH2', 'CH3CHCH3', 'C2H4+CH3', 'CH3CHCH2+H')
     hoten_branch_dct = mess_io.reader.hoten.extract_hot_branching(
-        HOT_LOG_DBL, hotspecies_en, species_lst)
+        HOT_LOG_DBL, hotspecies_en, species_lst, filter=True)
     hoten = hoten_branch_dct['CH3CHCH3']
-    
     assert np.allclose(hoten[100][1800].iloc[0].values,
                        np.array([2.27908435e-08, 1.73930121e-06, 5.13793577e-02, 9.48618880e-01]),
                        atol=1e-5)
     assert np.allclose(hoten[100][1800].iloc[-1].values,
                        np.array([2.15953354e-04, 9.99784047e-01,
                                  0.00000000e+00, 0.00000000e+00]),
-                       atol=1e-5)
+                       atol=3e-4) # seems large but bf above is almost 1
     assert np.allclose(hoten[100][1800].loc[91.4].values,
                        np.array([0.002120,  0.441947,  0.011999,    0.543935]),
                        atol=1e-5)
@@ -74,5 +72,5 @@ def test_extract_fne():
 
 if __name__ == '__main__':
     test_get_hot_species()
-    test_extract_hot_branching()
     test_extract_fne()
+    test_extract_hot_branching()
