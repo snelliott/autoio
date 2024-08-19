@@ -22,10 +22,19 @@ ARR_RXN_PARAM_DCT = {RXN1: ARR_PARAMS}
 DUP_ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000], [1E+15, 0.00, 25000]]}
 DUP_ARR_PARAMS = RxnParams(arr_dct=DUP_ARR_DCT)
 DUP_ARR_RXN_PARAM_DCT = {RXN1: DUP_ARR_PARAMS}
+DUP_ARR_DCT2 = {'arr_tuples': [[1E+15, 0.00, 27000], [1E+15, 0.00, 25000]]}
+DUP_ARR_PARAMS2 = RxnParams(arr_dct=DUP_ARR_DCT2)
+DUP_ARR_RXN_PARAM_DCT2 = {RXN1: DUP_ARR_PARAMS2}
 COLLID = {'N2': 1.4, 'AR': 1.0}
 COLLID_ARR_DCT = {'arr_tuples': [[1E+15, 0.00, 25000]], 'arr_collid': COLLID}
 COLLID_ARR_PARAMS = RxnParams(arr_dct=COLLID_ARR_DCT)
 COLLID_ARR_RXN_PARAM_DCT = {RXN1: COLLID_ARR_PARAMS}
+
+# rxns to test "=>" sign if 1) both fw and bw rxns present, 2) >2 products
+RXNA = (('H', 'O2'), ('OH', 'O'), (None,))
+RXNB = (('OH', 'O'), ('H', 'O2'), (None,))
+RXNC = (('H', 'O2'), ('O', 'O', 'H'), (None,))
+RXN_ALL_DCT = {RXNA: ARR_PARAMS, RXNB: ARR_PARAMS, RXNC: ARR_PARAMS}
 
 # Define stuff for testing PLOG
 PLOG_DCT = {
@@ -90,6 +99,30 @@ DUP_LIND_PARAMS.combine_objects(DUP_LIND_PARAMS)  # combine with itself
 DUP_LIND_RXN_PARAM_DCT = {RXN2: DUP_LIND_PARAMS}
 
 
+def test_orderalphabetically():
+    """ reorder reactions alphabetically when writing
+    """
+    ref_ckin_str = (
+          'REACTIONS     CAL/MOLE     MOLES\n\n'
+          'H + O2 => O + O + H          1.000E+15     0.000    25000\n\n'
+          'H + O2 => OH + O             1.000E+15     0.000    25000\n\n'
+          'OH + O => H + O2             1.000E+15     0.000    25000\n\n\n\n'
+          'END\n\n')
+    ckin_str = writer(RXN_ALL_DCT, sortrxns=True)
+    assert ckin_str == ref_ckin_str
+
+def test_headersymbol():
+    """ Test if => is written correctly
+    """
+    ref_ckin_str = (
+         'REACTIONS     CAL/MOLE     MOLES\n\n'
+         'H + O2 => OH + O             1.000E+15     0.000    25000\n\n'
+         'OH + O => H + O2             1.000E+15     0.000    25000\n\n'
+         'H + O2 => O + O + H          1.000E+15     0.000    25000\n\n\n\n'
+         'END\n\n')
+    ckin_str = writer(RXN_ALL_DCT)
+    assert ckin_str == ref_ckin_str
+
 def test_arr():
     """ Tests the Arrhenius writer
     """
@@ -100,11 +133,18 @@ def test_arr():
         'H + O2 = OH + O          1.000E+15     0.000    25000  ! Comment\n'
         '! Comment\n\n\n\n'
         'END\n\n')
-    ref_ckin_str2 = (
+    ref_ckin_str21 = (
         'REACTIONS     CAL/MOLE     MOLES\n\n'
         '! Block comment\n\n'
         '! Comment\n'
-        'H + O2 = OH + O          1.000E+15     0.000    25000  ! Comment\n'
+        'H + O2 = OH + O          2.000E+15     0.000    25000  ! Comment\n'
+        '! Comment\n\n\n\n'
+        'END\n\n')
+    ref_ckin_str22 = (
+        'REACTIONS     CAL/MOLE     MOLES\n\n'
+        '! Block comment\n\n'
+        '! Comment\n'
+        'H + O2 = OH + O          1.000E+15     0.000    27000  ! Comment\n'
         '  DUP\n'
         'H + O2 = OH + O          1.000E+15     0.000    25000\n'
         '  DUP\n'
@@ -116,11 +156,12 @@ def test_arr():
         '  N2/1.400/   AR/1.000/   \n\n\n\n'  # note three spaces before \n
         'END\n\n')
     ckin_str1 = writer(ARR_RXN_PARAM_DCT, rxn_cmts_dct=RXN_CMTS_DCT1)
-    ckin_str2 = writer(DUP_ARR_RXN_PARAM_DCT, rxn_cmts_dct=RXN_CMTS_DCT1)
+    ckin_str21 = writer(DUP_ARR_RXN_PARAM_DCT, rxn_cmts_dct=RXN_CMTS_DCT1)
+    ckin_str22 = writer(DUP_ARR_RXN_PARAM_DCT2, rxn_cmts_dct=RXN_CMTS_DCT1)
     ckin_str3 = writer(COLLID_ARR_RXN_PARAM_DCT)
-
     assert ckin_str1 == ref_ckin_str1
-    assert ckin_str2 == ref_ckin_str2
+    assert ckin_str21 == ref_ckin_str21
+    assert ckin_str22 == ref_ckin_str22
     assert ckin_str3 == ref_ckin_str3
 
 
@@ -154,7 +195,6 @@ def test_cheb():
         '  CHEB /   8.557E-03   4.345E-03   3.670E-03   1.608E-03 /\n'
         '  CHEB /   8.599E-04  -1.758E-03  -7.502E-04   7.396E-07 /\n\n\n\n'
         'END\n\n')
-
     ckin_str = writer(CHEB_RXN_PARAM_DCT)
     assert ckin_str == ref_ckin_str
 
@@ -282,6 +322,8 @@ def test_dups():
 
 
 if __name__ == '__main__':
+    test_headersymbol()
+    test_orderalphabetically()
     test_arr()
     test_plog()
     test_cheb()

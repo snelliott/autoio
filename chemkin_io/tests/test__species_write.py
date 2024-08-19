@@ -29,8 +29,8 @@ SPC_STR = (
 
 ELEM_STR = (
     'ELEMENTS\n\n'
-    'O\n'
-    'H\n\n'
+    'H\n'
+    'O\n\n'
     'END\n\n\n'
 )
 
