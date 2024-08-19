@@ -177,8 +177,8 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
             bf_hotspecies = pd.DataFrame(
                 0, index=hot_e_lvl, columns=species_lst)
             bf_hotspecies[species_bf_i] = branch_ratio
-            hoten_dct[hotspecies][_press][_temp] = bf_hotspecies
-            
+            hoten_dct[hotspecies].at[_temp, _press] = bf_hotspecies
+
     return hoten_dct
 
 
@@ -280,7 +280,7 @@ def extract_fne(log_str, sp_labels='auto'):
             bf_fne_renorm = bf_fne/np.sum(bf_fne)
 
             # put in dct
-            dct_bf_tp_df[well][_press][_temp] = pd.Series(
+            dct_bf_tp_df[well].at[_temp, _press] = pd.Series(
                 bf_fne_renorm, index=species, dtype=float)
 
     return dct_bf_tp_df
