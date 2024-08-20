@@ -27,9 +27,17 @@ def test_arr():
         'H+O2=OH+O     1.000E+15     0.000    25000\n'
         'DUP\n\n\n'
         'END\n\n')
+    ckin_str3 = (
+        'REACTIONS     CAL/MOLE     MOLES\n\n'
+        'H+O2=OH+O     1.000E+15     0.000    25000\n'
+        'DUP\n'
+        'H+O2=OH+O     1.000E+15     0.000    27000\n'
+        'DUP\n\n\n'
+        'END\n\n')
 
     rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
     rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct3 = parser(ckin_str3, 'cal/mole', 'moles')
 
     for params in rxn_param_dct1.values():  # should only be one rxn
         arr_tuples = params.arr
@@ -43,9 +51,15 @@ def test_arr():
 
     for params in rxn_param_dct2.values():
         arr_tuples = params.arr
-        assert len(arr_tuples) == 2  # should be a duplicate
+        assert len(arr_tuples) == 1  # removes duplicate bc EA is the same
         for arr_tuple in arr_tuples:
-            assert np.allclose(arr_tuple, [1e15, 0, 25000])
+            assert np.allclose(arr_tuple, [2e15, 0, 25000])
+
+    for params in rxn_param_dct3.values():
+        arr_tuples = params.arr
+        assert len(arr_tuples) == 2  # should be dup 
+        assert np.allclose(arr_tuples[0], [1e15, 0, 25000])
+        assert np.allclose(arr_tuples[1], [1e15, 0, 27000])
 
 
 def test_plog():

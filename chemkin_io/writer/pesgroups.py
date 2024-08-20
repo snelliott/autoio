@@ -12,17 +12,17 @@ def write_pes_groups(grp_dct_list, modeltype='rovib_dos', bf_thresh=BF_THRESH):
         :rtype: str
     """
     pg_str = ''
-    
+  
     for grp in grp_dct_list:
         pg_str += 'grp {} \n'.format(grp['grp'])
         pg_str += '\t idxs = {} \n'.format(grp['idxs']).replace("'","")
         pg_str += '\t peds = {} \n'.format(grp['peds'])
         pg_str += '\t hot = {} \n'.format(grp['hot'])
-        model_default = grp['modeltype']
-        if modeltype != 'rovib_dos' and model_default != 'thermal':
-            model = modeltype
+        
+        if 'modeltype' in grp.keys():
+            model = grp['modeltype']
         else:
-            model = model_default
+            model = modeltype
         pg_str += '\t modeltype = {} \n'.format(model).replace("'","")
         pg_str += '\t bf_threshold = {} \n'.format(bf_thresh)
         pg_str += 'end grp \n\n'

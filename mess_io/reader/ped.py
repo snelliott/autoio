@@ -268,7 +268,7 @@ def get_ped(pedoutput_str, energy_dct, sp_labels='auto'):
                 dtype=float).T
             energy = en_prob_all[:][0] + ene0
             probability = en_prob_all[:][column_i]
-            ped_df[pressure][temp] = prob_en_single(probability, energy)
+            ped_df.at[temp,pressure] = prob_en_single(probability, energy)
 
         ped_df_dct[label] = ped_df
 
@@ -318,19 +318,19 @@ def get_ped(pedoutput_str, energy_dct, sp_labels='auto'):
                 label = ((hotwell,), tuple(
                     prods_outinp[prods].split('+')), (None,))
                 try:
-                    ped_df_dct[label][pressure][temp][init_energy]
+                    ped_df_dct[label].at[temp, pressure][init_energy]
                 except TypeError:
-                    ped_df_dct[label][pressure][temp] = pd.Series(dtype=object)
+                    ped_df_dct[label].at[temp, pressure] = pd.Series(dtype=object)
                 except KeyError:
                     pass
                 finally:
                     energy = en_prob_all[:][0] + ene0_all[prods]
                     probability = en_prob_all[:][pi+1]
                     # print(probability)
-                    ped_df_dct[label][pressure][temp][init_energy] = prob_en_single(
+                    ped_df_dct[label].at[temp, pressure][init_energy] = prob_en_single(
                         probability, energy)
                     # print(label, prods , pressure, temp , ped_df_dct[label][pressure][temp][init_energy])
-                    ped_df_dct[label][pressure][temp] = ped_df_dct[label][pressure][temp].dropna(
+                    ped_df_dct[label].at[temp, pressure] = ped_df_dct[label][pressure][temp].dropna(
                     )
 
     # remove "self" reactions, nonsense

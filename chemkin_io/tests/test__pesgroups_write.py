@@ -55,7 +55,7 @@ PES_GROUPS_STR = (
 def test_pesgroups():
     """ Tests pes groups writing
     """
-    out_str = pesgroups.write_pes_groups(PES_GROUPS_DCT_LST)
+    out_str = pesgroups.write_pes_groups(PES_GROUPS_DCT_LST, modeltype='equip_phi')
     assert out_str == PES_GROUPS_STR
 
 

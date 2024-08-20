@@ -77,13 +77,13 @@ def test_pes():
     assert conn_lst2 == ref_conn_lst2
 
 
-# def test_get_species():
-#     """ test mess_io.reader.get_species
-#     """
-#
-#     species_blocks_ped = mess_io.reader.get_species(PED_INP_STR)
-#     assert list(species_blocks_ped.keys()) == ['W0', 'RH', 'NC3H7', 'IC3H7']
-#     assert [len(i) for i in species_blocks_ped.values()] == [1, 2, 2, 2]
+def test_get_species():
+    """ test mess_io.reader.get_species
+    """
+
+    species_blocks_ped = mess_io.reader.get_species(PED_INP_STR)
+    assert list(species_blocks_ped.keys()) == ['W0', 'C3H8+H', 'CH3CH2CH2+H2', 'CH3CHCH3+H2']
+    assert [len(i) for i in species_blocks_ped.values()] == [1, 2, 2, 2]
 
 
 def test_find_barrier():
@@ -115,6 +115,6 @@ def test_find_barrier():
 
 
 if __name__ == '__main__':
-    # test_get_species()
+    test_get_species()
     # test_dct_species_fragments()
     test_find_barrier()

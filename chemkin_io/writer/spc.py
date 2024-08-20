@@ -52,15 +52,15 @@ def write_elements(mech_spc_dct):
     
         # Build a non-unique list of all elements in the set
         all_elems = []
-        for spc, spc_dct in mech_spc_dct.items():
+        for _, spc_dct in mech_spc_dct.items():
             if 'fml' in spc_dct:
                 fml = spc_dct['fml']  # assumes that the fml exists!
             else:
                 fml = formula(spc_dct['inchi'])
             all_elems.extend(list(fml.keys()))
     
-        # Get the unique elements via a set
-        unique_elems = list(set(all_elems))
+        # Get the unique elements via a set; sorted otherwise random order
+        unique_elems = sorted(list(set(all_elems)))
     
         return unique_elems
 

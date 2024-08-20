@@ -13,3 +13,6 @@ def test__read_spc_names():
     """
     spc_tuple = parser(SPC_NAMES_STR)
     assert spc_tuple == SPC_NAMES_TUPLE
+
+if __name__ == '__main__':
+    test__read_spc_names()

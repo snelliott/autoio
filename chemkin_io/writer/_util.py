@@ -60,17 +60,24 @@ def name_column_length(names):
     return names_len
 
 
-def format_rxn_name(rxn, pdep=False, fullset_rxns = []):
+def format_rxn_name(rxn, pdep=False, rxnkeys = []):
     """ Receives a rxn and creates an appropriate string
         to be written in a Chemkin mech. Adds third body if applicable
 
         :param rxn: reaction names and third body
         :type rxn: tuple ((rct1, rct2), (prd1, prd2), (third_bod1,))
-        :param fullset_rxns: full set of reactions
-        :type fullset_rxns: list of rxn names and third body
+        :param rxnkeys: full set of reaction keys
+        :type rxnkeys: list of rxns
         :return rxn_name: formatted reaction name for writing in the mech
         :rtype: str
     """
+    # order names for consistent search 
+    rxnkeys_sorted = []
+    for rxnk in rxnkeys:
+        rxnkeys_sorted.append(
+            tuple([tuple(sorted(rxnk[0])), tuple(sorted(rxnk[1])), rxnk[2]])
+        )
+
     rcts = rxn[0]
     prds = rxn[1]
     thrbdy = rxn[2][0]
@@ -87,15 +94,16 @@ def format_rxn_name(rxn, pdep=False, fullset_rxns = []):
 
     # Add the +M or (+M) text if it is applicable
     if thrbdy is not None:
-        rct_str += f'{thrbdy}'  # buffer space
-        prd_str += f'{thrbdy}'
+        rct_str += f' {thrbdy}'  # buffer space
+        prd_str += f' {thrbdy}'
     elif pdep:  # if no tbody but pdep, add (+M)
-        rct_str += '(+M)'
-        prd_str += '(+M)'
+        rct_str += ' (+M)'
+        prd_str += ' (+M)'
 
     if len(prds) < 3:
         # check if backward reaction is also present
-        if (rxn[1], rxn[0], rxn[2]) in fullset_rxns:
+        rxnk_sorted = tuple([tuple(sorted(rxn[1])), tuple(sorted(rxn[0])), rxn[2]])
+        if rxnk_sorted in rxnkeys_sorted:
             join_sign = ' => '  # if backward reaction found: write as irreversible
         else:
             join_sign = ' = '
