@@ -4,13 +4,48 @@
 import os
 import numpy as np
 import ioformat
-from chemkin_io.parser.reaction import get_rxn_param_dct as parser
-
+from chemkin_io.parser.reaction import get_rxn_param_dct
+from chemkin_io.parser.reaction import get_pes_dct
 
 PATH = os.path.dirname(os.path.realpath(__file__))
 DAT_PATH = os.path.join(PATH, 'data')
 
-
+REACTION_BLOCK_COMMENTS = "\
+C4H7ORvE4fmAB0 = C4H7O4H74fm1                                             1.000E+00     0.000        0  ! pes.subpes.channel  1.1.1\n \
+C4H7ORvE4fmAB0 = C4H7O-kSV4fm                                             1.000E+00     0.000        0  ! pes.subpes.channel  1.1.2\n \
+C4H7ORvE4fmAB0 = C4H6O-RvErx51 + H-TcYTcY                                 1.000E+00     0.000        0  ! pes.subpes.channel  1.1.3\n \
+C4H7ORvE4fmAA0 = C4H7O4H74fm0                                             1.000E+00     0.000        0  ! pes.subpes.channel  1.1.4\n \
+C4H7ORvE4fmAA0 = C4H7O-kSV4fm                                             1.000E+00     0.000        0  ! pes.subpes.channel  1.1.5\n \
+C4H7ORvE4fmAA0 = C4H6O-RvErx50 + H-TcYTcY                                 1.000E+00     0.000        0  ! pes.subpes.channel  1.1.6\n \
+C4H7O4H74fm0 = C3H4OALAD-Wv9FbZ + CH3                                     1.000E+00     0.000        0  ! pes.subpes.channel  1.1.7\n \
+C4H7O4H74fm0 = C2H4OALD-UPQWKw + C2H3ALK-S58hH1                           1.000E+00     0.000        0  ! pes.subpes.channel  1.1.8\n \
+C4H7O-kSV4fm = C2H4OALD-UPQWKw + C2H3ALK-S58hH1                           1.000E+00     0.000        0  ! pes.subpes.channel  1.1.9\n \
+C4H8ORvEsWvAA0 + OH = C4H7ORvE4fmAA0 + H2O                                1.000E+00     0.000        0  ! pes.subpes.channel  2.1.1\n \
+C4H8ORvEsWvAB + OH = C4H7ORvE4fmAB0 + H2O                                 1.000E+00     0.000        0  ! pes.subpes.channel  2.2.2\n \
+C4H8ORvEsWvAA0 + HO2-S580KW = C4H7ORvE4fmAA0 + H2O2-S58pAY                 1.000E+00     0.000        0  ! pes.subpes.channel  3.1.1\n \
+C4H8ORvEsWvAA0 + CH3 = C4H7ORvE4fmAA0 + CH4                                1.000E+00     0.000        0  ! pes.subpes.channel  4.1.1\n \
+C4H8ORvEsWvAA0 + CH3O2RO2-2LTcwB = C4H7ORvE4fmAA0 + CH4O2QOOH-2LTWKw       1.000E+00     0.000        0  ! pes.subpes.channel  5.1.1\n \
+C4H8ORvEsWvAA0 + CH3O-S58cwB = C4H7ORvE4fmAA0 + CH4O-S58WKw                1.000E+00     0.000        0  ! pes.subpes.channel  6.1.1\n \
+C4H8ORvEsWvAA0 + Cl = C4H7ORvE4fmAA0 + HCl                                 1.000E+00     0.000        0  ! pes.subpes.channel  7.1.1\n \
+"
+REACTION_BLOCK_OKCOMM = "\
+C4H7ORvE4fmAB0 = C4H7O4H74fm1                                             1.000E+00     0.000        0  # pes.subpes.channel  1.1.1\n \
+C4H7ORvE4fmAB0 = C4H7O-kSV4fm                                             1.000E+00     0.000        0  # pes.subpes.channel  1.1.2\n \
+C4H7ORvE4fmAB0 = C4H6O-RvErx51 + H-TcYTcY                                 1.000E+00     0.000        0  # pes.subpes.channel  1.1.3\n \
+C4H7ORvE4fmAA0 = C4H7O4H74fm0                                             1.000E+00     0.000        0  # pes.subpes.channel  1.1.4\n \
+C4H7ORvE4fmAA0 = C4H7O-kSV4fm                                             1.000E+00     0.000        0  # pes.subpes.channel  1.1.5\n \
+C4H7ORvE4fmAA0 = C4H6O-RvErx50 + H-TcYTcY                                 1.000E+00     0.000        0  # pes.subpes.channel  1.1.6\n \
+C4H7O4H74fm0 = C3H4OALAD-Wv9FbZ + CH3                                     1.000E+00     0.000        0  # pes.subpes.channel  1.1.7\n \
+C4H7O4H74fm0 = C2H4OALD-UPQWKw + C2H3ALK-S58hH1                           1.000E+00     0.000        0  # pes.subpes.channel  1.1.8\n \
+C4H7O-kSV4fm = C2H4OALD-UPQWKw + C2H3ALK-S58hH1                           1.000E+00     0.000        0  # pes.subpes.channel  1.1.9\n \
+C4H8ORvEsWvAA0 + OH = C4H7ORvE4fmAA0 + H2O                                1.000E+00     0.000        0  # pes.subpes.channel  2.1.1\n \
+C4H8ORvEsWvAB + OH = C4H7ORvE4fmAB0 + H2O                                 1.000E+00     0.000        0  # pes.subpes.channel  2.2.2\n \
+C4H8ORvEsWvAA0 + HO2-S580KW = C4H7ORvE4fmAA0 + H2O2-S58pAY                 1.000E+00     0.000        0  # pes.subpes.channel  3.1.1\n \
+C4H8ORvEsWvAA0 + CH3 = C4H7ORvE4fmAA0 + CH4                                1.000E+00     0.000        0  # pes.subpes.channel  4.1.1\n \
+C4H8ORvEsWvAA0 + CH3O2RO2-2LTcwB = C4H7ORvE4fmAA0 + CH4O2QOOH-2LTWKw       1.000E+00     0.000        0  # pes.subpes.channel  5.1.1\n \
+C4H8ORvEsWvAA0 + CH3O-S58cwB = C4H7ORvE4fmAA0 + CH4O-S58WKw                1.000E+00     0.000        0  # pes.subpes.channel  6.1.1\n \
+C4H8ORvEsWvAA0 + Cl = C4H7ORvE4fmAA0 + HCl                                 1.000E+00     0.000        0  # pes.subpes.channel  7.1.1\n \
+"
 def test_arr():
     """ Tests the Arrhenius reader
     """
@@ -35,9 +70,9 @@ def test_arr():
         'DUP\n\n\n'
         'END\n\n')
 
-    rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
-    rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
-    rxn_param_dct3 = parser(ckin_str3, 'cal/mole', 'moles')
+    rxn_param_dct1 = get_rxn_param_dct(ckin_str1, 'cal/mole', 'moles')
+    rxn_param_dct2 = get_rxn_param_dct(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct3 = get_rxn_param_dct(ckin_str3, 'cal/mole', 'moles')
 
     for params in rxn_param_dct1.values():  # should only be one rxn
         arr_tuples = params.arr
@@ -90,7 +125,7 @@ def test_plog():
         '    PLOG /1.000E+02   1.000E+15     0.000    25000 /\nDUP\n\n\nEND' \
         '\n\n'
 
-    rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
+    rxn_param_dct1 = get_rxn_param_dct(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
         plog_dct = params.plog
         for pressure, arr_tuples in plog_dct.items():
@@ -100,7 +135,7 @@ def test_plog():
                 assert len(arr_tuples) == 2
 
     # Check the duplicate case
-    rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct2 = get_rxn_param_dct(ckin_str2, 'cal/mole', 'moles')
     for params in rxn_param_dct2.values():
         plog_dct = params.plog
         plog_dups = params.plog_dups
@@ -164,7 +199,7 @@ def test_cheb():
         '    CHEB /   8.599E-04  -1.758E-03  -7.502E-04   7.396E-07 /\n'
         'DUP\n\n\nEND\n\n')
 
-    rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
+    rxn_param_dct1 = get_rxn_param_dct(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
         cheb_dct = params.cheb
         tlim = cheb_dct['tlim']
@@ -175,7 +210,7 @@ def test_cheb():
         assert np.shape(alpha) == (6, 4)
 
     # Do the duplicates check
-    rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct2 = get_rxn_param_dct(ckin_str2, 'cal/mole', 'moles')
     for params in rxn_param_dct2.values():
         cheb_dct = params.cheb
         tlim = cheb_dct['tlim']
@@ -212,7 +247,7 @@ def test_troe():
         '     AR/1.400/   N2/1.700/   \n'
         'DUP\n\n\nEND\n\n')
 
-    rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
+    rxn_param_dct1 = get_rxn_param_dct(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
         troe_dct = params.troe
         highp_arr = troe_dct['highp_arr']
@@ -225,7 +260,7 @@ def test_troe():
         assert np.allclose(troe_params, [1.5, 8e3, 1e2, 1e3])
 
     # Do the duplicates check
-    rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct2 = get_rxn_param_dct(ckin_str2, 'cal/mole', 'moles')
     for params in rxn_param_dct2.values():
         troe_dct = params.troe
         highp_arr = troe_dct['highp_arr']
@@ -260,7 +295,7 @@ def test_lind():
         '     AR/1.400/   N2/1.700/   \n'
         'DUP\n\n\nEND\n\n')
 
-    rxn_param_dct1 = parser(ckin_str1, 'cal/mole', 'moles')
+    rxn_param_dct1 = get_rxn_param_dct(ckin_str1, 'cal/mole', 'moles')
     for params in rxn_param_dct1.values():
         lind_dct = params.lind
         highp_arr = lind_dct['highp_arr']
@@ -271,7 +306,7 @@ def test_lind():
             assert np.allclose(arr_tuple, [1e12, 1.5, 50000])
 
     # Do the duplicates check
-    rxn_param_dct2 = parser(ckin_str2, 'cal/mole', 'moles')
+    rxn_param_dct2 = get_rxn_param_dct(ckin_str2, 'cal/mole', 'moles')
     for params in rxn_param_dct2.values():
         lind_dct = params.lind
         highp_arr = lind_dct['highp_arr']
@@ -284,12 +319,46 @@ def test_lind():
 
 
 def test_rxn_names():
-    """ test mechanalyzer.parser.reaction
+    """ test mechanalyzer.parser.reaction.get_rxn_param_dct
+        calls also
+        get_rxn_strs
+        get_rxn_name
+        get_params
+        fix_duplicates
     """
     ckin_str = ioformat.pathtools.read_file(DAT_PATH, 'rxn_block.dat')
-    rxn_param_dct = parser(ckin_str, 'cal/mole', 'moles')
+    rxn_param_dct = get_rxn_param_dct(ckin_str, 'cal/mole', 'moles')
     print(rxn_param_dct)
 
+def test_pes_dct():
+    """ test mechanalyzer.parser.reaction.get_pes_dct with and w/o comments
+        calls also
+        get_rxn_strs
+        get_rxn_name
+        get_pes_info
+    """
+    RESULTS_PES_INFO = {('PES', 0, 0): ((0, (('C4H7ORvE4fmAB0',), ('C4H7O4H74fm1',), (None,))), 
+                                        (1, (('C4H7ORvE4fmAB0',), ('C4H7O-kSV4fm',), (None,))), 
+                                        (2, (('C4H7ORvE4fmAB0',), ('C4H6O-RvErx51', 'H-TcYTcY'), (None,))), 
+                                        (3, (('C4H7ORvE4fmAA0',), ('C4H7O4H74fm0',), (None,))), 
+                                        (4, (('C4H7ORvE4fmAA0',), ('C4H7O-kSV4fm',), (None,))), 
+                                        (5, (('C4H7ORvE4fmAA0',), ('C4H6O-RvErx50', 'H-TcYTcY'), (None,))), 
+                                        (6, (('C4H7O4H74fm0',), ('C3H4OALAD-Wv9FbZ', 'CH3'), (None,))), 
+                                        (7, (('C4H7O4H74fm0',), ('C2H4OALD-UPQWKw', 'C2H3ALK-S58hH1'), (None,))), 
+                                        (8, (('C4H7O-kSV4fm',), ('C2H4OALD-UPQWKw', 'C2H3ALK-S58hH1'), (None,)))), 
+                        ('PES', 1, 0): ((0, (('C4H8ORvEsWvAA0', 'OH'), ('C4H7ORvE4fmAA0', 'H2O'), (None,))),), 
+                        ('PES', 1, 1): ((1, (('C4H8ORvEsWvAB', 'OH'), ('C4H7ORvE4fmAB0', 'H2O'), (None,))),), 
+                        ('PES', 2, 0): ((0, (('C4H8ORvEsWvAA0', 'HO2-S580KW'), ('C4H7ORvE4fmAA0', 'H2O2-S58pAY'), (None,))),), 
+                        ('PES', 3, 0): ((0, (('C4H8ORvEsWvAA0', 'CH3'), ('C4H7ORvE4fmAA0', 'CH4'), (None,))),), 
+                        ('PES', 4, 0): ((0, (('C4H8ORvEsWvAA0', 'CH3O2RO2-2LTcwB'), ('C4H7ORvE4fmAA0', 'CH4O2QOOH-2LTWKw'), (None,))),), 
+                        ('PES', 5, 0): ((0, (('C4H8ORvEsWvAA0', 'CH3O-S58cwB'), ('C4H7ORvE4fmAA0', 'CH4O-S58WKw'), (None,))),), 
+                        ('PES', 6, 0): ((0, (('C4H8ORvEsWvAA0', 'Cl'), ('C4H7ORvE4fmAA0', 'HCl'), (None,))),)}
+
+    pes_info = get_pes_dct(REACTION_BLOCK_COMMENTS)
+    assert pes_info == None
+    pes_info = get_pes_dct(REACTION_BLOCK_OKCOMM)
+    for key, val in pes_info.items():
+        assert val == RESULTS_PES_INFO[key]
 
 if __name__ == '__main__':
     test_arr()
@@ -298,3 +367,4 @@ if __name__ == '__main__':
     test_troe()
     test_lind()
     test_rxn_names()
+    test_pes_dct()
