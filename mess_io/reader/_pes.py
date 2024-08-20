@@ -203,15 +203,10 @@ def get_species(input_string):
         dtype=int)
     init_i = np.where(_init_arr == 1)[0]
     init_i = init_i[init_i > names_i[0]]
-
-    _end_arr = np.array(['End' in line for line in lines], dtype=int)
-    end_i = np.where(_end_arr == 1)[0]+1
-
-    _levels_arr = np.array(
-        ['ElectronicLevels' in line for line in lines], dtype=int)
-    levels_i = np.where(_levels_arr == 1)[0]
-
-    final_i = np.array([end_i[i < end_i][0] for i in levels_i])[:len(init_i)]
+    
+    _barriers = np.array(['Barrier' in line for line in lines], dtype=int)
+    first_barrier = np.where(_barriers == 1)[0]
+    final_i = np.append(init_i[1:], first_barrier) -1 # line before each name
 
     # dictionary labels
     labels = [lines[i].strip().split()[1] for i in names_i]
