@@ -13,7 +13,7 @@ def standard_case(name):
         :type name: str
         :rtype: str
     """
-    return name.lower()
+    return name.lower() if isinstance(name, str) else name
 
 
 class Module():
@@ -100,6 +100,12 @@ class Method():
            Program.PSI4: (
                'hf', 'hf',
                ('R',), ('U', 'R'))})
+
+    class SemiEmpirical():
+        PM3 = ('pm3',
+            {Program.GAUSSIAN16: (
+                'pm3', 'pm3',
+                ('R',), ('U', 'R'))})
 
     class Corr():
         """ Correlated method names """
@@ -352,6 +358,21 @@ class Method():
         names = [row[0] for row in pclass.all_values(cls)]
 
         return name in names
+
+    @classmethod
+    def is_semi_empirical(cls, name):
+        """ Assess if a method is a semi-empirical method.
+
+            :param cls: class object
+            :type cls: obj
+            :param name: name of method
+            :type name: str
+        """
+
+        name = standard_case(name)
+        semi_emp_names = [row[0] for row in pclass.all_values(cls.SemiEmpirical)]
+
+        return name in semi_emp_names
 
     @classmethod
     def is_correlated(cls, name):
@@ -632,6 +653,16 @@ class Basis():
 
         (name, {program: name})
     """
+    NONE = (None, {Program.CFOUR2: None,
+                     Program.GAUSSIAN09: None,
+                     Program.GAUSSIAN03: None,
+                     Program.GAUSSIAN16: None,
+                     Program.MOLPRO2015: None,
+                     Program.MOLPRO2021: None,
+                     Program.MRCC2018: None,
+                     Program.NWCHEM6: None,
+                     Program.ORCA4: None,
+                     Program.PSI4: None})
 
     STO3G = ('sto-3g', {Program.CFOUR2: None,
                         Program.GAUSSIAN09: None,
@@ -960,7 +991,7 @@ class Basis():
             :param name: name of basis set
             :type name: str
         """
-        return name.lower().startswith('basis:')
+        return isinstance(name, str) and name.lower().startswith('basis:')
 
     @classmethod
     def nonstandard_basis_name(cls, name):

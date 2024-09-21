@@ -126,31 +126,6 @@ def geometry_strings(geo, frozen_coordinates, zma_sign='=', offset=False):
     return geo_str, zmat_vval_str, zmat_cval_str
 
 
-def _name_mat(zma, frozen_coordinates, job_key):
-    """ Build the name matrix for a Z-Matrix data structure:
-
-        used for cfour optimizations
-
-        :param zma: cartesian or z-matrix geometry
-        :type zma: tuple
-        :param frozen_coordinates: only with z-matrix geometries; list of
-            coordinate names to freeze
-        :type fozen_coordinates: tuple[str]
-        :param job_key: job contained in the inpit file
-        :type job_key: str
-    """
-    if job_key == 'optimization':
-        name_mat = [
-            [name+'*'
-             if name is not None and name not in frozen_coordinates else name
-             for name in row]
-            for row in automol.zmat.name_matrix(zma)]
-    else:
-        name_mat = automol.zmat.name_matrix(zma)
-
-    return name_mat
-
-
 def build_gen_lines(gen_lines, line1=None, line2=None, line3=None):
     """ Set three lines for writing in various blocks of files.
         Function either grabs lines from the dictionary and if nothing
@@ -300,7 +275,7 @@ def program_method_names(prog, method, basis, mult, orb_restricted):
     elif method == Method.HF[0]:
         if prog in (Program.GAUSSIAN09, Program.GAUSSIAN03,
                     Program.GAUSSIAN16):
-            prog_method = prog_reference
+            prog_method = prog_reference if prog_reference else method
         else:
             prog_method = program_method_name(prog, method, singlet=singlet)
     else:
@@ -331,7 +306,7 @@ def _reference(prog, method, mult, orb_restricted):
         :rtype: str
     """
     # Need a multiref version
-    if Method.is_dft(method):
+    if Method.is_dft(method) or Method.is_semi_empirical(method):
         reference = _dft_reference(prog, orb_restricted)
     elif method == Method.HF[0]:
         reference = _hf_reference(prog, mult, orb_restricted)
