@@ -288,7 +288,7 @@ def test__rxns_labels():
     )
 
     assert ref_rxns1 == mess_io.reader.rates.reactions(
-        KTP_OUT_STR, read_rev=True)
+        KTP_OUT_STR)
 
 
 def test__filter_ktp():
