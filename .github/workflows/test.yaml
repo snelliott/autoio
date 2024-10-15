@@ -27,7 +27,7 @@ jobs:
 
       - name: Pip install
         run: |
-          pixi run pip install git+https://github.com/Auto-Mech/autochem.git
+          pixi run pip install git+https://github.com/Auto-Mech/autochem.git --no-deps
           pixi run pip install -e . --no-deps
 
       # Test
