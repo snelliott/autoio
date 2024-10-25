@@ -55,7 +55,7 @@ def test_species_block():
     """
     species_block_good = mechanism.species_block(SPECIES_BLOCK_GOOD)
     species_block_bad = mechanism.species_block(SPECIES_BLOCK_BAD)
-    assert species_block_good == '\nCH4 H2 O2 N2\n'
+    assert species_block_good == '\nCH4 H2 O2 N2'
     assert species_block_bad is None
 
 
@@ -64,7 +64,7 @@ def test_reaction_block():
     """
     reaction_block_good = mechanism.reaction_block(REACTION_BLOCK_GOOD)
     reaction_block_bad = mechanism.reaction_block(REACTION_BLOCK_BAD)
-    assert reaction_block_good == '\nCH4+H=CH3+H2\n'
+    assert reaction_block_good == '\nCH4+H=CH3+H2'
     assert reaction_block_bad is None
 
 def test_reaction_block_comments():
@@ -90,7 +90,7 @@ def test_element_block():
     """
     element_block_good = mechanism.element_block(ELEMENT_BLOCK_GOOD)
     element_block_bad = mechanism.element_block(ELEMENT_BLOCK_BAD)
-    assert element_block_good == '\nC H O N\n'
+    assert element_block_good == '\nC H O N'
     assert element_block_bad is None
 
 
