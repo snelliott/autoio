@@ -98,7 +98,7 @@ def test_cmts():
 def test_rxn_strs():
     """ Test reaction string dictionary from file
     """       
-    check_one = ['C4H2+C6H5=C10H7                               5.000E+12    0.000     5000.00 \! LPM 01-21-2021 UPDATE C3 ! DUPLICATE CAUSE THERE WERE 2 DIFFERENT RADICALS OF C10H7; HPLIM IS OLD CRECK !lumped C10H8tyl as CRECK  \nPLOG / 0.01\t1.25E+88\t-21.83\t48863/\t!800-1700\nPLOG / 0.1\t1.54E+81\t-19.48\t50784/\t!800-1800\nPLOG / 1\t1.28E+76\t-17.68\t55146/\t!800-2000\nPLOG / 10\t2.22E+58\t-12.44\t49974/\t!800-2500\nPLOG / 100\t1.02E+35\t-5.809\t39347/\t!800-2500\nDUPLICATE', 
+    check_one = ['C4H2+C6H5=C10H7                               5.000E+12    0.000     5000.00 ! LPM 01-21-2021 UPDATE C3 ! DUPLICATE CAUSE THERE WERE 2 DIFFERENT RADICALS OF C10H7; HPLIM IS OLD CRECK !lumped C10H8tyl as CRECK  \nPLOG / 0.01\t1.25E+88\t-21.83\t48863/\t!800-1700\nPLOG / 0.1\t1.54E+81\t-19.48\t50784/\t!800-1800\nPLOG / 1\t1.28E+76\t-17.68\t55146/\t!800-2000\nPLOG / 10\t2.22E+58\t-12.44\t49974/\t!800-2500\nPLOG / 100\t1.02E+35\t-5.809\t39347/\t!800-2500\nDUPLICATE', 
                  'C4H2+C6H5=C10H7                      5.00E+12    0.000     5000.00 !2-naphthyl\nPLOG / 0.01\t1.83E+87\t-21.56\t48728/\nPLOG / 0.1\t4.57E+85\t-20.72\t54421/\nPLOG / 1\t7.82E+72\t-16.75\t53604/\nPLOG / 10\t3.74E+63\t-13.83\t55912/\nPLOG / 100\t2.55E+45\t-8.515\t52892/\nDUPLICATE\n\n!#[REACTIONCLASS][A1-R][ADD_C4.TT-M]\n!#[ENDREACTIONCLASS][A1-R][ADD_C4.TT-M]']
     ckin_str = ioformat.pathtools.read_file(DAT_PATH, 'pah_block.dat')
     rxn_strs_dct = get_rxn_strs_dct(ckin_str)

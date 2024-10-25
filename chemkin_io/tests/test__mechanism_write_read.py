@@ -81,7 +81,7 @@ def test_thermo_block():
     """
     thermo_block_good = mechanism.thermo_block(THERMO_BLOCK_GOOD)
     thermo_block_bad = mechanism.thermo_block(THERMO_BLOCK_BAD)
-    assert thermo_block_good == '\nC7H15OOH-1\n'
+    assert thermo_block_good == '\nC7H15OOH-1'
     assert thermo_block_bad is None
 
 
