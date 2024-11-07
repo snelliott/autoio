@@ -391,7 +391,6 @@ def test__barriers()
 """
 
 test__get_rxn_ktp_dct()
-exit()
 test__ktp_dct()
 test__ke_dct()
 test__tp()
