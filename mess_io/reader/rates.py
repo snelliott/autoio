@@ -49,7 +49,9 @@ def get_rxn_ktp_dct(out_str,
                                    filter_kts=filter_kts, tmin=tmin,
                                    tmax=tmax, pmin=pmin, pmax=pmax,
                                    convert=convert)
-
+        
+    # Reformat the dictionary keys to follow the tuple of tuples format
+    lbl_dct = name_label_dct(out_str)
     # Read the reactions; filter them if requested
     if filter_reaction_types:
         rxn_ktp_dct = filter_rxn_ktp_dct(
@@ -58,7 +60,8 @@ def get_rxn_ktp_dct(out_str,
             filter_self=('self' in filter_reaction_types),
             filter_loss=('loss' in filter_reaction_types),
             filter_capture=('capture' in filter_reaction_types),
-            filter_reverse=('reverse' in filter_reaction_types)
+            filter_reverse=('reverse' in filter_reaction_types),
+            lbl_dct = lbl_dct
         )
 
     # Reformat the dictionary keys to follow the tuple of tuples format
@@ -99,7 +102,7 @@ def ktp_dct(output_str, reactant, product, filter_kts=True, tmin=None,
     out_lines = output_str.splitlines()
     # Initialize dictionary with high-pressure rate constants
     _highp = _highp_kts(out_lines, reactant, product)
-    print('hihp', _highp)
+
     if _highp is not None:
         _ktp_dct = {'high': _highp_kts(out_lines, reactant, product)}
     else:
@@ -709,7 +712,8 @@ def filter_rxn_ktp_dct(rxn_ktp_dct,
                        filter_self=True,
                        filter_loss=True,
                        filter_capture=True,
-                       filter_reverse=True):
+                       filter_reverse=True,
+                       lbl_dct = None):
     """ Filter the reactions from a ktp dictionary
     """
 
@@ -726,9 +730,13 @@ def filter_rxn_ktp_dct(rxn_ktp_dct,
         #     any('F' in rgt for rgt in rct+prd)  or
         #     any('FW' in rgt for rgt in rct+prd)
         # ):
-        if any('Fake' in rgt for rgt in rct+prd):
-            if filter_fake:
+        if filter_fake:
+            if any('Fake' in rgt for rgt in rct+prd):
                 continue
+            elif lbl_dct:
+                if any('Fake' in lbl_dct[rgt] for rgt in rct+prd):
+                    continue
+        
         if rct == prd:
             if filter_self:
                 continue

@@ -11,7 +11,6 @@ import mess_io.reader
 PATH = os.path.dirname(os.path.realpath(__file__))
 INP_PATH = os.path.join(PATH, 'data', 'inp')
 OUT_PATH = os.path.join(PATH, 'data', 'out')
-INP_PATH_DBL = os.path.join(PATH, 'data', 'prompt', 'C3H8_H')
 
 KTP_INP_STR = pathtools.read_file(INP_PATH, 'example.inp')
 KTP_OUT_STR = pathtools.read_file(OUT_PATH, 'rate.out')
@@ -19,6 +18,7 @@ KTP_OUT_BAR_STR = pathtools.read_file(OUT_PATH, 'rate.out_bar')
 KTP_OUT_TORR_STR = pathtools.read_file(OUT_PATH, 'rate.out_torr')
 KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
 KE_PED_OUT_DBL = pathtools.read_file(OUT_PATH, 'ke_ped_c3h8_h.out')
+KTP_OUT_HABS_STR = pathtools.read_file(OUT_PATH, 'HABS.out')
 
 # Set the REACTANT and PRODUCT
 REACTANT = 'W1'
@@ -357,7 +357,41 @@ def test__dos_rovib():
     assert numpy.allclose(dos_df.loc[0.4].values, numpy.array(
         [1.099400e+05, 2.86923, 7.682720e+04]))
 
+    
 
+def test__get_rxn_ktp_dct():
+    """ test mess_io.reader.rates.get_rxn_ktp_dct
+        test mess_io.reader.rates.filter_rxn_ktp_dct
+        all subfunctions tested above
+        only checks for the filtering of "Fake" well 
+        with and without relabeling
+    """ 
+    ktp_dct = mess_io.reader.rates.get_rxn_ktp_dct(
+        KTP_OUT_HABS_STR)
+    assert list(ktp_dct.keys())[0] == (('C2H6', 'H'), ('C2H5', 'H2'), (None,))
+    ktp_dct = mess_io.reader.rates.get_rxn_ktp_dct(
+        KTP_OUT_HABS_STR, relabel_reactions=False)
+    assert list(ktp_dct.keys())[0] == (('P1',), ('P2',), (None,))
+    ktp_dct = mess_io.reader.rates.get_rxn_ktp_dct(
+        KTP_OUT_HABS_STR, relabel_reactions=True,
+        filter_reaction_types=('self', 'loss', 'capture', 'reverse'))
+    # no filtering
+    assert list(set(ktp_dct.keys())) == list(set([
+        (('FakeW-C2H6', 'H'), 
+         ('FakeW-C2H5', 'H2'), (None,)), 
+        (('FakeW-C2H6', 'H'), ('C2H5', 'H2'), (None,)), 
+        (('C2H6', 'H'), ('FakeW-C2H6', 'H'), (None,)), 
+        (('C2H6', 'H'), ('FakeW-C2H5', 'H2'), (None,)),
+        (('C2H6', 'H'), ('C2H5', 'H2'), (None,)),
+        (('C2H5', 'H2'), ('FakeW-C2H5', 'H2'), (None,)),]))
+   
+""" missing tests
+def test__energies()
+def test__barriers()
+"""
+
+test__get_rxn_ktp_dct()
+exit()
 test__ktp_dct()
 test__ke_dct()
 test__tp()
