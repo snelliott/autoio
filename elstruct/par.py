@@ -105,6 +105,9 @@ class Method():
         PM3 = ('pm3',
             {Program.GAUSSIAN16: (
                 'pm3', 'pm3',
+                ('R',), ('U', 'R')),
+            Program.GAUSSIAN09: (
+                'pm3', 'pm3',
                 ('R',), ('U', 'R'))})
 
     class Corr():

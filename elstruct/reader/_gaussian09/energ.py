@@ -106,6 +106,8 @@ for METHOD in METHODS:
             ENERGY_READER_DCT[(METHOD, frozenset({}))] = _dft_energy
         else:
             ENERGY_READER_DCT[(METHOD, frozenset({}))] = _doub_hyb_dft_energy
+    elif Method.is_semi_empirical(METHOD):
+        ENERGY_READER_DCT[(METHOD, frozenset({}))] = _dft_energy
 
 # Check if we have added any unsupported methods to the energy reader
 READ_METHODS = set(method[0] for method in ENERGY_READER_DCT)
