@@ -16,7 +16,8 @@ PED_INP_DBL = pathtools.read_file(IPATH, 'me_ktp_ped_c3h8_h.inp')
 PED_OUT_DBL = pathtools.read_file(OPATH, 'thf_pyro_ped_c3h8_h.out')
 PED_INP_HOT = pathtools.read_file(IPATH, 'me_ktp_pedhot_c6h7.inp')
 PED_OUT_HOT = pathtools.read_file(OPATH, 'ped_c6h7.out')
-
+PED_INP_SGL_NEW = pathtools.read_file(IPATH, 'dmm_habs_ped.inp')
+PED_OUT_SGL_NEW = pathtools.read_file(OPATH, 'dmm_habs_ped.out')
 
 def test_ped_names():
     """ test mess_io.reader.ped.ped_names
@@ -75,6 +76,12 @@ def test_ped_get_ped():
                  ][1][500].index[1], 6.735142,
         atol=1e-3, rtol=1e-3)
 
+    # PES3 NEWFORMAT mess 2024, skip Fake wells
+    energy_dct4 = {'FakeW-OH+DMM': -3.0, 'FakeW-H2O+DMM-R1': -23.39,
+                   'OH+DMM': 0.0, 'H2O+DMM-R1': -20.39,}
+    ped_dct4 = mess_io.reader.ped.get_ped(PED_OUT_SGL_NEW, energy_dct4)
+    assert np.isclose(ped_dct4[(('OH', 'DMM'), ('H2O', 'DMM-R1'), (None,))
+                               ][1][1000].iloc[50], 2.2e-6, atol=1e-7)
 
 if __name__ == '__main__':
     test_ped_names()

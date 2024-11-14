@@ -41,7 +41,7 @@ def get_hot_species(input_str):
 
 
 def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
-                          sp_labels='auto', filter=False):
+                          sp_labels='auto', filter_out01=False):
     """ Extract hot branching fractions for a single species
         :param hot_log_str: string of mess log file
         :type hot_log_str: str
@@ -118,7 +118,6 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
         for hotspecies in hotspecies_lst:
             hot_e_lvl, branch_ratio = [], []
             ref_en = hotspecies_en[hotspecies]
-
             if sp_labels == 'inp':
                 hotspecies_messout = inv_lbl_dct[hotspecies]
                 species_bf_i = [lbl_dct[sp_i] for sp_i in species_bf_i_messout]
@@ -126,9 +125,14 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
                 hotspecies_messout = hotspecies
                 species_bf_i = species_bf_i_messout
             else:
-                print('*Error: sp_labels must be "inp" (as in mess input) \
+                raise ValueError('*Error: sp_labels must be "inp" (as in mess input) \
                     or "out" (as in mess output)')
-                sys.exit()
+
+            species_bf_i_nofake = [sp_i for sp_i in species_bf_i if 'FakeW' not in sp_i]
+            species_bf_i_fake_dct = {}
+            for sp_i in species_bf_i:
+                if sp_i not in species_bf_i_nofake:
+                    species_bf_i_fake_dct[sp_i] = sp_i.split('FakeW-')[1]
 
             sp_i = apf.where_is(hotspecies_messout, species_bf_i_messout)
 
@@ -147,7 +151,7 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
 
                         # check that value of reactant branching is between 0 and 1
                         # if any bf > 1: skip the line
-                        if filter:
+                        if filter_out01:
                             if sp_i.size > 0:
                                 if branch_ratio_arr[sp_i] > 1:
                                     branch_ratio_arr = np.ones(branch_ratio_arr.shape)*1e-19
@@ -177,8 +181,14 @@ def extract_hot_branching(hot_log_str, hotspecies_en, species_lst,
             bf_hotspecies = pd.DataFrame(
                 0, index=hot_e_lvl, columns=species_lst)
             bf_hotspecies[species_bf_i] = branch_ratio
-            hoten_dct[hotspecies].at[_temp, _press] = bf_hotspecies
 
+            for fakesp, realsp in species_bf_i_fake_dct.items():
+                # sum fake species with respective wells
+                bf_hotspecies[realsp] = bf_hotspecies[realsp] + bf_hotspecies[fakesp]
+                bf_hotspecies = bf_hotspecies.drop(columns=[fakesp])
+
+            hoten_dct[hotspecies].at[_temp, _press] = bf_hotspecies
+ 
     return hoten_dct
 
 
@@ -272,8 +282,9 @@ def extract_fne(log_str, sp_labels='auto'):
 
             # remove negative values and renormalize
             if any(bf_fne < 0):
-                print('Warning: found negative fne BFs at {:1.0f} K and {:1.1e} atm'
-                      .format(_temp, _press))
+                # print removed, too verbose
+                # print('Warning: found negative fne BFs at {:1.0f} K and {:1.1e} atm'
+                #       .format(_temp, _press))
                 # bf_fne = abs(bf_fne * np.array(bf_fne > 0, dtype=int))
                 bf_fne = abs(bf_fne)
                 
