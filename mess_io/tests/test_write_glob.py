@@ -116,7 +116,7 @@ def test__global_rates_input():
         ped_spc_lst=('RH_R1', 'RH_R2'))
     glob7_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
-        hot_enes_dct={'W1': (10.0, 20.0, 30.0), 'W2': (40.0, 50.0, 60.0)})
+        hot_enes_dct={'W1': (10.0, 1.0, 30.0), 'W2': (40.0, 1.0, 60.0)})
     glob8_str = mess_io.writer.global_rates_input_v1(
         TEMPS, PRESSURES,
         micro_out_params=(0.0, 140.0, 0.1))
@@ -211,6 +211,6 @@ def test__pf_output():
 if __name__ == '__main__':
     test__full_str()
     test__global_pf_input()
-    #test__global_rates_input()
+    test__global_rates_input()
     test__messhr_inp_str()
     test__pf_output()
