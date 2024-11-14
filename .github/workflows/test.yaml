@@ -33,6 +33,7 @@ jobs:
       # Test
       - name: Test
         run: |
+          pixi run pytest -v mess_io 
           pixi run pytest -v autoparse
           pixi run pytest -v autoread
           pixi run pytest -v autowrite
@@ -45,6 +46,5 @@ jobs:
           # # broken:
           # pixi run pytest -v pac99_io   # ! fix
           # pixi run pytest -v varecof_io # ! fix
-          # pixi run pytest -v mess_io    # ! FIX !
           # pixi run pytest -v autorun    # ! fix
           # pixi run pytest -v elstruct   # ! fix

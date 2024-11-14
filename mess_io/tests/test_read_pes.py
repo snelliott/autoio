@@ -123,17 +123,17 @@ def test_find_barrier():
     assert barrier_label3 == 'B1'
 
 
-# def test_dct_species_fragments():
-#     """ test mess_io.reader.dct_species_fragments
-#     """
-#
-#     species_blocks_ped = mess_io.reader.get_species(PED_INP_STR)
-#     dct_sp_fr = mess_io.reader.dct_species_fragments(species_blocks_ped)
-#     assert dct_sp_fr == {'W0': ('W0',), 'RH': ('C3H8', 'H',), 'NC3H7': (
-#         'CH3CH2CH2', 'H2'), 'IC3H7': ('CH3CHCH3', 'H2')}
+def test_dct_species_fragments():
+     """ test mess_io.reader.dct_species_fragments
+     """
+
+     species_blocks_ped = mess_io.reader.get_species(PED_INP_STR)
+     dct_sp_fr = mess_io.reader.dct_species_fragments(species_blocks_ped)
+     assert dct_sp_fr == {'W0': ('W0',), 'C3H8+H': ('C3H8', 'H'), 'CH3CH2CH2+H2': (
+         'CH3CH2CH2', 'H2'), 'CH3CHCH3+H2': ('CH3CHCH3', 'H2')}
 
 
 if __name__ == '__main__':
     test_get_species()
-    # test_dct_species_fragments()
+    test_dct_species_fragments()
     test_find_barrier()

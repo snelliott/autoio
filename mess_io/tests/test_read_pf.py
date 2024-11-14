@@ -177,3 +177,7 @@ def test__thermo():
     for temp in sorted(list(s_dct.keys())):
         assert numpy.allclose(s_dct[temp], ref_s_dct[temp])
         assert numpy.allclose(cp_dct[temp], ref_cp_dct[temp])
+
+if __name__ == '__main__':
+    test__partition_function()
+    test__thermo()

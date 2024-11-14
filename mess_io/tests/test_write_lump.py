@@ -29,3 +29,6 @@ def test__():
 
     assert lump1_str == ref_lump1_str.rstrip()
     assert lump2_str == ref_lump2_str.rstrip()
+
+if __name__ == '__main__':
+    test__()

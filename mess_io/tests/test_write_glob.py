@@ -207,3 +207,10 @@ def test__pf_output():
 
     assert pf1_str == pathtools.read_file(OUT_PATH, 'pf.dat2')
     assert pf2_str == pathtools.read_file(OUT_PATH, 'pf.dat3')
+
+if __name__ == '__main__':
+    test__full_str()
+    test__global_pf_input()
+    #test__global_rates_input()
+    test__messhr_inp_str()
+    test__pf_output()

@@ -107,3 +107,8 @@ def test__dat():
 
     assert mc_dat1_str == pathtools.read_file(INP_PATH, 'mc_dat1.inp')
     assert mc_dat2_str == pathtools.read_file(INP_PATH, 'mc_dat2.inp')
+
+if __name__ == '__main__':
+    test__dat()
+    test__flux_mode()
+    test__dat()

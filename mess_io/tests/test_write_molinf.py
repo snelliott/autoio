@@ -335,3 +335,13 @@ def test__tunnel_read_writer():
         INP_PATH, 'tunnel_read1.inp')
     assert tunnel_read2_str == pathtools.read_file(
         INP_PATH, 'tunnel_read2.inp')
+
+if __name__ == '__main__':
+    test__core_multirotor_writer()
+    test__core_phasespace_writer()
+    test__core_rigidrotor_writer()
+    test__core_rotd_writer()
+    test__rotor_hindered_writer()
+    test__tunnel_eckart_writer()
+    test__tunnel_read_writer()
+    test__umbrella_writer()

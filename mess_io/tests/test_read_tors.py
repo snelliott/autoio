@@ -40,5 +40,8 @@ def test__zpves():
                  0.0005719403690265805)
 
     zpves = mess_io.reader.tors.zero_point_vibrational_energies(OUT_STR)
-
     assert numpy.allclose(zpves, ref_zpves)
+
+if __name__ == '__main__':
+    test__freqs()
+    test__zpves()
