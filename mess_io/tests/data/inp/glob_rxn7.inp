@@ -17,8 +17,8 @@ WellExtension                          0.0010
 ReductionMethod                        diagonalization
 !
 HotEnergies[kcal/mol]                  2
-W1   10.0 20.0 30.0
-W2   40.0 50.0 60.0
+W1    10.0:1.0:30.0
+W2    40.0:1.0:60.0
 !
 AtomDistanceMin[angstrom]              0.68793
 !

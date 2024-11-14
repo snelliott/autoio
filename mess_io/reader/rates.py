@@ -65,8 +65,8 @@ def get_rxn_ktp_dct(out_str,
         )
 
     # Reformat the dictionary keys to follow the tuple of tuples format
+    # NB needs to be written after filtering
     if relabel_reactions:
-        lbl_dct = name_label_dct(out_str)
         if lbl_dct is not None:
             rxn_ktp_dct = relabel(rxn_ktp_dct, lbl_dct)
         else:
@@ -337,13 +337,12 @@ def dos_rovib(ke_ped_out, sp_labels='auto'):
             try:
                 _labels.append(sp_tosplit.split('+')[int(frag_n)])
             except IndexError:
-                print('*Error: bimol species should be named as P1+P2 \
-                    with P1, P2 being the fragment names')
-                sys.exit()
+                raise IndexError('*Error: bimol species should be named as P1+P2 \
+                    with P1, P2 being the fragment names, but they read like {}'.format(sp_tosplit))
+
     else:
-        print('*Error: sp_labels must be "inp" (as in mess input) \
+        raise ValueError('*Error: sp_labels must be "inp" (as in mess input) \
             or "out" (as in mess output)')
-        sys.exit()
 
     dos_rovib_df = pd.DataFrame(dos_all, index=energy, columns=_labels)
     # drop potentially duplicate columns WARNING CHECK THE EFFECT OF THIS
@@ -716,10 +715,14 @@ def filter_rxn_ktp_dct(rxn_ktp_dct,
                        lbl_dct = None):
     """ Filter the reactions from a ktp dictionary
     """
-
+    if lbl_dct:
+        # invert dictionary for later use
+        inv_lbl_dct = {val: key for key, val in lbl_dct.items()}
+        
     filt_rxn_ktp_dct = {}
+    fake_rxn_ktp_dct = {}
     for rxn, ktp_dct in rxn_ktp_dct.items():
-        rct, prd, tbody = rxn
+        rct, prd, _ = rxn
         if prd == ('Loss',):
             if filter_loss:
                 continue
@@ -730,27 +733,133 @@ def filter_rxn_ktp_dct(rxn_ktp_dct,
         #     any('F' in rgt for rgt in rct+prd)  or
         #     any('FW' in rgt for rgt in rct+prd)
         # ):
-        if filter_fake:
-            if any('Fake' in rgt for rgt in rct+prd):
-                continue
-            elif lbl_dct:
-                if any('Fake' in lbl_dct[rgt] for rgt in rct+prd):
-                    continue
-        
-        if rct == prd:
-            if filter_self:
-                continue
+            
+        if rct == prd and filter_self:
+            continue
         if filter_reverse:
             is_desired = is_desired_direction(rxn, rxn_ktp_dct)
             if not is_desired:
                 continue
+        
+        if filter_fake:
+            if any('Fake' in rgt for rgt in rct+prd):
+                # add to fake dct only if in prd
+                if any('Fake' in rgt for rgt in prd):
+                    fake_rxn_ktp_dct[rxn] = ktp_dct  # add to fake dct
+                continue
+            elif lbl_dct:
+                if any('Fake' in lbl_dct[rgt] for rgt in rct+prd):
+                    if any('Fake' in lbl_dct[rgt] for rgt in prd):
+                        fake_rxn_ktp_dct[rxn] = ktp_dct  # add to fake dct
+                    continue
         # If continues not hit, reaction good to be added to new dct
         filt_rxn_ktp_dct[rxn] = ktp_dct
 
+    if filter_fake:
+        # sum dcts of FakeW and corresponding products
+        for rxn, ktp_dct in fake_rxn_ktp_dct.items():
+            # rewrite rxn name
+            rct, prd, tbdy = rxn
+            rxn2 = []
+            for sp in rxn[:-1]:
+                sp = sp[0]
+                if lbl_dct:
+                    if 'FakeW-' in lbl_dct[sp]:
+                        sp = inv_lbl_dct[lbl_dct[sp].split('FakeW-')[1]]
+                    elif 'FW-' in sp:
+                        sp = inv_lbl_dct[lbl_dct[sp].split('FW-')[1]]
+                else:
+                    if 'FakeW-' in sp:
+                        sp = sp.split('FakeW-')[1]
+                    elif 'FW-' in sp:
+                        sp = sp.split('FW-')[1]
+                rxn2.append((sp,))
+                
+            rxn2 = tuple(rxn2 + [tbdy])
+                
+            if rxn2 in filt_rxn_ktp_dct.keys():
+                # sum only if rxn already in dct, otherwise it's a filtered rxn
+                # keep only 'high' pressure limit of the "actual" reaction
+                if 'high' in ktp_dct.keys():
+                    del ktp_dct['high']
+                if 'high' in filt_rxn_ktp_dct[rxn2].keys():
+                    hpl = filt_rxn_ktp_dct[rxn2]['high']
+                    del filt_rxn_ktp_dct[rxn2]['high']
+                else:
+                    hpl = None
+                filt_rxn_ktp_dct[rxn2] = add_ktp_dcts(
+                    filt_rxn_ktp_dct[rxn2], ktp_dct)
+                if hpl:
+                    filt_rxn_ktp_dct[rxn2]['high'] = hpl
+                
     return filt_rxn_ktp_dct
 
 
 # Helper functions
+def add_ktp_dcts(ktp_dct1, ktp_dct2):
+    """ Add the rates in two ktp_dcts
+        IMPORTED FROM MECHANALYZER CALCULATOR TO SUM TWO KTP_DCTS 
+        ADDED TO SUM THE FAKEW DICTIONARIES TO THE CORRESPONDING PRODUCTS
+    """
+
+    # If either starting dct is empty, simply copy the other
+    if not ktp_dct1:
+        added_dct = copy.deepcopy(ktp_dct2)
+    elif not ktp_dct2:
+        added_dct = copy.deepcopy(ktp_dct1)
+    # Otherwise, add the dcts
+    else:
+        added_dct = {}
+
+        # Determine pressures common to both dcts and only in p1/p2
+        pr1 = set(ktp_dct1.keys())
+        pr2 = set(ktp_dct2.keys())
+
+        pr_common = sorted(list(pr1 & pr2))
+        pr1_only = sorted(list(pr1 - pr2))
+        pr2_only = sorted(list(pr2 - pr1))
+
+        # Loop over common pressures and add the rate constants togther
+        for pressure in pr_common:
+            temps1, kts1 = ktp_dct1[pressure]
+            temps2, kts2 = ktp_dct2[pressure]
+
+            # Check if two arrays are the same
+            if numpy.array_equal(temps1, temps2):
+                added_kts = kts1 + kts2
+                added_dct[pressure] = (temps1, added_kts)  # store added values
+            else:
+                added_temps = sorted(
+                    list(set(temps1.tolist() + temps2.tolist())))
+                added_kts = []
+                for temp in added_temps:
+                    if temp in temps1:
+                        _kt1_idx = next(i for i, t in enumerate(temps1)
+                                        if numpy.isclose(temp, t))
+                        _kt1 = kts1[_kt1_idx]
+                    else:
+                        _kt1 = 0
+                    if temp in temps2:
+                        _kt2_idx = next(i for i, t in enumerate(temps2)
+                                        if numpy.isclose(temp, t))
+                        _kt2 = kts2[_kt2_idx]
+                    else:
+                        _kt2 = 0
+                    added_kts.append(_kt1+_kt2)
+                added_dct[pressure] = (numpy.array(added_temps),
+                                       numpy.array(added_kts))
+
+        # Add rate constants for pressures only in ktp_dct1
+        for pressure in pr1_only:
+            added_dct[pressure] = ktp_dct1[pressure]
+
+        # Add rate constants for pressures only in ktp_dct2
+        for pressure in pr2_only:
+            added_dct[pressure] = ktp_dct2[pressure]
+
+    return added_dct
+
+
 def _reaction_header(reactant, product):
     return reactant + '->' + product
 
@@ -799,7 +908,7 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
     # Determine the molecularity of the reaction
     unimol_unimol = False
     bimol_bimol = False
-    unimol_bimol = False
+    # unimol_bimol = False
     if 'W' in rct[0] and 'W' in prd[0]:  # unimol to unimol
         unimol_unimol = True
     if 'P' in rct[0] and 'P' in prd[0]:  # bimol to bimol

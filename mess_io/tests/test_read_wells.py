@@ -49,3 +49,7 @@ def test__energies():
     assert numpy.isclose(
         mess_io.reader.well_thermal_energy(LOG_STR, 'W3', TEMP3),
         0.11904202744591934)
+
+if __name__ == '__main__':
+    test__energies()
+    test__merge()

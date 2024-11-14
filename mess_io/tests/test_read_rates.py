@@ -20,6 +20,8 @@ KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
 KE_PED_OUT_DBL = pathtools.read_file(OUT_PATH, 'ke_ped_c3h8_h.out')
 KTP_OUT_HABS_STR = pathtools.read_file(OUT_PATH, 'HABS.out')
 
+KE_OUT_SGL_NEW = pathtools.read_file(OUT_PATH, 'dmm_habs_ke.out')
+KTP_OUT_STR_WFAKE = pathtools.read_file(OUT_PATH, 'dmm_wext.out')
 # Set the REACTANT and PRODUCT
 REACTANT = 'W1'
 PRODUCT = 'P1'
@@ -130,8 +132,8 @@ def test__ktp_dct():
         KTP_OUT_STR, REACTANT, PRODUCT)
     assert set(ktp_dct.keys()) == set(ref_ktp_dct.keys())
     for pressure, tk_arr in ktp_dct.items():
-        print('tk array at p', pressure)
-        print(tk_arr)
+        # print('tk array at p', pressure)
+        # print(tk_arr)
         assert numpy.allclose(tk_arr, ref_ktp_dct[pressure])
 
     # Read files that have units that are in bar, torr instead of atm
@@ -351,11 +353,17 @@ def test__filter_ktp():
 def test__dos_rovib():
     """ test mess_io.reader.rates.dos_rovib
     """
+    # older formatting
     dos_df = mess_io.reader.rates.dos_rovib(KE_PED_OUT_DBL)
     # check dos info
     assert list(dos_df.columns) == ['CH3CH2CH2', 'H2', 'CH3CHCH3']
     assert numpy.allclose(dos_df.loc[0.4].values, numpy.array(
         [1.099400e+05, 2.86923, 7.682720e+04]))
+    # new formatting
+    dos_df = mess_io.reader.rates.dos_rovib(KE_OUT_SGL_NEW)
+    assert list(dos_df.columns) == ['H2O', 'DMM-R1']
+    assert numpy.allclose(dos_df.iloc[150].values, numpy.array(
+        [1.58209e+03, 1.79510e+13]))
 
     
 
@@ -384,16 +392,53 @@ def test__get_rxn_ktp_dct():
         (('C2H6', 'H'), ('FakeW-C2H5', 'H2'), (None,)),
         (('C2H6', 'H'), ('C2H5', 'H2'), (None,)),
         (('C2H5', 'H2'), ('FakeW-C2H5', 'H2'), (None,)),]))
-   
+    
+    # test dictionary values to check that fake prods were summed
+    ktp_dct_nosum = mess_io.reader.rates.get_rxn_ktp_dct(
+        KTP_OUT_STR_WFAKE, filter_reaction_types=('self', 'loss', 'capture', 'reverse'))
+    ktp_dct_sum = mess_io.reader.rates.get_rxn_ktp_dct(
+        KTP_OUT_STR_WFAKE)
+    
+    fake_for_sums = {(('DMM-R2',), ('CH3', 'CH3OCHO'), (None,)): (('DMM-R2',), ('FakeW-CH3', 'CH3OCHO'), (None,)),
+     (('DMM-R1',), ('CH3', 'CH3OCHO'), (None,)): (('DMM-R1',), ('FakeW-CH3', 'CH3OCHO'), (None,)),
+     (('DMM-R1',), ('CH2O', 'CH3OCH2'), (None,)): (('DMM-R1',), ('FakeW-CH2O', 'CH3OCH2'), (None,))}
+    
+    for rxn, fakerxn in fake_for_sums.items():
+        if not ktp_dct_nosum[rxn]:
+            # ref empty, only fakeW is formed
+            for p, kt in ktp_dct_sum[rxn].items():
+                t, k = kt
+                for i, ti in enumerate(t):
+                    assert numpy.isclose(ti, ktp_dct_nosum[fakerxn][p][0][i])
+                    assert numpy.isclose(k[i], ktp_dct_nosum[fakerxn][p][1][i])
+        else:
+            # check sum. in the case tested, 
+            # there are no overlaps but alternating pressures
+            for p, kt in ktp_dct_sum[rxn].items():
+                if p not in ktp_dct_nosum[rxn]:
+                    ktp_dct_nosum_tocheck = ktp_dct_nosum[fakerxn]
+                elif p not in ktp_dct_nosum[fakerxn]:
+                    ktp_dct_nosum_tocheck = ktp_dct_nosum[rxn]
+                # same checks as above
+                t, k = kt
+                for i, ti in enumerate(t):
+                    assert numpy.isclose(
+                        ti, ktp_dct_nosum_tocheck[p][0][i])
+                    assert numpy.isclose(
+                        k[i], ktp_dct_nosum_tocheck[p][1][i])
+
+
 """ missing tests
 def test__energies()
 def test__barriers()
 """
 
-test__get_rxn_ktp_dct()
-test__ktp_dct()
-test__ke_dct()
-test__tp()
-test__rxns_labels()
-test__filter_ktp()
-test__dos_rovib()
+if __name__ == '__main__':
+    test__get_rxn_ktp_dct()
+    test__ktp_dct()
+    test__ke_dct()
+    test__tp()
+    test__rxns_labels()
+    test__filter_ktp()
+    test__dos_rovib()
+    

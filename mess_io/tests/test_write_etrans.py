@@ -37,3 +37,6 @@ def test__energy_trans_writer():
 
     assert glob_etrans_str == pathtools.read_file(
         INP_PATH, 'glob_etrans.inp')
+
+if __name__ == '__main__':
+    test__energy_trans_writer()

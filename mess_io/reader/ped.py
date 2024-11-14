@@ -224,12 +224,23 @@ def get_ped(pedoutput_str, energy_dct, sp_labels='auto'):
                               columns=list(set(pressure_lst)), dtype=object)
 
         reacs, prods = label_messout.split('->')
-        # relabel if necessary
         if sp_labels == 'inp':
+            if 'FakeW' in lbl_dct[reacs] + lbl_dct[prods]:
+                continue
             label = (tuple(lbl_dct[reacs].split('+')),
                      tuple(lbl_dct[prods].split('+')), (None,))
         elif sp_labels == 'out':
-            label = (tuple(reacs.split('+')), tuple(prods.split('+')), (None,))
+            if 'FakeW' in reacs + prods:
+                continue
+            label = (tuple(reacs.split('+')), 
+                     tuple(prods.split('+')), (None,))
+        # relabel if necessary
+#        if sp_labels == 'inp':
+#            label = (tuple(lbl_dct[reacs].split('+')) if 'FakeW' not in lbl_dct[reacs] else (lbl_dct[reacs],),
+#                     tuple(lbl_dct[prods].split('+')) if 'FakeW' not in lbl_dct[prods] else (lbl_dct[prods],), (None,))
+#        elif sp_labels == 'out':
+#            label = (tuple(reacs.split('+')) if 'FakeW' not in reacs else (reacs,), 
+#                     tuple(prods.split('+')) if 'FakeW' not in prods else (prods,), (None,))
         else:
             print('*Error: sp_labels must be "inp" (as in mess input) \
                 or "out" (as in mess output)')

@@ -113,7 +113,12 @@ def well_energies(mess_out_str, mess_log_str, pressure):
             well_enes_new[new_key] = val
     else:
         well_enes_new = well_enes
-        
+    
+    #filter fake wells to avoid setting wellcaps (reduces their extension)
+    for name in well_enes_new.keys():
+        if 'FakeW' in name:
+            well_enes_new[name] = None
+            
     return well_enes_new
 
 
@@ -184,8 +189,14 @@ def _format_well_extension_inp(inp_str, well_enes_dct, well_lump_str):
     """
 
     # Reinitialize string and uncomment wellext if needed
-    new_inp_str = inp_str.replace('!WellExtension', 'WellExtension')
-
+    if '!WellExtension' in inp_str:
+        new_inp_str = inp_str.replace('!WellExtension', 'WellExtension')
+    else:
+        # add anyways
+        new_inp_str = ioformat.add_line(
+            string=inp_str, addline='WellExtension',
+            searchline='Model', position='before')
+        
     # Write string for each of the well enes
     for well, ene in well_enes_dct.items():
         if ene is not None:

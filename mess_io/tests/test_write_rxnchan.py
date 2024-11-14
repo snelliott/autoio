@@ -213,3 +213,12 @@ def test__configs_union_writer():
 
     assert union1_str == pathtools.read_file(INP_PATH, 'union1.inp')
     assert union2_str == pathtools.read_file(INP_PATH, 'union2.inp')
+
+if __name__ == '__main__':
+    test__bimolecular_writer()
+    test__configs_union_writer()
+    test__dummy_writer()
+    test__species_writer()
+    test__ts_sadpt_writer()
+    test__ts_variational_writer()
+    test__well_writer()

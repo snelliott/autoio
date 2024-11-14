@@ -56,6 +56,8 @@ def name_label_dct(output_str):
 
     start_table_ptt = 'Names Translation Tables'
     end_table_ptt = 'Barriers:'
+    start_table_ptt2 = 'Well Names Translation'
+    end_table_ptt2 = 'End'
     if apf.has_match(start_table_ptt, output_str):
         start_idx, end_idx = None, None
         out_lines = output_str.splitlines()
@@ -77,6 +79,32 @@ def name_label_dct(output_str):
 
         name_caps = apf.all_captures(name_ptt, table_block)
         lbl_dct = {lbl.strip(): name.strip() for lbl, name in name_caps}
+        
+    elif apf.has_match(start_table_ptt2, output_str):
+        # older formatting of output table
+        start_idx, end_idx = None, None
+        out_lines = output_str.splitlines()
+        check_outcapture = 0
+        for i, line in enumerate(out_lines):
+            if start_table_ptt2 in line:
+                start_idx = i
+            if end_table_ptt2 in line:
+                check_outcapture += 1
+                if check_outcapture == 2:
+                    end_idx = i
+                    break
+
+        table_block = '\n'.join(out_lines[start_idx+1: end_idx])
+        name_ptt = (
+            app.capturing(app.one_or_more(app.NONNEWLINE))
+        )
+        name_caps = apf.all_captures(name_ptt, table_block)
+        lbl_dct = {}
+        for entry in name_caps:
+            if 'End' not in entry and 'Bimolecular' not in entry:
+                lbl, name = entry.strip().split()
+                lbl_dct[lbl] = name
+
     else:
         lbl_dct = None
         print('Warning no name-label table found in output to relabel labels '

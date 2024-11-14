@@ -12,10 +12,11 @@ import autoparse.pattern as app
 from ioformat import remove_comment_lines
 
 def get_bf(bf_str):
-
+    
     lines = bf_str.splitlines()
     if '' in lines:
-    	lines.remove('') #delete empty lines if present
+        lines.remove('') #delete empty lines if present
+        
     pressures = np.array(lines[0].split()[1:], dtype=float)
     temperatures = np.array([line.split()[0] for line in lines[1:]], dtype=float)
     
