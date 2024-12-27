@@ -68,9 +68,28 @@ PLOG/ 300	3.34E-12	4.14	6779	/\n \
 !#[ENDREACTIONCLASS][C4.DT-R][ADD_C2.T-M]\n \
 END\n\
 "
-NONINT_RXN_PRODUCTS = "REACTIONS\n\
+NONINT_RXN_PRODUCTS_AND_OTHER_EXCEPTIONS = "REACTIONS\n\
 C5H5CH3+C5H4CH3=>0.5C10H7CH3+0.5CH3+0.5H2 +0.5C12H8+1.5H2+0.5H    .3000E+13    .000  23000.0     \n\
 CH3C6H4+C6H5C2H2=>.5C16H10+.5C14H10+H2+H+H   +5.00000E+012 +0.00000E+000 +0.00000E+000 \n\
+A+B=>1.5C+H 1.0 1.0 1.0\n\
+TIC4H7Q2-I=>ET12IC4-1OOH+OH                       +4.45000000E+009 +8.60000000E-001 +1.08000000E+004 \n\
+CH3CHO+C2H5CO3<=>CH3CO+C2H5CO3H                   +1.91580000E+000 +3.64260000E+000 +5.64190000E+003 \n\
+DUP \n\
+CH3CHO+C2H5CO3<=>CH3CO+C2H5CO3H                   +9.81000000E-004 +4.32010000E+000 +2.63610000E+003 \n\
+DUP\n\
+    H+OH(+M)<=>H2O(+M)                                +2.50000000E+013 +2.34000000E-001 -1.14000000E+002 \n\
+LOW /                                             +4.53000000E+021 -1.81000000E+000 +4.92000000E+002 /\n\
+TROE /                           +7.30000000E-001 +1.00000000E-030 +1.00000000E+030 +1.00000000E+030 /\n\
+AR / +0.4000 / HE / +0.5700 / O2 / +1.0000 / N2 / +1.0000 / H2 / +1.5000 / H2O / +13.0000 / \n\
+O+O+M<=>O2+M                                      +6.16500000E+015 -5.00000000E-001 +0.00000000E+000 \n\
+HE / +0.8300 / AR / +0.8300 / CO / +1.9000 / CH4 / +2.0000 / H2 / +2.5000 / C2H6 / +3.0000 / CO2 / +3.8000 / H2O / +12.0000 / \n\
+H+O+M<=>OHV+M                                     +4.43000000E+014 +0.00000000E+000 +1.00000000E+004 \n\
+AR / +0.4000 / O2 / +0.8000 / CO2 / +2.0000 / H2 / +2.0000 / CH4 / +2.0000 / H2O / +12.0000 / \n\
+H2O2(+M)<=>OH+OH(+M)                              +2.00000000E+012 +9.00000000E-001 +4.87490000E+004 \n\
+LOW /                                             +2.35301810E+024 -2.29293580E+000 +4.87434050E+004 /\n\
+TROE /                                            +4.30000000E-001 +1.00000000E-030 +1.00000000E+030 /\n\
+HE / +0.4400 / O2 / +0.7900 / CO2 / +1.0600 / N2 / +1.5000 / CO / +2.8000 / H2 / +3.7000 / H2O / +5.1000 / H2O2 / +5.2000 / \n\
+TIC4H7Q2-I=>ET12IC4-1OOH+OH                       +4.45000000E+009 +8.60000000E-001 +1.08000000E+004 \n\
 END\n"
 
 
@@ -119,11 +138,21 @@ def test_nonint_rxn_products():
     """ Test PLOG with comments
     """
     NAMES = {(('CH3C6H4', 'C6H5C2H2'), ('.5C16H10', '.5C14H10', 'H2', 'H', 'H'), (None,)),
-        (('C5H5CH3', 'C5H4CH3'), ('0.5C10H7CH3', '0.5CH3', '0.5H2', '0.5C12H8', '1.5H2', '0.5H'), (None,))
+        (('C5H5CH3', 'C5H4CH3'), ('0.5C10H7CH3', '0.5CH3', '0.5H2', '0.5C12H8', '1.5H2', '0.5H'), (None,)),
+        (('A', 'B'), ('1.5C', 'H'), (None,)),
+        (('TIC4H7Q2-I',), ('ET12IC4-1OOH', 'OH',), (None,)),
+        (('CH3CHO', 'C2H5CO3'), ('CH3CO', 'C2H5CO3H',), (None,)),
+        (('H2O2',), ('OH', 'OH'), ('(+M)',)),
+        (('H', 'OH'), ('H2O',), ('(+M)',)),
+        (('O', 'O'), ('O2',), ('+M',)),
+        (('H', 'O'), ('OHV',), ('+M',)),
+        (('TIC4H7Q2-I',), ('ET12IC4-1OOH', 'OH'), (None,)),
         }
-    rxn_param_dct1 = get_rxn_param_dct(NONINT_RXN_PRODUCTS, 'cal/mole', 'moles')
-    # 2 reactions found
+
+    rxn_param_dct1 = get_rxn_param_dct(NONINT_RXN_PRODUCTS_AND_OTHER_EXCEPTIONS, 'cal/mole', 'moles')
+    # 3 reactions found
     assert all(name in rxn_param_dct1.keys() for name in NAMES)
+    assert all(name in NAMES for name in rxn_param_dct1.keys())
     
             
 def test_arr():
