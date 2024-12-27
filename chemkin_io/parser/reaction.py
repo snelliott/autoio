@@ -16,15 +16,16 @@ from autoreact.params import RxnParams
 PP_ARROW = pp.Combine(pp.Opt("<") + pp.Char("=") + pp.Opt(">"))
 PP_THIRD_BODY = pp.Group("(" + pp.Word(pp.printables + "+", excludeChars=")") + ")")
 PP_SPECIES_NAME = pp.Combine(
-    pp.Char(
-        pp.printables, excludeChars=(pp.nums + "+=.<Ee")
-    )  # Exclude scientific notation
+    pp.Word(pp.alphas, excludeChars="+=.<")  # Start with an alphabetical character
+    #pp.Char(
+    #    pp.printables, excludeChars=(pp.nums + "+=.<Ee")
+    #)  # Exclude scientific notation- doesn't work with species starting with E/e
     + pp.ZeroOrMore(
         pp.Char(pp.printables, excludeChars="+=.<(")
         ^ "(" + ~pp.FollowedBy("+")
         ^ "<" + ~pp.FollowedBy("=")
     )
-)
+    )
 # old, no accomodation for floats # PP_COEFF = pp.Word(pp.nums)
 PP_COEFF = pp.Combine(
     pp.Optional(pp.Word(pp.nums) + ".")
@@ -311,13 +312,16 @@ def get_rxn_name(rxn_str):
     :return rxn: tuple describing the reactants, products, and third body
     :rtype: tuple ((rct1, rct2, ...), (prd1, prd2, ...), (third_bod1, ...))
     """
+    # split line; remove last 3 items (always rxn params) and re-join
+    rxn_str = ' '.join(rxn_str.split('\n')[0].split()[:-3])
     parse_dct = PP_REACTION_EQUATION.parseString(rxn_str).asDict()
     rcts = list(
         itertools.chain(
             *(r if len(r) == 1 else int(r[0]) * [r[1]] for r in parse_dct["reactants"])
         )
     )
-    if any(float(r[0]) < 1 for r in parse_dct["products"] if len(r) > 1):
+
+    if any(not r[0].isdigit() for r in parse_dct["products"] if len(r) > 1):
         prds = list(
             itertools.chain(
                 *(r if len(r) == 1 else [r[0] + r[1]] for r in parse_dct["products"])
@@ -440,7 +444,8 @@ def get_rxn_strs(block_str, remove_bad_fits=False):
     """Parses all of the chemical equations and corresponding fitting
     parameters in the reactions block of the mechanism input file
     and stores them in a list.
-
+    NB only works on rxn strs without comments
+    
     :param block_str: raw string for the entire reactions block
     :type block_str: str
     :param remove_bad_fits: remove reactions with bad fits
