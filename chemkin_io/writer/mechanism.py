@@ -7,12 +7,10 @@ from chemkin_io.writer import thermo
 from chemkin_io.writer import spc
 
 
-def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
+def write_chemkin_file(mech_spc_dct=None, spc_nasa7_dct=None,
                        rxn_param_dct=None, rxn_cmts_dct=None, sortrxns=False):
     """ Writes a Chemkin-formatted mechanism and/or thermo file as a string
 
-        :param elem_tuple: tuple containing the element names
-        :type elem_tuple: tuple
         :param mech_spc_dct: species data for a mechanism
         :type mech_spc_dct: {spc_name:data}
         :param spc_nasa7_dct: containing NASA-7 thermo data for each species
@@ -29,8 +27,6 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
     """
 
     total_str = ''
-    if elem_tuple:
-        print("'elem_tuple' input in ckin_io.writer will soon be deprecated!")
     if mech_spc_dct:
         elem_str = elements_block(mech_spc_dct)
         spc_str = species_block(mech_spc_dct)
@@ -48,8 +44,6 @@ def write_chemkin_file(elem_tuple=None, mech_spc_dct=None, spc_nasa7_dct=None,
 def elements_block(mech_spc_dct):
     """ Writes the elements block of the mechanism file
 
-        :param elem_tuple: tuple containing the element names
-        :type elem_tuple: tuple
         :return elem_str: str containing the elements block
         :rtype: str
     """
