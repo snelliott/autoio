@@ -135,8 +135,8 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     if filter_kts:
         full_ktp_dct = filter_ktp(full_ktp_dct, bimol, tmin=tmin, tmax=tmax,
                                pmin=pmin, pmax=pmax)
-    #if convert:
-    #    full_ktp_dct = convert_units(full_ktp_dct, bimol)
+    if convert:
+        full_ktp_dct = convert_units(full_ktp_dct, bimol)
 
     return full_ktp_dct
 
@@ -933,14 +933,16 @@ def filter_ktp(ktp, bimol,
 def convert_units(ktp, bimol):
     """ Convert units from cm^3.s^-1 to cm^3.mol^-1.s^-1 if rxn is bimolecular
     """
-
-    conv_ktp = {}
-    for pressure, (temps, kts) in ktp.items():
+    temp_idx = 0
+    for temp in xarray_wrappers.get_temperatures(ktp):
+        kts = xarray_wrappers.get_tslice(ktp, temp)
+        kts = kts.to_numpy()
         if bimol:
             kts *= phycon.NAVO
-        conv_ktp[pressure] = (temps, kts)
+        ktp[:, temp_idx] = kts
+        temp_idx += 1
 
-    return conv_ktp
+    return ktp
 
 
 def filter_reactions(rxns,
