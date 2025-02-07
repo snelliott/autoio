@@ -106,8 +106,6 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     else:
         ktp = {}
 
-    print(ktp)
-
     # Read the pressures and convert them to atm if needed
     press, _ = get_pressures(output_str, mess_file='out')
     press = list(press)
@@ -122,22 +120,21 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     # Update the dictionary with the pressure-dependent rate constants
     for pres_idx, pres in enumerate(_pres for _pres in press if not numpy.isinf(_pres)):
         temporary_ktp[pres_idx + 1] = _pdep_kts(out_lines, reactant, product, pres)
-    print(temporary_ktp)
     bimol = (reactant[0] == 'P') or ('+' in reactant)
 
     full_ktp_dct = xarray_wrappers.from_data(list(temps), list(press), temporary_ktp)
     print(full_ktp_dct)
 
-    # NVJY Note: Not filter_kts and convert not fully fixed to replace usage of ktp_dcts!
+    # NVJY Note: convert_units not fully fixed to replace usage of ktp_dcts!
     # Currently commented so as to allow new_test_read_rates to function.
 
     #Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
 
     #full_ktp_dct = xarray_wrappers.dict_from_xarray(full_ktp_dct)
 
-    #if filter_kts:
-    #    full_ktp_dct = filter_ktp(full_ktp_dct, bimol, tmin=tmin, tmax=tmax,
-    #                           pmin=pmin, pmax=pmax)
+    if filter_kts:
+        full_ktp_dct = filter_ktp(full_ktp_dct, bimol, tmin=tmin, tmax=tmax,
+                               pmin=pmin, pmax=pmax)
     #if convert:
     #    full_ktp_dct = convert_units(full_ktp_dct, bimol)
 
@@ -179,11 +176,11 @@ def _highp_kts(out_lines, reactant, product):
         if 'Reactant =' in line:
             mess_reac = line.strip().split()[2]
             if mess_reac == reactant:
-                rate_constants = _parse_reactant_rate_constants(
+                rate_constant = _parse_reactant_rate_constants(
                     block_lines, i+1, product)
                 break
     
-    return list(rate_constants[1])
+    return list(rate_constant)
 
 
 def _pdep_kts(out_lines, reactant, product, pressure):
@@ -227,14 +224,11 @@ def _pdep_kts(out_lines, reactant, product, pressure):
                 numpy.isclose(mess_press, pressure)
             ):
                 atm_pressure = _convert_pressure(pressure, mess_punit)
-                pdep_vals = _parse_reactant_rate_constants(
+                pdep_val = _parse_reactant_rate_constants(
                     block_lines, i+2, product)
                 break
 
-    #pdep_vals = list(pdep_dct[pressure])
-    #pdep_vals = pdep_vals[1]
-
-    return list(pdep_vals[1])
+    return list(pdep_val)
 
 
 def _parse_reactant_rate_constants(out_lines, block_start, product):
@@ -260,22 +254,20 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
             break
 
     # Parse the following lines and store the constants in a list
-    temps, kts = [], []
+    kts = []
     for i in range(block_start+1, len(out_lines)):
         if out_lines[i].strip() == '':
             break
-        temps.append(out_lines[i].strip().split()[0])
         kts.append(out_lines[i].strip().split()[product_col])
 
     # Convert temps and rate constants to floats and combine values
     # only do so if the rate constant is defined (i.e., not '***')
-    fin_temps = tuple(float(temp) for temp in temps)
     fin_kts = ()
     for kt_i in kts:
         new_kt = float(kt_i) if kt_i != '***' else numpy.nan
         fin_kts += (new_kt,)
 
-    return fin_temps, fin_kts
+    return fin_kts
 
 
 # Functions for getting k(E)s and density-of-states from
@@ -856,8 +848,8 @@ def filter_ktp(ktp, bimol,
     """ Filters out bad or undesired rate constants from a ktp dictionary
     """
 
-    def get_valid_tk(temps, kts, bimol, tmin=None, tmax=None,
-                     bimolthresh=1.0e-24):
+    def get_valid_k(kts, bimol, tmin = None, tmax = None, 
+                    bimolthresh=1.0e-24):
         """ Takes in lists of temperature-rate constant pairs [T,k(T)]
             and removes invalid pairs for which
             (1) k(T) < 0
@@ -879,86 +871,63 @@ def filter_ktp(ktp, bimol,
             :rtype: (numpy.ndarray, numpy.ndarray)
             """
 
-        # bimolthresh = 1.0e-60
         bimolthresh = 1.0e-24
-        # Set max temperature
-        if tmax is None:
-            tmax = max(temps)
 
         # Set min temperature to user input, if none use either
         # min of input temperatures or
         # if negative kts are found, set min temp to be just above highest neg.
-        max_neg_idx = None
-        sing_kts = []  # empty list that won't have any Nones
-        for kt_idx, sing_kt in enumerate(kts):
-            # find idx for max temperature for which kt is negative, if any
-            float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
-            if float_sing_kt < 0.0:
-                max_neg_idx = kt_idx
-            sing_kts.append(float_sing_kt) 
+        #imax_neg_idx = None
+        #sing_kts = []  # empty list that won't have any Nones
+        #for kt_idx, sing_kt in enumerate(kts):
+        #    # find idx for max temperature for which kt is negative, if any
+        #    float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
+        #    if float_sing_kt < 0.0:
+        #        max_neg_idx = kt_idx
+        #    sing_kts.append(float_sing_kt) 
 
         #   Otherwise, use requested tmin value or minimum of input temps
         # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
-        if max_neg_idx is not None:
-            # If negative values found:
-            #   Set tmin to highest T where k(T) is non-negative
-            if max_neg_idx+1 < len(temps):
-                tmin = temps[max_neg_idx+1]
-            else:
-                tmin = None
-        else:
-            # Otherwise, use requested tmin value or minimum of input temps
-            if tmin is None:
-                tmin = min(temps)
-            else:
-                assert tmin in temps, (f'{tmin} not in temps: {temps}')
+        
+        if tmin is not None and tmax is not None:
+            # Check for sign changes
+            allowed = 2  # number of allowed changes
+            nsign_chgs = numpy.count_nonzero((numpy.diff(numpy.sign(kts)) != 0) * 1)
+            if nsign_chgs > allowed:
+                valid_k = []
 
         # Grab the temperature, rate constant pairs which correspond to
         # temp > 0, temp within tmin and tmax, rate constant defined (not ***)
-        valid_t, valid_k = [], []
-        if tmin is not None and tmax is not None:
-            for temp, sing_kt in zip(temps, kts):
-                if sing_kt is None:
-                    continue
-                kthresh = 0.0 if not bimol else bimolthresh
-                if float(sing_kt) > kthresh and tmin <= temp <= tmax:
-                    valid_t.append(temp)
-                    valid_k.append(sing_kt)
+        kthresh = 0.0 if not bimol else bimolthresh
+        kts[kts < kthresh] = numpy.nan
 
-        # Check for sign changes
-        allowed = 2  # number of allowed changes
-        sing_kts = numpy.array(sing_kts)
-        nsign_chgs = numpy.count_nonzero((numpy.diff(numpy.sign(sing_kts)) != 0) * 1)
-        if nsign_chgs > allowed:
-            valid_t, valid_k = [], []
-
-        # Convert the lists to numpy arrays
-        valid_t = numpy.array(valid_t, dtype=numpy.float64)
-        valid_k = numpy.array(valid_k, dtype=numpy.float64)
-
-        return valid_t, valid_k
+        return kts
 
     # Filter the kts based on temps, negatives, None, and bimolthresh
-    #temporary_filt_kts = numpy.ndarray(len(xarray_wrappers.get_pressures(ktp), len(xarray_wrappers.get_temperatures(ktp))) 
-    filt_ktp_dct = {}
-    for pressure, (temps, kts) in ktp.items():
-        filt_temps, filt_kts = get_valid_tk(temps, kts, bimol, tmin, tmax)
-        if filt_kts.size > 0:
-            filt_ktp_dct[pressure] = (filt_temps, filt_kts)
+    if tmin == None:
+        tmin = float(ktp.coords['temp'].min(skipna=True))
+    ktp = ktp.where(ktp['temp'] >= tmin, numpy.nan)
+    if tmax == None:
+        tmax = float(ktp.coords['temp'].max(skipna=True))
+    ktp = ktp.where(ktp['temp'] <= tmax, numpy.nan)
+
+    temp_idx = 0
+    for temp in xarray_wrappers.get_temperatures(ktp):
+        kts = xarray_wrappers.get_tslice(ktp, temp)
+        kts = kts.to_numpy()
+        filt_kts = get_valid_k(kts, bimol)
+        ktp[:, temp_idx] = filt_kts
+        temp_idx += 1
 
     # Remove undesired pressures if pmin and/or pmax were given (leaves 'high'
     # untouched if it is present)
-    _pressures = tuple(pressure for pressure in filt_ktp_dct
-                        if pressure != 'high')
-    for pressure in _pressures:
-        if pmin is not None:
-            if pressure < pmin:
-                filt_ktp_dct.pop(pressure)
-        if pmax is not None:
-            if pressure > pmax:
-                filt_ktp_dct.pop(pressure)
+    if pmin == None:
+        pmin = float(ktp.coords['pres'].min(skipna=True))
+    ktp = ktp.where(ktp['pres'] >= pmin, numpy.nan)
+    if pmax == None:
+        pmax = float(ktp.pres[numpy.isfinite(ktp.pres)].max(skipna=True))
+    ktp = ktp.where((ktp['pres'] <= pmax) | (ktp['pres'] == numpy.inf), numpy.nan)
 
-    return filt_ktp_dct
+    return ktp
 
 
 def convert_units(ktp, bimol):
