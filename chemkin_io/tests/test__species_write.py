@@ -22,8 +22,8 @@ MECH_SPC_DCT = {
 
 SPC_STR = (
     'SPECIES\n\n'
-    'O     ! SMILES: smiles_1         ChI: inchi_1  \n'  # note: dumb spaces
-    'H     ! SMILES: smiles_2         ChI: inchi_2  \n\n'
+    'O     ! SMILES: smiles_1         InChI: inchi_1  \n'  # note: dumb spaces
+    'H     ! SMILES: smiles_2         InChI: inchi_2  \n\n'
     'END\n\n\n'
 )
 
