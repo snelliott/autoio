@@ -326,6 +326,10 @@ class Method():
                   Program.GAUSSIAN16: (
                       'm062x', 'm062x',
                       ('R',), ('U',))})
+        REVDSD = ('revdsd',
+                 {Program.GAUSSIAN16: (
+                      'dsdpbep86', 'udsdpbep86',
+                      ('R',), ('U',))})        
         B2PLYPD3 = ('b2plypd3',
                     {Program.GAUSSIAN09: (
                         'b2plypd3', 'b2plypd3',
@@ -942,6 +946,26 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             CA5 = ('aug-cc-pcv5z', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
+            JT = ('jun-cc-pvtz', {Program.CFOUR2: None,
+                                    Program.GAUSSIAN09: None,
+                                    Program.GAUSSIAN03: None,
+                                    Program.GAUSSIAN16: None,
+                                    Program.MOLPRO2015: None,
+                                    Program.MOLPRO2021: None,
+                                    Program.MRCC2018: None,
+                                    Program.NWCHEM6: None,
+                                    Program.ORCA4: None,
+                                    Program.PSI4: None})
+            JQ = ('jun-cc-pvqz', {Program.CFOUR2: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
