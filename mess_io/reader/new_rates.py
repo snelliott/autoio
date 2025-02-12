@@ -933,14 +933,9 @@ def filter_ktp(ktp, bimol,
 def convert_units(ktp, bimol):
     """ Convert units from cm^3.s^-1 to cm^3.mol^-1.s^-1 if rxn is bimolecular
     """
-    temp_idx = 0
-    for temp in xarray_wrappers.get_temperatures(ktp):
-        kts = xarray_wrappers.get_tslice(ktp, temp)
-        kts = kts.to_numpy()
-        if bimol:
-            kts *= phycon.NAVO
-        ktp[:, temp_idx] = kts
-        temp_idx += 1
+
+    if bimol:
+        ktp *= phycon.NAVO
 
     return ktp
 
