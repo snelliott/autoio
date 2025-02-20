@@ -16,7 +16,7 @@ from autoreact.ktp_xarray import xarray_wrappers
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
-DIRECTION_DCT = {'temp': 1000.0, 'pressure': 1.0, 'thresh': 1e-14}
+DIRECTION_DCT = {'temp': 1000.0, 'pres': 1.0, 'thresh': 1e-14}
 
 # Functions for getting k(T,P) values from main MESS `RateOut` file
 def get_rxn_ktp_dct(out_str,
@@ -100,16 +100,16 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     out_lines = output_str.splitlines()
 
     # Read the pressures and temperatures, initiate the ktp
-    press = get_pressures(output_str, mess_file='out')
-    temps = get_temperatures(output_str, mess_file='out')
+    press = get_press(output_str, mess_file='out')
+    temps = get_temps(output_str, mess_file='out')
     ktp = xarray_wrappers.make_empty_dataarray(temps, press)
 
     # Update the dictionary with the pressure-dependent rate constants
     for pres in press:
         if numpy.isinf(pres):
-            kts = _highp_kts(out_lines, reactant, product)
+            kts = get_kts_highp(out_lines, reactant, product)
         else:
-            kts = _pdep_kts(out_lines, reactant, product, pres)
+            kts = get_kts_pdep(out_lines, reactant, product, pres)
         ktp = xarray_wrappers.set_rates_pslice(ktp, kts, pres)
 
     print(ktp)
@@ -124,8 +124,8 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     return ktp
 
 
-def _highp_kts(out_lines, reactant, product):
-    """ Parses the MESS output file string for the rate constants [k(T)]s
+def get_kts_highp(out_lines, reactant, product):
+    """ Parses the MESS output file string for the rate constants, k(T),
         for a single reaction at the high-pressure limit.
 
         :param out_lines: all of the lines of MESS output
@@ -138,7 +138,7 @@ def _highp_kts(out_lines, reactant, product):
         :rtype list(float)
     """
 
-    # Find where the block of text where the high-pressure rates exist
+    # Find where the block of text where the high-P rates exist
     block_str = ('High Pressure Rate Coefficients ' +
                  '(Temperature-Species Rate Tables):')
     for i, line in enumerate(out_lines):
@@ -150,8 +150,8 @@ def _highp_kts(out_lines, reactant, product):
                     break
             break
     block_lines = out_lines[block_start: block_end]
-    # Get the high-pressure rate constants
-    rate_constants = None
+
+    # Get the high-P rate constants
     for i, line in enumerate(block_lines):
         # Find line with reactant name
         # If they match desired reactant, read rates
@@ -159,15 +159,14 @@ def _highp_kts(out_lines, reactant, product):
         if 'Reactant =' in line:
             mess_reac = line.strip().split()[2]
             if mess_reac == reactant:
-                rate_constant = _parse_reactant_rate_constants(
-                    block_lines, i+1, product)
+                kts = parse_kts(block_lines, i+1, product)
                 break
 
-    return rate_constant
+    return kts
 
 
-def _pdep_kts(out_lines, reactant, product, pressure):
-    """ Parses the MESS output file string for the rate constants [k(T,P)]s
+def get_kts_pdep(out_lines, reactant, product, pres):
+    """ Parses the MESS output file string for the rate constants, k(T),
         for a single reaction at a given numerical pressure, P.
 
         :param out_lines: all of the lines of MESS output
@@ -176,8 +175,8 @@ def _pdep_kts(out_lines, reactant, product, pressure):
         :type reactant: str
         :param product: product name in MESS output
         :type product: str
-        :param pressure: pressure that k(T,P)s will be read for
-        :type pressure: float
+        :param pres: pressure that k(T,P)s will be read for
+        :type pres: float
         :return rate_constants: k(T,P)s for the reaction at given pressure
         :rtype list(float)
     """
@@ -193,7 +192,6 @@ def _pdep_kts(out_lines, reactant, product, pressure):
     block_lines = out_lines[block_start: block_end]
 
     # Find where the block of text where the pressure-dependent rates exist
-    pdep_vals = []
     for i, line in enumerate(block_lines):
         # Find line with reactant name and pressure
         # If they match desired reactant and pressure, read rates
@@ -201,22 +199,20 @@ def _pdep_kts(out_lines, reactant, product, pressure):
         if 'Reactant =' in line:
             tmp = line.strip().split()
             mess_reac = tmp[2]
-            mess_press, mess_punit = float(tmp[5]), tmp[6]
+            mess_press, pres_unit = float(tmp[5]), tmp[6]
             if (
                 mess_reac == reactant and
-                numpy.isclose(mess_press, pressure)
+                numpy.isclose(mess_press, pres)
             ):
-                atm_pressure = _convert_pressure(pressure, mess_punit)
-                pdep_val = _parse_reactant_rate_constants(
-                    block_lines, i+2, product)
+                atm_pres = convert_pres(pres, pres_unit)
+                kts = parse_kts(block_lines, i+2, product)
                 break
 
-    return pdep_val
+    return kts
 
 
-def _parse_reactant_rate_constants(out_lines, block_start, product):
-    """ Parses specific rate constants from the correct column
-        in the MESS output file string.
+def parse_kts(out_lines, block_start, product):
+    """ Parses specific rate constants from the correct column.
 
         :param out_lines: all of the lines of MESS output
         :type out_lines: list(str)
@@ -225,7 +221,7 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
         :param product: label for the product used in the MESS output
         :type product: str
         :return rate_constants: all rate constants for the reaction
-        :rtype: list(str, float)
+        :rtype: list(float)
     """
 
     # Find the column corresponding to the reaction
@@ -236,21 +232,16 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
             product_col = i
             break
 
-    # Parse the following lines and store the constants in a list
+    # Parse the subsequent lines and store the rate constants in a list;
+    # convert '***' to NaN
     kts = []
     for i in range(block_start+1, len(out_lines)):
         if out_lines[i].strip() == '':
             break
-        kts.append(out_lines[i].strip().split()[product_col])
+        raw_val = out_lines[i].strip().split()[product_col]
+        kts.append(float(raw_val) if raw_val != '***' else numpy.nan)
 
-    # Convert temps and rate constants to floats and combine values
-    # only do so if the rate constant is defined (i.e., not '***')
-    fin_kts = []
-    for kt_i in kts:
-        new_kt = float(kt_i) if kt_i != '***' else numpy.nan
-        fin_kts.append(new_kt)
-
-    return fin_kts
+    return kts
 
 
 # Functions for getting k(E)s and density-of-states from
@@ -476,37 +467,41 @@ def barriers(barriers_ene_s, species_ene_s, reac, prod):
 
 
 # Functions to read temperatures and pressures
-def get_temperatures(file_str, mess_file='out'):
-    """ Get temps
+def get_temps(file_str, mess_file='out'):
+    """ Get temperatures from either an input or output MESS file
     """
 
     if mess_file == 'out':
-        temps, _ = _temperatures_output_string(file_str)
+        temps, _ = get_temps_output(file_str)
     elif mess_file == 'inp':
-        temps, _ = _temperatures_input_string(file_str)
+        temps, _ = get_temps_input(file_str)
     else:
-        temps = ()
+        raise NotImplementedError(
+            f'MESS file type "{mess_file}" invalid. Should be "out" or "inp".'
+        )
 
     return temps
 
 
-def get_pressures(file_str, mess_file='out'):
-    """ Get pressures
+def get_press(file_str, mess_file='out'):
+    """ Get pressures from either an input or output MESS file
     """
 
     if mess_file == 'out':
-        _pressures, _  = _pressures_output_string(file_str)
+        press, _  = get_press_output(file_str)
     elif mess_file == 'inp':
-        _pressures, _  = _pressures_input_string(file_str)
+        press, _  = get_press_input(file_str)
     else:
-        _pressures = ()
+        raise NotImplementedError(
+            f'MESS file type "{mess_file}" invalid. Should be "out" or "inp".'
+        )
 
-    return _pressures
+    return press
 
 
-def _temperatures_input_string(input_str):
-    """ Reads the temperatures from the MESS input file string
-        that were used in the master-equation calculation.
+def get_temps_input(input_str):
+    """ Reads temperatures from the MESS input file 
+
         :param input_str: string of lines of MESS input file
         :type input_str: str
         :return temperatures: temperatures in the input
@@ -515,20 +510,19 @@ def _temperatures_input_string(input_str):
         :rtype: str
     """
 
-    # Get the MESS input lines
     mess_lines = input_str.splitlines()
     for line in mess_lines:
         if 'TemperatureList' in line:
-            temps = tuple(float(val) for val in line.strip().split()[1:])
+            temps = list(float(val) for val in line.strip().split()[1:])
             temp_unit = line.strip().split('[')[1].split(']')[0]
             break
 
     return temps, temp_unit
 
 
-def _temperatures_output_string(output_str):
-    """ Reads the temperatures from the MESS output file string
-        that were used in the master-equation calculation.
+def get_temps_output(output_str):
+    """ Reads temperatures from the MESS output file 
+
         :param output_str: string of lines of MESS output file
         :type output_str: str
         :return temperatures: temperatures in the output
@@ -568,14 +562,14 @@ def _temperatures_output_string(output_str):
     return temps, temp_unit
 
 
-def _pressures_input_string(input_str):
-    """ Reads the pressures from the MESS input file string
-        that were used in the master-equation calculation.
+def get_press_input(input_str):
+    """ Reads pressures from the MESS input file 
+
         :param input_str: string of lines of MESS input file
         :type input_str: str
-        :return pressures: pressures in the input
+        :return press: pressures in the input
         :rtype: list(str, float)
-        :return pressure_unit: unit of the pressures in the input
+        :return pres_unit: unit of the pressures in the input
         :rtype: str
     """
 
@@ -583,24 +577,24 @@ def _pressures_input_string(input_str):
     mess_lines = input_str.splitlines()
     for line in mess_lines:
         if 'PressureList' in line:
-            _pressures = [float(val) for val in line.strip().split()[1:]]
-            pressure_unit = line.strip().split('[')[1].split(']')[0]
+            press = [float(val) for val in line.strip().split()[1:]]
+            pres_unit = line.strip().split('[')[1].split(']')[0]
             break
 
     # Append high pressure
-    _pressures.append('high')
+    press.append(numpy.inf)
 
-    return _pressures, pressure_unit
+    return press, pres_unit
 
 
-def _pressures_output_string(output_str):
-    """ Reads the pressures from the MESS output file string
-        that were used in the master-equation calculation.
+def get_press_output(output_str):
+    """ Reads pressures from the MESS output file 
+
         :param output_str: string of lines of MESS output file
         :type output_str: str
-        :return pressures: pressures in the output
+        :return press: pressures in the output
         :rtype: list(str, float)
-        :return pressure_unit: unit of the pressures in the output
+        :return pres_unit: unit of the pressures in the output
         :rtype: str
     """
 
@@ -608,52 +602,50 @@ def _pressures_output_string(output_str):
     mess_lines = output_str.splitlines()
 
     # Find the block of lines where the pressures can be read
-    pressure_str = 'Pressure-Species Rate Tables:'
+    pres_str = 'Pressure-Species Rate Tables:'
     for i, line in enumerate(mess_lines):
-        if pressure_str in line:
+        if pres_str in line:
             block_start = i
             break
 
     # Read the pressures
-    _pressures = []
+    press = []
     for i in range(block_start, len(mess_lines)):
         if 'P(' in mess_lines[i]:
-            pressure_unit = mess_lines[i].strip().split('(')[1].split(')')[0]
-            pressure_start = i+1
-            for j in range(pressure_start, len(mess_lines)):
+            pres_unit = mess_lines[i].strip().split('(')[1].split(')')[0]
+            pres_start = i+1
+            for j in range(pres_start, len(mess_lines)):
                 if 'O-O' in mess_lines[j]:
                     break
                 tmp = mess_lines[j].strip().split()
-                _pressures.append(float(tmp[0]))
+                press.append(float(tmp[0]))
             break
 
     # Append high pressure
-    _pressures.append(numpy.inf)
+    press.append(numpy.inf)
 
-    return _pressures, pressure_unit
+    return press, pres_unit
 
 
-def _convert_pressure(pressure, pressure_unit):
-    """ Convert a set of pressures using the pressure unit, accounting
-        for high-pressure in list
+def convert_pres(pres, pres_unit):
+    """ Convert a pressure to atm using the pressure unit
 
-        :param pressure: pressures to convert
-        :type pressure: tuple(float, str)
-        :param pressure_unit: unit of pressures
-        :type pressure_unit: str
+        :param pres: pressure(s) to convert
+        :type pres: tuple(float, str)
+        :param pres_unit: unit of pressure(s)
+        :type pres_unit: str
         :rtype: tuple(float, str)
     """
     
-    if pressure != 'high':
-        if pressure_unit == 'atm':
-            conv = 1.0
-        elif pressure_unit == 'torr':
-            conv = phycon.TORR2ATM
-        elif pressure_unit == 'bar':
-            conv = phycon.BAR2ATM
-        pressure *= conv
+    if pres_unit == 'atm':
+        conv = 1.0
+    elif pres_unit == 'torr':
+        conv = phycon.TORR2ATM
+    elif pres_unit == 'bar':
+        conv = phycon.BAR2ATM
+    pres *= conv
 
-    return pressure
+    return pres
 
 
 # Read the reactions
@@ -753,16 +745,16 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
         :rtype: bool
     """
 
-    def get_avg(ktp_dct, targ_temp, pressures):
+    def get_avg(ktp_dct, targ_temp, press):
         """ Gets a singular rate constant at a desired temp and pressure
         """
         rate_sum = 0
         nrates = 0  # number of forward rates (i.e., not NaNs)
         # Get forward rates
-        for pressure in pressures:
-            curr_temps = ktp_dct[pressure][0]
+        for pres in press:
+            curr_temps = ktp_dct[pres][0]
             tidx = (numpy.abs(numpy.array(curr_temps) - targ_temp)).argmin()
-            curr_rate = ktp_dct[pressure][1][tidx]
+            curr_rate = ktp_dct[pres][1][tidx]
             if not numpy.isnan(curr_rate):
                 rate_sum += curr_rate
                 nrates += 1
@@ -803,10 +795,10 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
         bck_avg = get_avg(bck_ktp_dct, targ_temp, ['high'])
     # Otherwise, average over all pressures except 'high' at target T
     else: 
-        fwd_pressures = [key for key in fwd_ktp_dct.keys() if key != 'high']
-        bck_pressures = [key for key in bck_ktp_dct.keys() if key != 'high']
-        fwd_avg = get_avg(fwd_ktp_dct, targ_temp, fwd_pressures)
-        bck_avg = get_avg(bck_ktp_dct, targ_temp, bck_pressures)
+        fwd_press = [key for key in fwd_ktp_dct.keys() if key != 'high']
+        bck_press = [key for key in bck_ktp_dct.keys() if key != 'high']
+        fwd_avg = get_avg(fwd_ktp_dct, targ_temp, fwd_press)
+        bck_avg = get_avg(bck_ktp_dct, targ_temp, bck_press)
 
     # Finally, determine whether the current direction is desired
     # If unimol > unimol or bimol > bimol, larger direction is preferred 
