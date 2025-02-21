@@ -100,8 +100,8 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     out_lines = output_str.splitlines()
 
     # Read the pressures and temperatures, initiate the ktp
-    press = get_press(output_str, mess_file='out')
-    temps = get_temps(output_str, mess_file='out')
+    press, _ = get_press(output_str, mess_file='out')
+    temps, _ = get_temps(output_str, mess_file='out')
     ktp = xarray_wrappers.make_empty_dataarray(temps, press)
 
     # Update the dictionary with the pressure-dependent rate constants
@@ -111,8 +111,6 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
         else:
             kts = get_kts_pdep(out_lines, reactant, product, pres)
         ktp = xarray_wrappers.set_rates_pslice(ktp, kts, pres)
-
-    print(ktp)
 
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     bimol = (reactant[0] == 'P') or ('+' in reactant)
@@ -472,15 +470,15 @@ def get_temps(file_str, mess_file='out'):
     """
 
     if mess_file == 'out':
-        temps, _ = get_temps_output(file_str)
+        temps, t_unit = get_temps_output(file_str)
     elif mess_file == 'inp':
-        temps, _ = get_temps_input(file_str)
+        temps, t_unit = get_temps_input(file_str)
     else:
         raise NotImplementedError(
             f'MESS file type "{mess_file}" invalid. Should be "out" or "inp".'
         )
 
-    return temps
+    return temps, t_unit
 
 
 def get_press(file_str, mess_file='out'):
@@ -488,15 +486,15 @@ def get_press(file_str, mess_file='out'):
     """
 
     if mess_file == 'out':
-        press, _  = get_press_output(file_str)
+        press, p_unit = get_press_output(file_str)
     elif mess_file == 'inp':
-        press, _  = get_press_input(file_str)
+        press, p_unit = get_press_input(file_str)
     else:
         raise NotImplementedError(
             f'MESS file type "{mess_file}" invalid. Should be "out" or "inp".'
         )
 
-    return press
+    return press, p_unit
 
 
 def get_temps_input(input_str):
@@ -848,30 +846,29 @@ def filter_ktp(ktp, bimol,
 
         bimolthresh = 1.0e-24
 
-        # Set min temperature to user input, if none use either
-        # min of input temperatures or
-        # if negative kts are found, set min temp to be just above highest neg.
-        #imax_neg_idx = None
-        #sing_kts = []  # empty list that won't have any Nones
-        #for kt_idx, sing_kt in enumerate(kts):
-        #    # find idx for max temperature for which kt is negative, if any
-        #    float_sing_kt = float(sing_kt) if sing_kt is not None else 1.0
-        #    if float_sing_kt < 0.0:
-        #        max_neg_idx = kt_idx
-        #    sing_kts.append(float_sing_kt) 
+        # Find first non-nan index
+        first_idx = 0
+        for idx, _ in enumerate(kts):
+            if not numpy.isnan(kts[idx]):
+                first_idx = idx
+                break
+    
+        # Find last non-nan index
+        last_idx = 0
+        for idx, _ in reversed(list(enumerate(kts))):
+            if not numpy.isnan(kts[idx]):
+                last_idx = idx
+                break
 
-        #   Otherwise, use requested tmin value or minimum of input temps
-        # Set tmin to None (i.e., no valid k(T)) if highest T has neg. k(T)
-        
-        if tmin is not None and tmax is not None:
-            # Check for sign changes
-            allowed = 2  # number of allowed changes
-            nsign_chgs = numpy.count_nonzero((numpy.diff(numpy.sign(kts)) != 0) * 1)
-            if nsign_chgs > allowed:
+        # Between these two indexes, search for nan values and filter
+        # if nan values are found.
+        for idx in range(first_idx, last_idx):
+            #print(not numpy.isnan(kts[idx]))
+            if numpy.isnan(kts[idx]):
                 kts[:] = numpy.nan
+                break
 
-        # Grab the temperature, rate constant pairs which correspond to
-        # temp > 0, temp within tmin and tmax, rate constant defined (not ***)
+        # Set kts below kthresh to nan
         kthresh = 0.0 if not bimol else bimolthresh
         kts[kts < kthresh] = numpy.nan
 
@@ -893,14 +890,12 @@ def filter_ktp(ktp, bimol,
         pmax = float(ktp.pres[numpy.isfinite(ktp.pres)].max(skipna=True))
     ktp = ktp.where((ktp['pres'] <= pmax) | (ktp['pres'] == numpy.inf), numpy.nan)
 
-    pres_idx = 0
-    for pres in xarray_wrappers.get_pressures(ktp):
+    # Filter ktp based on kts by pressure slice
+    for pres_idx, pres in enumerate(xarray_wrappers.get_pressures(ktp)):
         kts = xarray_wrappers.get_pslice(ktp, pres)
         kts = kts.to_numpy()
         filt_kts = get_valid_k(kts, bimol)
         ktp[pres_idx, :] = filt_kts
-        pres_idx += 1
-
 
     return ktp
 
