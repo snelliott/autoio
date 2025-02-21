@@ -14,6 +14,7 @@ OUT_PATH = os.path.join(PATH, 'data', 'out')
 
 KTP_INP_STR = pathtools.read_file(INP_PATH, 'example.inp')
 KTP_OUT_STR = pathtools.read_file(OUT_PATH, 'rate.out')
+KTP_BAD_OUT_STR = pathtools.read_file(OUT_PATH, 'new_rate.out')
 KTP_OUT_BAR_STR = pathtools.read_file(OUT_PATH, 'rate.out_bar')
 KTP_OUT_TORR_STR = pathtools.read_file(OUT_PATH, 'rate.out_torr')
 KE_OUT_STR = pathtools.read_file(OUT_PATH, 'ke.out')
@@ -57,8 +58,8 @@ KTP_DCT3 = {
           (-8.0e-25, -3.0e-24, -2.0e-22, -6.0e-20, -2.5e-18, -5.0e-16)), }
 
 
-def test__ktp_dct():
-    """ test mess_io.reader.rates.ktp_dct
+def test__ktp():
+    """ test mess_io.reader.new_rates.ktp_dct
     """
 
     ref_ktp_vals = [
@@ -104,10 +105,6 @@ def test__ktp_dct():
     ktp = mess_io.reader.new_rates.get_ktp(
         KTP_OUT_STR, REACTANT, PRODUCT)
     assert numpy.allclose(ktp, ref_ktp_vals)
-    #for pressure, tk_arr in ktp_dct.items():
-    #    print('tk array at p', pressure)
-    #    print(tk_arr)
-    #    assert numpy.allclose(tk_arr, ref_ktp_dct[pressure])
 
     # Read files that have units that are in bar, torr instead of atm
     # vals should be same as above; just changed units in output string
@@ -117,17 +114,59 @@ def test__ktp_dct():
     ktp_torr = mess_io.reader.new_rates.get_ktp(
         KTP_OUT_TORR_STR, REACTANT, PRODUCT)
 
-    #tkbarr = automol.util.dict_.value_in_floatkey_dct(
-    #    ktp_dct_bar, 0.98692, tol=0.01)
-    #tktorr = automol.util.dict_.value_in_floatkey_dct(
-    #    ktp_dct_torr, 0.0013157894736842107, tol=0.00001)
-
     assert numpy.allclose(ref_ktp_vals, ktp_bar)
     assert numpy.allclose(ref_ktp_vals, ktp_torr)
 
+def test__filter():
+    """ test mess_io.reader.new_rates.ktp_dct with values that need to be 
+        filtered
+    """
+
+    ref_ktp_vals = [
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, 8.35e-07, 9.24e-06,
+     7.46e-05, 4.64e-04, 2.32e-03, 9.70e-03, 3.46e-02, 3.01e-01,
+     1.75e+00, 7.47e+00, 2.50e+01, 6.90e+01, 1.63e+02, 3.40e+02,
+     6.41e+02, 1.11e+03, 1.80e+03, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, 5.38e-06, 5.85e-05,
+     4.64e-04, 2.84e-03, 1.40e-02, 5.74e-02, 2.02e-01, 1.71e+00,
+     9.65e+00, 4.02e+01, 1.31e+02, 3.55e+02, 8.24e+02, 1.69e+03,
+     3.12e+03, 5.31e+03, 8.49e+03, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, 3.40e-04,
+     2.71e-03, 1.66e-02, 8.19e-02, 3.36e-01, 1.18e+00, 9.93e+00,
+     5.59e+01, 2.31e+02, 7.49e+02, 2.01e+03, 4.62e+03, 9.36e+03,
+     1.72e+04, 2.89e+04, 4.57e+04, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, 1.07e-04, 1.20e-03,
+     9.81e-03, 6.14e-02, 3.08e-01, 1.28e+00, 4.56e+00, 3.93e+01,
+     2.25e+02, 9.43e+02, 3.10e+03, 8.37e+03, 1.94e+04, 3.95e+04,
+     7.26e+04, 1.23e+05, numpy.nan, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan,
+     numpy.nan, numpy.nan, numpy.nan, numpy.nan, numpy.nan],
+    [numpy.nan, numpy.nan, numpy.nan, numpy.nan, 1.05e-03, 1.45e-02,
+     1.45e-01, 1.11e+00, 6.77e+00, 3.44e+01, 1.49e+02, 1.88e+03,
+     1.57e+04, 9.54e+04, 4.49e+05, 1.73e+06, 5.64e+06, 1.60e+07,
+     4.07e+07, 9.39e+07, 1.99e+08, numpy.nan, numpy.nan]]
+
+    ktp = mess_io.reader.new_rates.get_ktp(
+        KTP_BAD_OUT_STR, REACTANT, PRODUCT, True, 700, 2e+3, 0.1, 10)
+    assert numpy.allclose(
+            ktp, ref_ktp_vals, rtol=1e-05, atol=1e-08, equal_nan=True)
 
 def test__ke_dct():
-    """ test mess_io.reader.rates.ke_dct
+    """ test mess_io.reader.new_rates.ke_dct
     """
 
     ref_ke_dct = {
@@ -173,17 +212,17 @@ def test__tp():
                      850.0, 900.0, 950.0, 1000.0, 1100.0, 1200.0, 1300.0, 
                      1400.0, 1500.0, 1600.0, 1700.0, 1800.0, 1900.0, 
                      2000.0, 2200.0, 2500.0)
-    ref_inp_press = (0.01, 0.1, 1.0, 10.0, 100.0, 'high')
-    ref_out_press = (0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 'high')
+    ref_inp_press = (0.01, 0.1, 1.0, 10.0, 100.0, numpy.inf)
+    ref_out_press = (0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, numpy.inf)
 
-    inp_temps, inp_tunit = mess_io.reader.rates.temperatures(
+    inp_temps, inp_tunit = mess_io.reader.new_rates.get_temps(
         KTP_INP_STR, mess_file='inp')
-    out_temps, out_tunit = mess_io.reader.rates.temperatures(
+    out_temps, out_tunit = mess_io.reader.new_rates.get_temps(
         KTP_OUT_STR, mess_file='out')
 
-    inp_press, inp_punit = mess_io.reader.rates.pressures(
+    inp_press, inp_punit = mess_io.reader.new_rates.get_press(
         KTP_INP_STR, mess_file='inp')
-    out_press, out_punit = mess_io.reader.rates.pressures(
+    out_press, out_punit = mess_io.reader.new_rates.get_press(
         KTP_OUT_STR, mess_file='out')
 
     assert numpy.allclose(ref_inp_temps, inp_temps)
@@ -198,7 +237,7 @@ def test__tp():
 
 
 def test__rxns_labels():
-    """ test mess_io.reader.rates.reactions
+    """ test mess_io.reader.new_rates.reactions
     """
 
     ref_rxns1 = (
@@ -224,118 +263,22 @@ def test__rxns_labels():
         (('P3',), ('Capture',), (None,))
 	    )
 
-    assert ref_rxns1 == mess_io.reader.rates.reactions(
+    assert ref_rxns1 == mess_io.reader.new_rates.reactions(
         KTP_OUT_STR)
-
-
-def test__filter_ktp():
-    """ test mess_io.reader.rates.filter_ktp_dct
-    """
-
-    # Check the temperatures and undefined (these are wrong)
-    ref_dct1 = {
-        0.1: (numpy.array([400., 600.]),
-              numpy.array([2.0e4, 3.0e4])),
-        1.0: (numpy.array([200., 400., 600.]),
-              numpy.array([1.0e5, 2.0e5, 3.0e5])),
-        10.0: (numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-               numpy.array([1.0e6, 2.0e6, 3.0e6, 4.0e6, 5.0e6, 6.0e6])),
-        100.0: (numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-                numpy.array([1.0e7, 2.0e7, 3.0e7, 4.0e7, 5.0e7, 6.0e7]))}
-    ref_dct2 = {
-        0.1: (numpy.array([400., 600.]),
-              numpy.array([2.0e4, 3.0e4])),
-        1.0: (numpy.array([400., 600.]),
-              numpy.array([2.0e5, 3.0e5])),
-        10.0: (numpy.array([400., 600., 800.]),
-               numpy.array([2.0e6, 3.0e6, 4.0e6])),
-        100.0: (numpy.array([400., 600., 800.]),
-                numpy.array([2.0e7, 3.0e7, 4.0e7]))}
-
-    filt_ktp_dct_temp1 = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT1, bimol=False, tmin=None, tmax=None)
-
-    filt_ktp_dct_temp2 = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT1, bimol=False, tmin=400.0, tmax=800.0)
-
-    for key1, key2 in zip(filt_ktp_dct_temp1.keys(), ref_dct1.keys()):
-        assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_temp1[key1][0], ref_dct1[key2][0])
-        assert numpy.allclose(filt_ktp_dct_temp1[key1][1], ref_dct1[key2][1])
-
-    for key1, key2 in zip(filt_ktp_dct_temp2.keys(), ref_dct2.keys()):
-        assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_temp2[key1][0], ref_dct2[key2][0])
-        assert numpy.allclose(filt_ktp_dct_temp2[key1][1], ref_dct2[key2][1])
-
-    # Check for small rate constants (based on bimol flag)
-    ref_dct3 = {
-        0.01: (
-            numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-            numpy.array([1.0e-25, 5.0e-25, 9.0e-24,
-                         1.5e-23, 6.5e-22, 1.0e-20])),
-        1.0: (
-            numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-            numpy.array([8.0e-25, 3.0e-24, 2.0e-22,
-                         6.0e-20, 2.5e-18, 5.0e-16]))}
-    ref_dct4 = {
-        0.01: (numpy.array([600.,  800., 1000., 1200.]),
-               numpy.array([9.0e-24, 1.5e-23, 6.5e-22, 1.0e-20])),
-        1.0: (numpy.array([400.,  600.,  800., 1000., 1200.]),
-              numpy.array([3.0e-24, 2.0e-22, 6.0e-20, 2.5e-18, 5.0e-16]))}
-
-    filt_ktp_dct_smallk1 = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT2, bimol=False, tmin=None, tmax=None)
-    filt_ktp_dct_smallk2 = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT2, bimol=True, tmin=None, tmax=None)
-
-    for key1, key2 in zip(filt_ktp_dct_smallk1.keys(), ref_dct3.keys()):
-        assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_smallk1[key1][0], ref_dct3[key2][0])
-        assert numpy.allclose(filt_ktp_dct_smallk1[key1][1], ref_dct3[key2][1])
-
-    for key1, key2 in zip(filt_ktp_dct_smallk2.keys(), ref_dct4.keys()):
-        assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_smallk2[key1][0], ref_dct4[key2][0])
-        assert numpy.allclose(filt_ktp_dct_smallk2[key1][1], ref_dct4[key2][1])
-
-    # Dict that should come back empty
-    filt_ktp_dct_emptyret = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT3, bimol=False, tmin=None, tmax=None)
-
-    assert not filt_ktp_dct_emptyret
-
-    # Test the removal of pressures
-    ref_dct5 = {
-        0.1: (numpy.array([400., 600.]),
-              numpy.array([2.0e4, 3.0e4])),
-        1.0: (numpy.array([200., 400., 600.]),
-              numpy.array([1.0e5, 2.0e5, 3.0e5])),
-        10.0: (numpy.array([200.,  400.,  600.,  800., 1000., 1200.]),
-               numpy.array([1.0e6, 2.0e6, 3.0e6, 4.0e6, 5.0e6, 6.0e6]))}
-    filt_ktp_dct_pressure = mess_io.reader.rates.filter_ktp_dct(
-        KTP_DCT1, bimol=False, tmin=None, tmax=None, pmin=0.1, pmax=10)
-    for key1, key2 in zip(filt_ktp_dct_pressure.keys(), ref_dct5.keys()):
-        assert numpy.isclose(key1, key2)
-        assert numpy.allclose(filt_ktp_dct_pressure[key1][0],
-                              ref_dct5[key2][0])
-        assert numpy.allclose(filt_ktp_dct_pressure[key1][1],
-                              ref_dct5[key2][1])
-
 
 def test__dos_rovib():
     """ test mess_io.reader.rates.dos_rovib
     """
-    dos_df = mess_io.reader.rates.dos_rovib(KE_PED_OUT_DBL)
+    dos_df = mess_io.reader.new_rates.dos_rovib(KE_PED_OUT_DBL)
     # check dos info
     assert list(dos_df.columns) == ['CH3CH2CH2', 'H2', 'CH3CHCH3']
     assert numpy.allclose(dos_df.loc[0.4].values, numpy.array(
         [1.099400e+05, 2.86923, 7.682720e+04]))
 
 
-test__ktp_dct()
+test__ktp()
+test__filter()
 test__ke_dct()
 test__tp()
 test__rxns_labels()
-test__filter_ktp()
 test__dos_rovib()
