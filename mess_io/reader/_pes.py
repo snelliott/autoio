@@ -179,27 +179,26 @@ def get_species(input_string):
             {name:[frag1 block, frag2 block], name:[unimol block],}
         :rtype: dict{label: list}
     """
-
+    # find where data of interest are
+    bad_wrds = ['WellDepth', 'WellCutoff', 'WellExtension',
+                    'WellReductionThreshold', 'WellPartitionMethod',
+                    'WellProjectionThreshold', 'PEDSpecies']
+    
     input_string = remove_comment_lines(
         input_string, delim_pattern=app.escape('!'))
     lines = input_string.splitlines()
-    lines = [line for line in lines if line.strip() != '']
-
-    # find where data of interest are
-    bad_wellwrds = ['WellDepth', 'WellCutoff', 'WellExtension',
-                    'WellReductionThreshold', 'WellPartitionMethod',
-                    'WellProjectionThreshold']
-    bad_fragwrds = ['FragmentGeometry', 'PEDSpecies']
+    lines = [line for line in lines if (line.strip() != '' and
+             all(bad not in line for bad in bad_wrds))]
 
     _name_arr = np.array(
-        [('Bimolecular' in line or 'Well' in line) and
-         all(bad not in line for bad in bad_wellwrds) for line in lines],
+        [('Bimolecular' in line or 'Well' in line)
+         for line in lines],
         dtype=int)
     names_i = np.where(_name_arr == 1)[0]
 
     _init_arr = np.array(
         [('Fragment' in line or 'Species' in line) and
-         all(bad not in line for bad in bad_fragwrds) for line in lines],
+         'FragmentGeometry' not in line for line in lines],
         dtype=int)
     init_i = np.where(_init_arr == 1)[0]
     init_i = init_i[init_i > names_i[0]]
