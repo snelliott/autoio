@@ -48,6 +48,73 @@ C4H8ORvEsWvAA0 + CH3O2RO2-2LTcwB = C4H7ORvE4fmAA0 + CH4O2QOOH-2LTWKw       1.000
 C4H8ORvEsWvAA0 + CH3O-S58cwB = C4H7ORvE4fmAA0 + CH4O-S58WKw                1.000E+00     0.000        0  # pes.subpes.channel  6.1.1\n \
 C4H8ORvEsWvAA0 + Cl = C4H7ORvE4fmAA0 + HCl                                 1.000E+00     0.000        0  # pes.subpes.channel  7.1.1\n \
 "
+REACTION_BLOCK_PESUBPES_WDUP = "REACTIONS     CAL/MOLE     MOLES\n\
+\n\
+NC3H7 = IC3H7                    1.000E+00     1.000        1  # pes.subpes.channel.submech_prompt  1.1.1.RAD_DECO_NC3H\n\
+\n\
+C3H6 + H = NC3H7                 1.040E+49   -11.500    15359  # pes.subpes.channel.submech_prompt  1.1.2.RAD_DECO_NC3H\n\
+  PLOG /             1.300E-03   7.990E+81   -23.161    22239 /\n\
+  PLOG /             1.300E-03   1.850E+26    -5.830     3866 /\n\
+  PLOG /             4.000E-02   4.240E+68   -18.427    19665 /\n\
+  PLOG /             4.000E-02   2.820E+30    -6.490     5471 /\n\
+  PLOG /             1.000E+00   1.040E+49   -11.500    15359 /\n\
+  PLOG /             1.000E+00   3.780E+28    -5.570     5625 /\n\
+  PLOG /             1.000E+01   6.200E+41    -8.892    14637 /\n\
+  PLOG /             1.000E+01   1.460E+25    -4.280     5248 /\n\
+  PLOG /             1.000E+02   4.220E+27    -4.390     9346 /\n\
+  PLOG /             1.000E+02   1.000E-10     0.000        0 /\n\
+\n\
+C3H6 + H = IC3H7                 3.260E+61   -14.940    20161  # pes.subpes.channel.submech_prompt  1.1.3.RAD_DECO_IC3H\n\
+  PLOG /             1.300E-03   1.350E+44   -10.680     8196 /\n\
+  PLOG /             1.300E-03   2.170E+130  -32.580   136140 /\n\
+  PLOG /             4.000E-02   2.110E+57   -14.230    15147 /\n\
+  PLOG /             4.000E-02   2.250E+29    -5.840     4242 /\n\
+  PLOG /             1.000E+00   3.260E+61   -14.940    20161 /\n\
+  PLOG /             1.000E+00   1.060E+30    -5.630     5613 /\n\
+  PLOG /             1.000E+01   5.300E+56   -13.120    20667 /\n\
+  PLOG /             1.000E+01   6.110E+26    -4.440     5182 /\n\
+  PLOG /             1.000E+02   1.110E+50   -10.800    20202 /\n\
+  PLOG /             1.000E+02   2.730E+23    -3.260     4597 /\n\
+\n\
+C3H6 + H = C2H4 + CH3            2.670E+12     0.470     5431  # pes.subpes.channel.submech_prompt  1.1.4.\n\
+  PLOG /             1.300E-03   1.540E+09     1.350     2542 /\n\
+  PLOG /             1.300E-03   1.000E-10     0.000        0 /\n\
+  PLOG /             4.000E-02   7.880E+10     0.870     3600 /\n\
+  PLOG /             4.000E-02   1.000E-10     0.000        0 /\n\
+  PLOG /             1.000E+00   2.670E+12     0.470     5431 /\n\
+  PLOG /             1.000E+00   1.000E-10     0.000        0 /\n\
+  PLOG /             1.000E+01   9.250E+22    -2.600    12898 /\n\
+  PLOG /             1.000E+01   1.240E+05     2.520     3679 /\n\
+  PLOG /             1.000E+02   1.320E+23    -2.420    16500 /\n\
+  PLOG /             1.000E+02   2.510E+03     2.910     3981 /\n\
+\n\
+C2H4 + CH3 = NC3H7               7.670E+47   -11.170    22366  # pes.subpes.channel.submech_prompt  1.1.5.RAD_DECO_NC3H\n\
+  PLOG /             1.300E-03   8.670E+48   -12.540    18206 /\n\
+  PLOG /             1.300E-03   1.120E+43   -11.300    13080 /\n\
+  PLOG /             4.000E-02   1.060E+49   -12.040    20001 /\n\
+  PLOG /             4.000E-02   7.280E+39    -9.880    13164 /\n\
+  PLOG /             1.000E+00   7.670E+47   -11.170    22366 /\n\
+  PLOG /             1.000E+00   2.600E+33    -7.460    12416 /\n\
+  PLOG /             1.000E+01   1.810E+45   -10.030    23769 /\n\
+  PLOG /             1.000E+01   3.850E+27    -5.380    11455 /\n\
+  PLOG /             1.000E+02   2.040E+40    -8.250    24214 /\n\
+  PLOG /             1.000E+02   1.660E+21    -3.170    10241 /\n\
+\n\
+C3H8 + H = IC3H7 + H2            3.060E+04     2.800     3473  # pes.subpes.channel.submech_prompt  2.1.1.RAD_GEN_IC3H7\n\
+  DUP\n\
+C3H8 + H = IC3H7 + H2            5.730E+13     0.100    10600\n\
+  DUP\n\
+\n\
+C3H8 + H = NC3H7 + H2            1.290E+04     2.930     5246  # pes.subpes.channel.submech_prompt  2.2.2.RAD_GEN_NC3H7\n\
+  DUP\n\
+C3H8 + H = NC3H7 + H2            1.470E+10     1.310    10300\n\
+  DUP\n\
+\n\
+C3H8 + OH = IC3H7 + H2O          3.738E+05     2.305     -561  # pes.subpes.channel.submech_prompt  3.1.1.RAD_GEN_IC3H7\n\
+\n\
+C3H8 + OH = NC3H7 + H2O          6.865E+06     2.000      677  # pes.subpes.channel.submech_prompt  3.2.2.RAD_GEN_NC3H7\n\
+END\n\
+"
 REACTION_BLOCK_OSCLASS = "REACTIONS\n\
 !#[REACTIONCLASS][A1-R][ROPEN]\n \
 C6H5=LC6H4+H	1.64E+16	0	88395	! LPM 02-05-2024 FIT FROM MADDEN 1997 JPCA 10.1021/JP970723D\n \
@@ -487,13 +554,24 @@ def test_pes_dct():
                         ('PES', 4, 0): ((0, (('C4H8ORvEsWvAA0', 'CH3O2RO2-2LTcwB'), ('C4H7ORvE4fmAA0', 'CH4O2QOOH-2LTWKw'), (None,))),), 
                         ('PES', 5, 0): ((0, (('C4H8ORvEsWvAA0', 'CH3O-S58cwB'), ('C4H7ORvE4fmAA0', 'CH4O-S58WKw'), (None,))),), 
                         ('PES', 6, 0): ((0, (('C4H8ORvEsWvAA0', 'Cl'), ('C4H7ORvE4fmAA0', 'HCl'), (None,))),)}
+    REACTION_BLOCK_PESUBPES_WDUP_INFO = {('PES', 0, 0): ((0, (('NC3H7',), ('IC3H7',), (None,))), 
+    (1, (('C3H6', 'H'), ('NC3H7',), (None,))), 
+    (2, (('C3H6', 'H'), ('IC3H7',), (None,))), 
+    (3, (('C3H6', 'H'), ('C2H4', 'CH3'), (None,))), 
+    (4, (('C2H4', 'CH3'), ('NC3H7',), (None,)))), 
+    ('PES', 1, 0): ((0, (('C3H8', 'H'), ('IC3H7', 'H2'), (None,))),), 
+    ('PES', 1, 1): ((1, (('C3H8', 'H'), ('NC3H7', 'H2'), (None,))),), 
+    ('PES', 2, 0): ((0, (('C3H8', 'OH'), ('IC3H7', 'H2O'), (None,))),), 
+    ('PES', 2, 1): ((1, (('C3H8', 'OH'), ('NC3H7', 'H2O'), (None,))),)}
 
     pes_info = get_pes_dct(REACTION_BLOCK_COMMENTS)
     assert pes_info == None
     pes_info = get_pes_dct(REACTION_BLOCK_OKCOMM)
     for key, val in pes_info.items():
         assert val == RESULTS_PES_INFO[key]
-
+    pes_info = get_pes_dct(REACTION_BLOCK_PESUBPES_WDUP)
+    for key, val in pes_info.items():
+        assert val == REACTION_BLOCK_PESUBPES_WDUP_INFO[key]
 if __name__ == '__main__':
     test_rxn_strs()
     test_cmts()
