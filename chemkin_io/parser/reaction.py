@@ -281,13 +281,17 @@ def get_pes_dct(block_str):
     """
 
     rxn_strs = get_rxn_strs(block_str)
-
+    rxns = []
     if rxn_strs is not None:
         pes_dct = {}
         for rxn_str in rxn_strs:
             rxn = get_rxn_name(rxn_str)
+            if rxn in rxns:
+                # channel already sorted, must be a dup entry
+                continue
             idx_inf = get_pes_info(rxn_str)
             if idx_inf is not None:
+                rxns.append(rxn) #add rxn found- dup rxns might not be classified and then throw an error
                 pes_idx, subpes_idx, chnl_idx = idx_inf
                 pes_inf = ("PES", pes_idx, subpes_idx)
                 chnl_inf = (chnl_idx, rxn)
