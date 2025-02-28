@@ -102,20 +102,22 @@ def get_ktp(output_str, reactant, product, filter_kts=True, tmin=None,
     # Read the pressures and temperatures, initiate the ktp
     press, _ = get_press(output_str, mess_file='out')
     temps, _ = get_temps(output_str, mess_file='out')
-    ktp = xarray_wrappers.make_empty_dataarray(temps, press)
+    ktp = numpy.full((len(press), len(temps)), numpy.nan)
+    #ktp = xarray_wrappers.make_empty_dataarray(temps, press)
 
     # Update the dictionary with the pressure-dependent rate constants
-    for pres in press:
+    for pres_idx, pres in enumerate(press):
         if numpy.isinf(pres):
             kts = get_kts_highp(out_lines, reactant, product)
         else:
             kts = get_kts_pdep(out_lines, reactant, product, pres)
-        ktp = xarray_wrappers.set_rates_pslice(ktp, kts, pres)
+        #ktp = xarray_wrappers.set_rates_pslice(ktp, kts, pres)
+        ktp[pres_idx,:] = kts
 
     # Note: filtering is before unit conversion, so bimolthresh is in cm^3.s^-1
     bimol = (reactant[0] == 'P') or ('+' in reactant)
     if filter_kts:
-        ktp = filter_ktp(ktp, bimol, tmin=tmin, tmax=tmax, pmin=pmin, pmax=pmax)
+        ktp = filter_ktp(ktp, temps, press, bimol, tmin=tmin, tmax=tmax, pmin=pmin, pmax=pmax)
     if convert:
         ktp = convert_units(ktp, bimol)
 
@@ -816,7 +818,7 @@ def is_desired_direction(rxn, rxn_ktp_dct, direction_dct=DIRECTION_DCT):
     return is_desired
             
 
-def filter_ktp(ktp, bimol,
+def filter_ktp(ktp, temps, press, bimol,
                    tmin=None, tmax=None, pmin=None, pmax=None):
     """ Filters out bad or undesired rate constants from a ktp dictionary
     """
@@ -876,24 +878,38 @@ def filter_ktp(ktp, bimol,
 
     # Filter ktp based on temp thresholds (if given)
     if tmin == None:
-        tmin = float(ktp.coords['temp'].min(skipna=True))
-    ktp = ktp.where(ktp['temp'] >= tmin, numpy.nan)
+        #tmin = float(ktp.coords['temp'].min(skipna=True))
+        tmin = temps[0]
+    tmin_idx = temps.index(tmin)
+    ktp[:,:tmin_idx] = numpy.nan
+    #ktp = ktp.where(ktp['temp'] >= tmin, numpy.nan)
     if tmax == None:
-        tmax = float(ktp.coords['temp'].max(skipna=True))
-    ktp = ktp.where(ktp['temp'] <= tmax, numpy.nan)
+        #tmax = float(ktp.coords['temp'].max(skipna=True))
+        tmax = temps[-1]
+    tmax_idx = temps.index(tmax) + 1
+    if tmax_idx < len(temps):
+        ktp[:,tmax_idx:] = numpy.nan
+    #ktp = ktp.where(ktp['temp'] <= tmax, numpy.nan)
 
     # Filter ktp based on pres thresholds (if given)
     if pmin == None:
-        pmin = float(ktp.coords['pres'].min(skipna=True))
-    ktp = ktp.where(ktp['pres'] >= pmin, numpy.nan)
+        #pmin = float(ktp.coords['pres'].min(skipna=True))
+        pmin = press[0]
+    pmin_idx = press.index(pmin)
+    ktp[:pmin_idx] = numpy.nan
+    #ktp = ktp.where(ktp['pres'] >= pmin, numpy.nan)
     if pmax == None:
-        pmax = float(ktp.pres[numpy.isfinite(ktp.pres)].max(skipna=True))
-    ktp = ktp.where((ktp['pres'] <= pmax) | (ktp['pres'] == numpy.inf), numpy.nan)
+        #pmax = float(ktp.pres[numpy.isfinite(ktp.pres)].max(skipna=True))
+        pmax = press[-1]
+    pinf_vals = copy.deepcopy(ktp[-1])
+    pmax_idx = press.index(pmax)
+    ktp[pmax_idx:] = numpy.nan
+    ktp[-1] = pinf_vals
+    #ktp = ktp.where((ktp['pres'] <= pmax) | (ktp['pres'] == numpy.inf), numpy.nan)
 
     # Filter ktp based on kts by pressure slice
-    for pres_idx, pres in enumerate(xarray_wrappers.get_pressures(ktp)):
-        kts = xarray_wrappers.get_pslice(ktp, pres)
-        kts = kts.to_numpy()
+    for pres_idx, pres in enumerate(press):
+        kts = ktp[pres_idx]
         filt_kts = get_valid_k(kts, bimol)
         ktp[pres_idx, :] = filt_kts
 
