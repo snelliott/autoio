@@ -12,6 +12,10 @@ DOUB_HYB_DFT = [
     'b2plypd3'
 ]
 
+EMP_DFT = [
+    'revdsd'
+]
+
 
 def _hf_energy(output_str):
     """ Reads the Hartree-Fock energy from the output file string.
@@ -142,6 +146,9 @@ def energy(method, output_str):
         else:
             energy_reader = _doub_hyb_dft_energy
     else:
-        energy_reader = ENERGY_READER_DCT[full_method]
+        if core_method in EMP_DFT:
+            energy_reader = _mp2_energy
+        else:
+            energy_reader = ENERGY_READER_DCT[full_method]
 
     return energy_reader(output_str)
