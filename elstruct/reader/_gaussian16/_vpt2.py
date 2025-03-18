@@ -112,7 +112,7 @@ def anharmonicity_matrix(output_str):
         line_start_ptt=comp_ptt,
         tril=True)
 
-    mat = tuple(tuple(float(val.replace('D', 'E')) for val in row)
+    mat = tuple(tuple(val for val in row)
                 for row in mat)
 
     return mat
@@ -128,7 +128,7 @@ def vibrorot_alpha_matrix(output_str):
     """
 
     begin_string = 'Vibro-Rot alpha Matrix (in cm^-1)'
-    end_string = app.escape('Q(') + app.maybe(app.SPACE) + app.UNSIGNED_INTEGER + app.escape(')')
+    end_string = app.escape('Q(') + app.zero_or_more(app.SPACE) + app.UNSIGNED_INTEGER + app.escape(')')
 
     vib_rot_mat = ar.matrix.read(
         output_str,
@@ -136,7 +136,6 @@ def vibrorot_alpha_matrix(output_str):
             app.padded(app.escape(begin_string), app.NONNEWLINE),
             app.LINE, app.LINE, '']),
         line_start_ptt=end_string)
-
     return vib_rot_mat
 
 
@@ -285,7 +284,7 @@ def _fc_mat(fc_caps):
         fc_idxs.append(tuple(int(val)-1 for val in caps[:-1]))
         fc_vals.append(float(caps[-1]))
 
-    fc_mat = automol.util.highd_mat.build_full_array(
+    fc_mat = automol.util.tensor.build_full_array(
         fc_idxs, fc_vals, fill_perms=True)
 
     return fc_mat
