@@ -18,9 +18,9 @@ def anharmonic_frequencies(output_str):
     """
 
     block = apf.last_capture(
-        (app.escape('Fundamental Bands (DE w.r.t. Ground State)') +
+        (app.escape('Fundamental Bands') +
          app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
-         app.escape('Overtones (DE w.r.t. Ground State)')), output_str)
+         app.escape('Overtones')), output_str)
 
     pattern = (
         app.INTEGER +
@@ -28,7 +28,7 @@ def anharmonic_frequencies(output_str):
         app.escape('(1') + app.maybe(app.escape(',')) +
         app.maybe(app.SIGN) +
         app.maybe(app.INTEGER) + app.escape(')') +
-        app.SPACE +
+        app.one_or_more(app.SPACE) +
         app.maybe(app.one_or_more(app.LOWERCASE_LETTER)) +
         app.one_or_more(app.SPACE) +
         app.FLOAT +
