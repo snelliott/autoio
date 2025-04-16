@@ -62,6 +62,8 @@ ${zmat_const_vals}
 % endif
 % if job_key == 'vpt2':
 
+DataSrc=NMOrder=Print
 Print=NMOrder=AscNoIrrep
+
 % endif
 
