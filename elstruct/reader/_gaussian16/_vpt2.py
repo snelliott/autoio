@@ -18,9 +18,9 @@ def anharmonic_frequencies(output_str):
     """
 
     block = apf.last_capture(
-        (app.escape('Fundamental Bands (DE w.r.t. Ground State)') +
+        (app.escape('Fundamental Bands') +
          app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
-         app.escape('Overtones (DE w.r.t. Ground State)')), output_str)
+         app.escape('Overtones')), output_str)
 
     pattern = (
         app.INTEGER +
@@ -28,7 +28,7 @@ def anharmonic_frequencies(output_str):
         app.escape('(1') + app.maybe(app.escape(',')) +
         app.maybe(app.SIGN) +
         app.maybe(app.INTEGER) + app.escape(')') +
-        app.SPACE +
+        app.one_or_more(app.SPACE) +
         app.maybe(app.one_or_more(app.LOWERCASE_LETTER)) +
         app.one_or_more(app.SPACE) +
         app.FLOAT +
@@ -112,9 +112,50 @@ def anharmonicity_matrix(output_str):
         line_start_ptt=comp_ptt,
         tril=True)
 
-    mat = tuple(tuple(float(val.replace('D', 'E')) for val in row)
+    mat = tuple(tuple(val for val in row)
                 for row in mat)
 
+    # Get mode equivalency chart, since X Matrix drops duplicates
+    block = apf.all_captures(
+        (app.escape('(A) |') +
+         app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
+         app.escape('Normal modes will')), output_str)
+
+    pattern = (
+        app.one_or_more(app.SPACE) +
+        app.capturing(app.INTEGER + app.maybe(app.one_or_more(app.LOWERCASE_LETTER)))
+        + '|'
+    )
+    a_rows = [
+        [val for val in apf.all_captures(pattern, block) if val]
+        for block in block]
+
+    # Extend X Mat to include any duplicates based on mode equivalency
+    if len(a_rows) == 2:
+        harm_modes_dct = {}
+        index = 0
+        for val in a_rows[0]:
+            mode = int(''.join(filter(str.isdigit, val)))
+            if mode not in harm_modes_dct:
+                harm_modes_dct[mode] = index
+                index += 1
+        anharm_modes_dct = {}
+        index = 0
+        for val in a_rows[1]:
+            mode = int(''.join(filter(str.isdigit, val)))
+            anharm_modes_dct[index] = mode
+            index += 1
+        new_mat = [
+            [None for _ in range(len(a_rows[1]))]
+            for _ in range(len(a_rows[1]))]
+        for row_idx, row in enumerate(new_mat):
+            for col_idx, col in enumerate(new_mat):
+                orig_row_idx = harm_modes_dct[anharm_modes_dct[row_idx]]
+                orig_col_idx = harm_modes_dct[anharm_modes_dct[col_idx]]
+                new_mat[row_idx][col_idx] = mat[orig_row_idx][orig_col_idx]
+                new_mat[col_idx][row_idx] = mat[orig_col_idx][orig_row_idx]
+        mat = tuple(tuple(val for val in row)
+                    for row in new_mat)
     return mat
 
 
@@ -128,15 +169,51 @@ def vibrorot_alpha_matrix(output_str):
     """
 
     begin_string = 'Vibro-Rot alpha Matrix (in cm^-1)'
-    end_string = app.escape('Q(') + app.maybe(app.SPACE) + app.UNSIGNED_INTEGER + app.escape(')')
+    end_string = app.escape('Q(') + app.zero_or_more(app.SPACE) + app.UNSIGNED_INTEGER + app.escape(')')
 
     vib_rot_mat = ar.matrix.read(
-        output_str,
+        output_str.replace('  Imaginary value', ''),
         start_ptt=app.padded(app.NEWLINE).join([
             app.padded(app.escape(begin_string), app.NONNEWLINE),
             app.LINE, app.LINE, '']),
         line_start_ptt=end_string)
+    # Get mode equivalency chart, since X Matrix drops duplicates
+    block = apf.all_captures(
+        (app.escape('(A) |') +
+         app.capturing(app.one_or_more(app.WILDCARD, greedy=False)) +
+         app.escape('Normal modes will')), output_str)
 
+    pattern = (
+        app.one_or_more(app.SPACE) +
+        app.capturing(app.INTEGER + app.maybe(app.one_or_more(app.LOWERCASE_LETTER)))
+        + '|'
+    )
+    a_rows = [
+        [val for val in apf.all_captures(pattern, block) if val]
+        for block in block]
+
+    # Extend X Mat to include any duplicates based on mode equivalency
+    if len(a_rows) == 2:
+        harm_modes_dct = {}
+        index = 0
+        for val in a_rows[0]:
+            mode = int(''.join(filter(str.isdigit, val)))
+            if mode not in harm_modes_dct:
+                harm_modes_dct[mode] = index
+                index += 1
+        anharm_modes_dct = {}
+        index = 0
+        for val in a_rows[1]:
+            mode = int(''.join(filter(str.isdigit, val)))
+            anharm_modes_dct[index] = mode
+            index += 1
+        new_mat = [
+            [None, None, None]
+            for _ in range(len(a_rows[1]))]
+        for row_idx, row in enumerate(new_mat):
+            orig_row_idx = harm_modes_dct[anharm_modes_dct[row_idx]]
+            new_mat[row_idx] = vib_rot_mat[orig_row_idx]
+        vib_rot_mat = tuple(tuple(val for val in row) for row in new_mat)
     return vib_rot_mat
 
 
@@ -285,7 +362,7 @@ def _fc_mat(fc_caps):
         fc_idxs.append(tuple(int(val)-1 for val in caps[:-1]))
         fc_vals.append(float(caps[-1]))
 
-    fc_mat = automol.util.highd_mat.build_full_array(
+    fc_mat = automol.util.tensor.build_full_array(
         fc_idxs, fc_vals, fill_perms=True)
 
     return fc_mat
