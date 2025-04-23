@@ -159,7 +159,7 @@ def keyword_dcts_from_blocks(block_dct):
         for key, block in block_dct.items():
 
             key_dct = keyword_dct_from_paren_blocks(block)
-            if key_dct is None:
+            if key_dct is None or key_dct == {}:
                 key_dct = keyword_dct_from_block(block)
 
             new_block_dct[key] = key_dct
@@ -262,7 +262,6 @@ def format_keyword_values(keyword, value):
 
     # Format the keyword
     frmtd_keyword = set_value_type(keyword.strip().lower())
-
     # Format values if it is a list (of string(s), boolean(s), int(s))
     # Additional functionality is used to handle when values are lists
     value = value.strip()
@@ -272,12 +271,9 @@ def format_keyword_values(keyword, value):
         if frmtd_keyword == 'tors_names':
             value = value.replace('D', '').replace('d', '')
             value = ast.literal_eval(value)
-            frmtd_value = ()
-            for sub_lst in value:
-                assert all(isinstance(val, int) for val in sub_lst)
-                frmtd_value += (
-                    tuple(f'D{val}' for val in sub_lst),
-                )
+            frmtd_value = tuple(
+                tuple(f'D{val}' for val in sub_lst) for sub_lst in value
+            )
         else:
             frmtd_value = ast.literal_eval(value)
             frmtd_value = tuple(tuple(x) for x in frmtd_value)
