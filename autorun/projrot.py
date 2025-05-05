@@ -19,7 +19,8 @@ OUTPUT_NAMES = (
 
 
 # Specialized Runners
-def pot_frequencies(script_str, geoms, grads, hessians, run_path):
+def pot_frequencies(script_str, geoms, grads, hessians, run_path, 
+        rotors_str=''):
     """ Calculate the frequencies (need to replace)
 
         all input here are dictionaries (like potentials)
@@ -33,7 +34,8 @@ def pot_frequencies(script_str, geoms, grads, hessians, run_path):
             run_path,
             [geoms[point]],
             [grads[point]],
-            [hessians[point]])
+            [hessians[point]],
+            rotors_str=rotors_str)
         hr_freqs[point] = proj_freqs
 
     return hr_freqs
@@ -78,7 +80,6 @@ def frequencies(script_str, run_dir, geoms, grads, hessians,
             hrproj_str)
     else:
         hrproj_freqs, hr_imag_freq = (), ()
-
     return rtproj_freqs, hrproj_freqs, rt_imag_freq, hr_imag_freq
 
 

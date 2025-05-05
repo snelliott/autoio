@@ -352,12 +352,14 @@ def mdhr_data(pot_dct, freqs=None, nrot=0):
     """
 
     assert pot_dct, 'Potential has no values'
-
     # Remap potential so that keys are indices, not vcoord valyes
     pot_obj = automol.data.potent.from_dict(pot_dct)
     pots_byidx = automol.data.potent.dict_(pot_obj, index=True, drop_null=True)
+    pots_bykey = automol.data.potent.dict_(pot_obj, index=False, drop_null=True)
     pot_idxs = tuple(pots_byidx.keys())
-
+    key_idx_dct = {
+        idx: key for key, idx in zip(pots_bykey.keys(), pots_byidx.keys())
+        if pots_byidx[idx] == pots_bykey[key]}
     # Get the dimensions of the MDHR
     ndims = len(pot_idxs[0])
     assert ndims in (1, 2, 3, 4), 'Rotor must have dimension 1-4'
@@ -416,8 +418,8 @@ def mdhr_data(pot_dct, freqs=None, nrot=0):
 
             # Add any frequencies if necessary
             if freqs is not None:
-                if idxs in freqs:
-                    for freq in freqs[idxs]:
+                if key_idx_dct[idxs] in freqs:
+                    for freq in freqs[key_idx_dct[idxs]]:
                         dat_str += f'{freq:>8.1f}'
 
             dat_str += '\n'
