@@ -28,14 +28,22 @@ def pot_frequencies(script_str, geoms, grads, hessians, run_path,
 
     # Initialize hr freqs list
     hr_freqs = {}
-    for point in geoms.keys():
-        _, proj_freqs, _, _ = frequencies(
+    imag_freqs = ()
+    for i, point in enumerate(geoms.keys()):
+        _, proj_freqs, rt_imag_freqs, hr_imag_freqs = frequencies(
             script_str,
             run_path,
             [geoms[point]],
             [grads[point]],
             [hessians[point]],
             rotors_str=rotors_str)
+        if i == 0:
+            imag_freqs = rt_imag_freqs
+        if len(imag_freqs) > 0 and len(hr_imag_freqs) < 1:
+            print(imag_freqs, proj_freqs)
+            print(f'Imaginary frequencies lost during projection, for pot#{i}')
+            print('setting lowest frequency to imag')
+            proj_freqs = proj_freqs[1:]
         hr_freqs[point] = proj_freqs
 
     return hr_freqs
