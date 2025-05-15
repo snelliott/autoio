@@ -109,6 +109,13 @@ class Method():
             Program.GAUSSIAN09: (
                 'pm3', 'pm3',
                 ('R',), ('U', 'R'))})
+        PM6 = ('pm6',
+            {Program.GAUSSIAN16: (
+                'pm6', 'pm6',
+                ('R',), ('U', 'R')),
+            Program.GAUSSIAN09: (
+                'pm6', 'pm6',
+                ('R',), ('U', 'R'))})
 
     class Corr():
         """ Correlated method names """
