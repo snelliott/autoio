@@ -239,7 +239,8 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
             product_col = i
             break
 
-    line_expr = ppc.number("T") + pp.OneOrMore(ppc.number | pp.Literal("***"))("k")
+    nan_expr = pp.Opt(pp.Char("-")) + pp.Literal("nan")
+    line_expr = ppc.number("T") + pp.OneOrMore(ppc.number | pp.Literal("***") | nan_expr)("k")
 
     # Parse the following lines and store the constants in a list
     temps, kts = [], []
@@ -251,13 +252,8 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
         temps.append(res.get("T"))
         kts.append(res.get("k")[product_col-1])
 
-    # Convert temps and rate constants to floats and combine values
-    # only do so if the rate constant is defined (i.e., not '***')
-    fin_temps = tuple(float(temp) for temp in temps)
-    fin_kts = ()
-    for kt_i in kts:
-        new_kt = float(kt_i) if kt_i != '***' else None
-        fin_kts += (new_kt,)
+    fin_temps = tuple(temps)
+    fin_kts = tuple(None if isinstance(k, str) else k for k in kts)
 
     return (fin_temps, fin_kts)
 
