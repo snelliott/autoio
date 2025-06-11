@@ -12,6 +12,8 @@ from phydat import phycon
 import autoparse.find as apf
 from mess_io.reader._label import relabel
 from mess_io.reader._label import name_label_dct
+import pyparsing as pp
+from pyparsing import pyparsing_common as ppc
 
 # Global lists
 UNWANTED_RXN_TYPS = ('fake', 'self', 'loss', 'capture', 'reverse')
@@ -229,7 +231,6 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
         :return rate_constants: all rate constants for the reaction
         :rtype: list(str, float)
     """
-
     # Find the column corresponding to the reaction
     product_col = 0
     product_headers = out_lines[block_start].strip().split()
@@ -238,21 +239,21 @@ def _parse_reactant_rate_constants(out_lines, block_start, product):
             product_col = i
             break
 
+    nan_expr = pp.Opt(pp.Char("-")) + pp.Literal("nan")
+    line_expr = ppc.number("T") + pp.OneOrMore(ppc.number | pp.Literal("***") | nan_expr)("k")
+
     # Parse the following lines and store the constants in a list
     temps, kts = [], []
     for i in range(block_start+1, len(out_lines)):
         if out_lines[i].strip() == '':
             break
-        temps.append(out_lines[i].strip().split()[0])
-        kts.append(out_lines[i].strip().split()[product_col])
 
-    # Convert temps and rate constants to floats and combine values
-    # only do so if the rate constant is defined (i.e., not '***')
-    fin_temps = tuple(float(temp) for temp in temps)
-    fin_kts = ()
-    for kt_i in kts:
-        new_kt = float(kt_i) if kt_i != '***' else None
-        fin_kts += (new_kt,)
+        res = line_expr.parse_string(out_lines[i])
+        temps.append(res.get("T"))
+        kts.append(res.get("k")[product_col-1])
+
+    fin_temps = tuple(temps)
+    fin_kts = tuple(None if isinstance(k, str) else k for k in kts)
 
     return (fin_temps, fin_kts)
 
