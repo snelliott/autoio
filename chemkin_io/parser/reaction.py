@@ -212,8 +212,9 @@ def get_rxn_strs_dct(block_str):
         rxn_str_orig = []
         for line in rxn_str.split("\n"):
             # skip empty lines
-            if line.strip() == '':
+            if line.strip() in ['', 'REACTIONS', 'END']:
                 continue
+            # skip lines 
             for idx, str_orig in enumerate(block_strs_lst):
                 if line in str_orig and not used_indices[idx]:
                     rxn_str_orig.append(str_orig)  # add to original list
@@ -477,6 +478,7 @@ def get_rxn_strs(block_str, remove_bad_fits=False):
         rxn_strs = [remove_comment_lines(dstr, delim_pattern=app.escape("!"))
                     for dstr in rxn_strs if dstr.strip()[0] != "!" and
                     'HTYPE' not in dstr] # ignore R+MOLEC types from CRECK model
+
     else:
         rxn_strs = None
 
