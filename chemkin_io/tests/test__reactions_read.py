@@ -157,6 +157,7 @@ LOW /                                             +2.35301810E+024 -2.29293580E+
 TROE /                                            +4.30000000E-001 +1.00000000E-030 +1.00000000E+030 /\n\
 HE / +0.4400 / O2 / +0.7900 / CO2 / +1.0600 / N2 / +1.5000 / CO / +2.8000 / H2 / +3.7000 / H2O / +5.1000 / H2O2 / +5.2000 / \n\
 TIC4H7Q2-I=>ET12IC4-1OOH+OH                       +4.45000000E+009 +8.60000000E-001 +1.08000000E+004 \n\
+C6H5C3H3+C6H5=>C14H10+CH3                                     +1.00000E+012 +0.00000E+000 +8.00000E+003 \n\
 END\n"
 
 
@@ -214,6 +215,7 @@ def test_nonint_rxn_products():
         (('O', 'O'), ('O2',), ('+M',)),
         (('H', 'O'), ('OHV',), ('+M',)),
         (('TIC4H7Q2-I',), ('ET12IC4-1OOH', 'OH'), (None,)),
+        (('C6H5C3H3', 'C6H5'), ('C14H10', 'CH3'), (None,))
         }
 
     rxn_param_dct1 = get_rxn_param_dct(NONINT_RXN_PRODUCTS_AND_OTHER_EXCEPTIONS, 'cal/mole', 'moles')
