@@ -142,4 +142,4 @@ Interfaces for codes distributed alongside AutoMech:
 - [VareCof](https://github.com/Auto-Mech/OneDMin): 
 - 
 ### Usage
-Our pytest tests serve as an example for building filesystems
+Our pytest tests serve as an example for building filesystems.
