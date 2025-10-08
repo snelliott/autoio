@@ -131,3 +131,6 @@ dmypy.json
 
 scratch/
 tmp/
+# pixi environments
+.pixi/*
+!.pixi/config.toml
