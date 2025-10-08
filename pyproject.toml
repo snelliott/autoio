@@ -62,7 +62,7 @@ preview = ["pixi-build"]
 
 #   - Build
 [tool.pixi.package] 
-name = "autochem"
+name = "autoio"
 
 [tool.pixi.package.build] 
 backend = { name = "pixi-build-python", version = "==0.3.2" }
@@ -151,3 +151,6 @@ depends-on = [
     "test-autorun",
     "test-elstruct",
 ]
+
+[tool.pixi.feature.build.tasks]
+upload = "rattler-build upload anaconda -o Auto-Mech *.conda"

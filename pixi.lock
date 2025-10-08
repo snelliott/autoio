@@ -747,7 +747,7 @@ packages:
 - pypi: ./
   name: autoio
   version: 2025.10.0
-  sha256: 2f157ffe57e60011ca0395ec5f0b54e861fcb76b16ddab7bee4b3c5171c74e8e
+  sha256: 5bb376048157efe95ca59c5af5d54cb091b62da12a065c641a338aebb14e8bbb
   requires_python: '>=3.11'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-1.1.0-hb03c661_4.conda
