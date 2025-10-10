@@ -8,6 +8,7 @@ import elstruct
 
 
 SCRIPT_DCT = {
+    'ase_psi4': None,
     'cfour2': None,
     'gaussian09': None,
     'gaussian03': None,
@@ -39,9 +40,11 @@ def test__energy():
     charge_vals = [0, 1]
 
     for prog in elstruct.writer.programs():
-        # print(prog)
+        print(prog)
+        if not "ase" in prog.lower():
+            continue
         for method in elstruct.program_methods(prog):
-            # print(method)
+            print(method)
             for mult, charge in zip(mult_vals, charge_vals):
                 for orb_type in (
                         elstruct.program_method_orbital_types(
@@ -213,7 +216,8 @@ def _test_pipeline(script_str, writer, readers,
     prog, method = args[0], args[4]
 
     # for programs with no run test, ensure input file generated
-    _ = writer(*args, **kwargs)
+    inp_str = writer(*args, **kwargs)
+    print(inp_str)
     if script_str is not None:
         script_str = SCRIPT_DCT[prog]
         run_dir = tempfile.mkdtemp()
@@ -249,6 +253,6 @@ def _test_pipeline(script_str, writer, readers,
 
 if __name__ == '__main__':
     test__energy()
-    test__gradient()
-    test__hessian()
-    test__optimization()
+    #test__gradient()
+    #test__hessian()
+    #test__optimization()

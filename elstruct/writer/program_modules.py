@@ -22,6 +22,8 @@ def call_module_function(prog, function, *args, **kwargs):
             prog = 'molpro2015'
         elif prog in ('gaussian03'):
             prog = 'gaussian09'
+        elif prog in ('ase_psi4'):
+            prog = 'ase'
         return prog
 
     new_name = _rename_prog(prog)
@@ -64,6 +66,10 @@ class Job():
 
 # Dictionaries that dictate what writer/reader functionality
 WRITER_MODULE_DCT = {
+    par.Program.ASE: (
+        Job.ENERGY,),
+    par.Program.ASE_PSI4: (
+        Job.ENERGY,),
     par.Program.CFOUR2: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION),
     par.Program.GAUSSIAN09: (

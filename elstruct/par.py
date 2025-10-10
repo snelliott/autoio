@@ -24,6 +24,9 @@ class Module():
 
 class Program():
     """ Programs supported in elstruct """
+    ASE = 'ase'
+    ASE_PSI4 = 'ase_psi4'
+    # ASE_NWX = 'ase_nwx'
     CFOUR2 = 'cfour2'
     GAUSSIAN09 = 'gaussian09'
     GAUSSIAN03 = 'gaussian03'
@@ -73,7 +76,13 @@ class Method():
     """
 
     HF = ('hf',
-          {Program.CFOUR2: (
+          {Program.ASE_PSI4: (
+              'rhf', 'hf',
+              ('R',), ('U', 'R')),
+          Program.ASE: (
+              'rhf', 'hf',
+              ('R',), ('U', 'R')),
+          Program.CFOUR2: (
               'rhf', 'hf',
               ('R',), ('U', 'R')),
            Program.GAUSSIAN09: (
@@ -127,7 +136,13 @@ class Method():
     class Corr():
         """ Correlated method names """
         MP2 = ('mp2',
-               {Program.CFOUR2: (
+               {Program.ASE_PSI4: (
+                   'mp2', 'mp2',
+                   ('R',), ('U', 'R')),
+               Program.ASE: (
+                   'mp2', 'mp2',
+                   ('R',), ('U', 'R')),
+               Program.CFOUR2: (
                    'mp2', 'mp2',
                    ('R',), ('U', 'R')),
                 Program.GAUSSIAN09: (
@@ -302,6 +317,12 @@ class Method():
                  {Program.PSI4: (
                      'B3LYP', 'B3LYP',
                      ('R',), ('U',)),
+                  Program.ASE_PSI4: (
+                      'b3lyp', 'b3lyp',
+                      ('R',), ('U',)),
+                  Program.ASE: (
+                      'b3lyp', 'b3lyp',
+                      ('R',), ('U',)),
                   Program.GAUSSIAN09: (
                       'b3lyp', 'b3lyp',
                       ('R',), ('U',)),
@@ -674,7 +695,8 @@ class Basis():
 
         (name, {program: name})
     """
-    NONE = (None, {Program.CFOUR2: None,
+    NONE = (None, {Program.ASE_PSI4: None,
+                     Program.CFOUR2: None,
                      Program.GAUSSIAN09: None,
                      Program.GAUSSIAN03: None,
                      Program.GAUSSIAN16: None,
@@ -686,6 +708,7 @@ class Basis():
                      Program.PSI4: None})
 
     STO3G = ('sto-3g', {Program.CFOUR2: None,
+                        Program.ASE_PSI4: None,
                         Program.GAUSSIAN09: None,
                         Program.GAUSSIAN03: None,
                         Program.GAUSSIAN16: None,
@@ -697,6 +720,7 @@ class Basis():
                         Program.PSI4: None})
 
     DEF2SV_P = ('def2-sv(p)', {Program.CFOUR2: None,
+                               Program.ASE_PSI4: None,
                                Program.GAUSSIAN09: 'def2svpp',
                                Program.GAUSSIAN03: 'def2svpp',
                                Program.GAUSSIAN16: 'def2svpp',
@@ -708,6 +732,7 @@ class Basis():
                                Program.PSI4: None})
 
     DEF2SVP = ('def2-svp', {Program.CFOUR2: None,
+                            Program.ASE_PSI4: None,
                             Program.GAUSSIAN09: 'def2svp',
                             Program.GAUSSIAN03: 'def2svp',
                             Program.GAUSSIAN16: 'def2svp',
@@ -719,6 +744,7 @@ class Basis():
                             Program.PSI4: None})
 
     DEF2TZVP = ('def2-tzvp', {Program.CFOUR2: None,
+                              Program.ASE_PSI4: None,
                               Program.GAUSSIAN09: 'def2tzvp',
                               Program.GAUSSIAN03: 'def2tzvp',
                               Program.GAUSSIAN16: 'def2tzvp',
@@ -743,6 +769,7 @@ class Basis():
     class Pople:
         """ Pople basis sets """
         P321 = ('3-21g', {Program.CFOUR2: None,
+                          Program.ASE_PSI4: None,
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN03: None,
                           Program.GAUSSIAN16: None,
@@ -754,6 +781,7 @@ class Basis():
                           Program.PSI4: None})
         P321S = ('3-21g*', {Program.PSI4: None})
         P631 = ('6-31g', {Program.CFOUR2: None,
+                          Program.ASE_PSI4: None,
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN03: None,
                           Program.GAUSSIAN16: None,
@@ -764,6 +792,7 @@ class Basis():
                           Program.ORCA4: None,
                           Program.PSI4: None})
         P631S = ('6-31g*', {Program.CFOUR2: None,
+                            Program.ASE_PSI4: None,
                             Program.GAUSSIAN09: None,
                             Program.GAUSSIAN03: None,
                             Program.GAUSSIAN16: None,
@@ -775,6 +804,7 @@ class Basis():
                             Program.PSI4: None,
                             Program.QCHEM5: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
+                              Program.ASE_PSI4: None,
                               Program.GAUSSIAN09: None,
                               Program.GAUSSIAN03: None,
                               Program.GAUSSIAN16: None,
@@ -785,6 +815,7 @@ class Basis():
                               Program.ORCA4: None,
                               Program.PSI4: None})
         P6311SS = ('6-311g**', {Program.CFOUR2: None,
+                                Program.ASE_PSI4: None,
                                 Program.GAUSSIAN09: None,
                                 Program.GAUSSIAN03: None,
                                 Program.GAUSSIAN16: None,
@@ -795,6 +826,7 @@ class Basis():
                                 Program.ORCA4: None,
                                 Program.PSI4: None})
         P6311PSS = ('6-311+g**', {Program.CFOUR2: None,
+                                  Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -805,6 +837,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
         P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -818,6 +851,7 @@ class Basis():
     class Dunning():
         """ Dunning basis sets """
         D = ('cc-pvdz', {Program.CFOUR2: None,
+                         Program.ASE_PSI4: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -828,6 +862,7 @@ class Basis():
                          Program.ORCA4: None,
                          Program.PSI4: None})
         T = ('cc-pvtz', {Program.CFOUR2: None,
+                         Program.ASE_PSI4: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -838,6 +873,7 @@ class Basis():
                          Program.ORCA4: None,
                          Program.PSI4: None})
         Q = ('cc-pvqz', {Program.CFOUR2: None,
+                         Program.ASE_PSI4: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -848,6 +884,7 @@ class Basis():
                          Program.ORCA4: None,
                          Program.PSI4: None})
         P = ('cc-pv5z', {Program.CFOUR2: None,
+                         Program.ASE_PSI4: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -858,6 +895,7 @@ class Basis():
                          Program.ORCA4: None,
                          Program.PSI4: None})
         CD = ('cc-pcvdz', {Program.CFOUR2: None,
+                           Program.ASE_PSI4: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -868,6 +906,7 @@ class Basis():
                            Program.ORCA4: None,
                            Program.PSI4: None})
         CT = ('cc-pcvtz', {Program.CFOUR2: None,
+                           Program.ASE_PSI4: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -878,6 +917,7 @@ class Basis():
                            Program.ORCA4: None,
                            Program.PSI4: None})
         CQ = ('cc-pcvqz', {Program.CFOUR2: None,
+                           Program.ASE_PSI4: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -888,6 +928,7 @@ class Basis():
                            Program.ORCA4: None,
                            Program.PSI4: None})
         CP = ('cc-pcv5z', {Program.CFOUR2: None,
+                           Program.ASE_PSI4: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -901,6 +942,7 @@ class Basis():
         class Aug():
             """ Augmented Dunning basis sets """
             AD = ('aug-cc-pvdz', {Program.CFOUR2: None,
+                                  Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -911,6 +953,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
             AT = ('aug-cc-pvtz', {Program.CFOUR2: None,
+                                  Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -921,6 +964,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
             AQ = ('aug-cc-pvqz', {Program.CFOUR2: None,
+                                  Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -931,6 +975,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
             A5 = ('aug-cc-pv5z', {Program.CFOUR2: None,
+                                  Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -941,6 +986,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
             CAD = ('aug-cc-pcvdz', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -951,6 +997,7 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             CAT = ('aug-cc-pcvtz', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -961,6 +1008,7 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             CAQ = ('aug-cc-pcvqz', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -971,6 +1019,7 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             CA5 = ('aug-cc-pcv5z', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -981,6 +1030,7 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             JT = ('jun-cc-pvtz', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,
@@ -991,6 +1041,7 @@ class Basis():
                                     Program.ORCA4: None,
                                     Program.PSI4: None})
             JQ = ('jun-cc-pvqz', {Program.CFOUR2: None,
+                                    Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
                                     Program.GAUSSIAN16: None,

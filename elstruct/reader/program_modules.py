@@ -22,6 +22,9 @@ def call_module_function(prog, function, *args, **kwargs):
             prog = 'molpro2015'
         elif prog in ('gaussian03'):
             prog = 'gaussian09'
+        elif prog in ('ase_psi4'):
+            prog = 'ase'
+
         return prog
 
     new_name = _rename_prog(prog)
@@ -83,6 +86,25 @@ class Job():
 
 # Dictionaries that dictate what writer/reader functionality
 READER_MODULE_DCT = {
+    par.Program.ASE: (
+        Job.ENERGY,
+        Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    par.Program.ASE_PSI4: (
+        Job.ENERGY, 
+        Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    # par.Program.ASE_NWX: (
+    #      Job.ENERGY, Job.GRADIENT,
+    #      Job.OPT_GEO, Job.OPT_ZMA,
+    #      Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+    #      Job.ERR_MSG, Job.CONV_MSG,
+    #      Job.PROG_NAME, Job.PROG_VERS
+    # ),
     par.Program.CFOUR2: (
         Job.ENERGY, Job.GRADIENT,
         Job.OPT_GEO, Job.OPT_ZMA,
