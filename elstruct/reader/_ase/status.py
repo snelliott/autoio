@@ -11,7 +11,6 @@ def has_normal_exit_message(output_dct):
         :type output_dct: dict
         :rtype: bool
     """
-    print(f"Output dictionary in has_normal_exit_message: {output_dct}")
     return output_dct.get('normal_termination', False)
 
 

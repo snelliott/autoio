@@ -70,11 +70,17 @@ def write_input(job_key, geo, charge, mult, method, basis, orb_restricted,
     calc_parameters['job'] = job_key
     calc_parameters['charge'] = charge
     calc_parameters['multiplicity'] = mult
-    calc_parameters['method'] = method
-    calc_parameters['basis'] = basis
+    if elstruct.par.Method.contains(method):
+        calc_parameters['method'] = method
+        calc_parameters['basis'] = basis
+    else:
+        calc_parameters['family'] = method
+        calc_parameters['mlip'] = basis
+        # model, model_file = method.split(':')
+        # calc_parameters['model'] = model
+        # calc_parameters['model_file'] = os.path.abspath(model_file)
     calc_parameters['reference'] = 'rhf' if orb_restricted else 'uhf'
 
-    print('calc_parameters:', calc_parameters)  # Debug print statement
     return calc_parameters 
 
 

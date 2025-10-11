@@ -600,17 +600,26 @@ def _process_theory_specifications(prog, method, basis, mult, orb_type):
     orb_restricted = (orb_type == 'R')
 
     # for non-standard DFT/Basis, the user can input whatever they want
-    if not par.Method.is_nonstandard_dft(method):
-        core_method, _ = par.Method.evaluate_method_type(method)
-        assert par.is_program_method(prog, core_method)
-        assert par.is_program_method_orbital_type(
-            prog, core_method, singlet, orb_type)
-
+    if par.method_is_mlip(method):
+        model = par.mlip_from_method(method) 
+        assert par.is_program_model(prog, model)
         prog = par.standard_case(prog)
-        method = par.standard_case(method)
+        family, mlip = par.program_family_mlip_names(prog, model)
+        method = family
+        basis = mlip
 
-    if not par.Basis.is_nonstandard_basis(basis):
-        assert par.is_program_basis(prog, basis)
-        basis = par.standard_case(basis)
+    else:
+        if not par.Method.is_nonstandard_dft(method):
+            core_method, _ = par.Method.evaluate_method_type(method)
+            assert par.is_program_method(prog, core_method)
+            assert par.is_program_method_orbital_type(
+                prog, core_method, singlet, orb_type)
+
+            prog = par.standard_case(prog)
+            method = par.standard_case(method)
+
+        if not par.Basis.is_nonstandard_basis(basis):
+            assert par.is_program_basis(prog, basis)
+            basis = par.standard_case(basis)
 
     return prog, method, basis, orb_restricted

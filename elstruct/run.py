@@ -36,7 +36,7 @@ def direct(input_writer, script_str, run_dir, prog,
         prog=prog,
         geo=geo, charge=charge, mult=mult, method=method, basis=basis,
         **kwargs)
-    print(f"Input file for {prog}:\n{input_obj}\n")
+    
     if isinstance(input_obj, str):
         output_strs = from_input_string(script_str, run_dir, input_obj)
         output_obj = output_strs[0]

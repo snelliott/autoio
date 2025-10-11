@@ -26,6 +26,8 @@ class Program():
     """ Programs supported in elstruct """
     ASE = 'ase'
     ASE_PSI4 = 'ase_psi4'
+    ASE_MACE = 'ase_mace'
+    ASE_UMA = 'ase_uma'
     # ASE_NWX = 'ase_nwx'
     CFOUR2 = 'cfour2'
     GAUSSIAN09 = 'gaussian09'
@@ -64,6 +66,127 @@ class Reference():
     RKS = 'rks'
     UKS = 'uks'
 
+
+class Model():
+    """ Machine Learning Interatomic Potentials (MLIP) """
+
+    class Pretrained():
+        """ foundation models """
+        MP_SMALL = ('mp_small', {Program.ASE: None,
+                                 Program.ASE_MACE: 'mace_mp:small'})
+        MP_MEDIUM = ('mp_medium', {Program.ASE: None,
+                                   Program.ASE_MACE: 'mace_mp:medium'})
+        MP_LARGE = ('mp_large', {Program.ASE: None,
+                                 Program.ASE_MACE: 'mace_mp:large'})
+        OFF_SMALL = ('off_small', {Program.ASE: None,
+                                   Program.ASE_MACE: 'mace_off:small'})
+        OFF_MEDIUM = ('off_medium', {Program.ASE: None,
+                                     Program.ASE_MACE: 'mace_off:medium'})
+        ANICC = ('anicc', {Program.ASE: None,
+                           Program.ASE_MACE: 'mace_anicc'})
+        UMA_SMALL = ('uma_small', {Program.ASE: None,
+                                  Program.ASE_UMA: "uma-s-1p1"})
+        UMA_MEDIUM = ('uma_medium', {Program.ASE: None,
+                                  Program.ASE_UMA: "uma-m-1p1"})
+
+    class Local():
+        """ Locally trained models """
+        LOCAL = ('local', {Program.ASE: None,
+                          Program.ASE_UMA: "local_uma",
+                          Program.ASE_MACE: "local_mace"})
+
+    @classmethod
+    def is_pretrained_model(cls, model_name):
+        """ Check if a string represents a valid pre-trained model name
+
+            :param model_name: potential pre-trained model name
+            :type model_name: str
+            :rtype: bool
+        """
+        model_name = standard_case(model_name)
+        return model_name in [row[0] for row in pclass.all_values(cls.Pretrained)]
+    
+    @classmethod
+    def is_local_model(cls, model_name):
+        """ Check if a string represents a valid local model name
+
+            :param model_name: potential local model name
+            :type model_name: str
+            :rtype: bool
+        """
+        model_name = standard_case(model_name)
+        return model_name in [row[0] for row in pclass.all_values(cls.Local)]
+
+    @classmethod
+    def contains(cls, model_name):
+        """ Check if a string represents a valid model name
+
+            :param model_name: potential model name
+            :type model_name: str
+            :rtype: bool
+        """
+        return cls.is_pretrained_model(model_name) or cls.is_local_model(model_name) 
+
+def program_models_info(prog):
+    """ List models available for a given program, with their information.
+
+        :param prog: electronic structure program name
+        :type prog: str
+        :rtype: dict[str: str]
+    """
+    prog = standard_case(prog)
+    return {row[0]: row[1][prog] for row in pclass.all_values(Model)
+            if prog in row[1]}
+
+
+def program_models(prog):
+    """ List models available for a given program.
+
+        :param prog: electronic structure program name
+        :type prog: str
+        :rtype: tuple(str)
+    """
+    return tuple(sorted(program_models_info(prog)))
+
+
+def is_program_model(prog, model):
+    """ Assess if the given model is valid for the specific program.
+
+        :param prog: electronic structure program name
+        :type prog: str
+        :param model: interatomic potential model name
+        :type model: str
+    """
+
+    prog = standard_case(prog)
+    model = standard_case(model)
+
+    return model in program_models(prog)
+
+
+def program_family_mlip_names(prog, model):
+    """ Obtain the name of a given model for a specific program.
+
+        :param prog: electronic structure program name
+        :type prog: str
+        :param model: interatomic potential model name
+        :type model: str
+    """
+
+    prog = standard_case(prog)
+
+    if Model.is_local_model(model):
+        family = 'local'
+        mlip = Model.nonstandard_model_name(model)
+    else:
+        model = standard_case(model)
+        prog_models = program_models(prog)
+        print("prog_models:", prog_models)  # Debug print statement
+        assert model in prog_models
+        name = Model.Pretrained.__dict__[standard_case(model).upper()][1][prog]
+        family, mlip = name.split(':') 
+
+    return family, mlip
 
 class Method():
     """ Program specific names for various electronic structure methods
@@ -170,7 +293,13 @@ class Method():
                     'mp2', 'mp2',
                     ('R',), ('U', 'R'))})
         CCSD = ('ccsd',
-                {Program.CFOUR2: (
+                {Program.ASE_PSI4: (
+                    'ccsd', 'ccsd',
+                    ('R',), ('U', 'R')),
+                Program.ASE: (
+                    'ccsd', 'ccsd',
+                    ('R',), ('U', 'R')),
+                Program.CFOUR2: (
                     'ccsd', 'ccsd',
                     ('R',), ('U', 'R',)),
                  Program.MOLPRO2015: (
@@ -183,7 +312,13 @@ class Method():
                     'ccsd', 'ccsd',
                     ('R',), ('U', 'R',))})
         CCSD_T = ('ccsd(t)',
-                  {Program.CFOUR2: (
+                  {Program.ASE_PSI4: (
+                      'ccsd(t)', 'ccsd(t)',
+                      ('R',), ('U', 'R')),
+                   Program.ASE: (
+                      'ccsd(t)', 'ccsd(t)', 
+                      ('R',), ('U', 'R')),
+                   Program.CFOUR2: (
                       'ccsd(t)', 'ccsd(t)',
                       ('R',), ('R',)),
                    Program.MOLPRO2015: (
@@ -301,7 +436,13 @@ class Method():
     class Dft():
         """ Density functional theory method names """
         BP86 = ('bp86',
-                 {Program.PSI4: (
+                 {Program.ASE_PSI4: (
+                     'BP86', 'BP86',
+                     ('R',), ('U',)),
+                  Program.ASE: (
+                     'BP86', 'BP86',
+                     ('R',), ('U',)),
+                  Program.PSI4: (
                      'BP86', 'BP86',
                      ('R',), ('U',)),
                   Program.GAUSSIAN09: (
@@ -333,7 +474,13 @@ class Method():
                       'b3lyp', 'b3lyp',
                       ('R',), ('U',))})
         WB97XD = ('wb97xd',
-                  {Program.PSI4: (
+                  {Program.ASE_PSI4: (
+                      'WB97X-D', 'WB97X-D',
+                      ('R',), ('U',)),
+                   Program.ASE: (
+                      'WB97X-D', 'WB97X-D',
+                      ('R',), ('U',)),
+                   Program.PSI4: (
                       'WB97X-D', 'WB97X-D',
                       ('R',), ('U',)),
                    Program.QCHEM5: (
@@ -349,7 +496,13 @@ class Method():
                        'wb97xd', 'wb97xd',
                        ('R',), ('U',))})
         M062X = ('m062x',
-                 {Program.PSI4: (
+                 {Program.ASE_PSI4: (
+                     'M06-2X', 'M06-2X',
+                     ('R',), ('U',)),
+                  Program.ASE: (
+                     'M06-2X', 'M06-2X',
+                     ('R',), ('U',)),
+                  Program.PSI4: (
                      'M06-2X', 'M06-2X',
                      ('R',), ('U',)),
                   Program.GAUSSIAN09: (
@@ -590,6 +743,27 @@ def program_methods(prog):
     return tuple(sorted(program_methods_info(prog)))
 
 
+def method_is_mlip(method):
+    """ Assess if a method is meant to be a mlip model. 
+
+        :param method: name of method
+        :type method: str
+        :rtype: bool
+    """
+    return 'model_' in method
+
+
+def mlip_from_method(method):
+    """ Extract the mlip model name from a method string. 
+
+        :param method: name of method
+        :type method: str
+        :rtype: str
+    """
+    assert method_is_mlip(method)
+    return method.split('model_')[-1]
+
+
 def program_dft_methods(prog):
     """ List density functional theory methods available for a given program.
 
@@ -696,6 +870,7 @@ class Basis():
         (name, {program: name})
     """
     NONE = (None, {Program.ASE_PSI4: None,
+                     Program.ASE: None,
                      Program.CFOUR2: None,
                      Program.GAUSSIAN09: None,
                      Program.GAUSSIAN03: None,
@@ -709,6 +884,7 @@ class Basis():
 
     STO3G = ('sto-3g', {Program.CFOUR2: None,
                         Program.ASE_PSI4: None,
+                        Program.ASE: None,
                         Program.GAUSSIAN09: None,
                         Program.GAUSSIAN03: None,
                         Program.GAUSSIAN16: None,
@@ -721,6 +897,7 @@ class Basis():
 
     DEF2SV_P = ('def2-sv(p)', {Program.CFOUR2: None,
                                Program.ASE_PSI4: None,
+                               Program.ASE: None,
                                Program.GAUSSIAN09: 'def2svpp',
                                Program.GAUSSIAN03: 'def2svpp',
                                Program.GAUSSIAN16: 'def2svpp',
@@ -733,6 +910,7 @@ class Basis():
 
     DEF2SVP = ('def2-svp', {Program.CFOUR2: None,
                             Program.ASE_PSI4: None,
+                            Program.ASE: None,
                             Program.GAUSSIAN09: 'def2svp',
                             Program.GAUSSIAN03: 'def2svp',
                             Program.GAUSSIAN16: 'def2svp',
@@ -745,6 +923,7 @@ class Basis():
 
     DEF2TZVP = ('def2-tzvp', {Program.CFOUR2: None,
                               Program.ASE_PSI4: None,
+                              Program.ASE: None,
                               Program.GAUSSIAN09: 'def2tzvp',
                               Program.GAUSSIAN03: 'def2tzvp',
                               Program.GAUSSIAN16: 'def2tzvp',
@@ -756,6 +935,8 @@ class Basis():
                               Program.PSI4: None})
 
     DEF2TZVPP = ('def2-tzvpp', {Program.CFOUR2: None,
+                              Program.ASE_PSI4: None,
+                              Program.ASE: None,
                               Program.GAUSSIAN09: 'def2tzvpp',
                               Program.GAUSSIAN03: 'def2tzvpp',
                               Program.GAUSSIAN16: 'def2tzvpp',
@@ -769,6 +950,7 @@ class Basis():
     class Pople:
         """ Pople basis sets """
         P321 = ('3-21g', {Program.CFOUR2: None,
+                          Program.ASE: None,
                           Program.ASE_PSI4: None,
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN03: None,
@@ -781,6 +963,7 @@ class Basis():
                           Program.PSI4: None})
         P321S = ('3-21g*', {Program.PSI4: None})
         P631 = ('6-31g', {Program.CFOUR2: None,
+                          Program.ASE: None,
                           Program.ASE_PSI4: None,
                           Program.GAUSSIAN09: None,
                           Program.GAUSSIAN03: None,
@@ -792,6 +975,7 @@ class Basis():
                           Program.ORCA4: None,
                           Program.PSI4: None})
         P631S = ('6-31g*', {Program.CFOUR2: None,
+                            Program.ASE: None,
                             Program.ASE_PSI4: None,
                             Program.GAUSSIAN09: None,
                             Program.GAUSSIAN03: None,
@@ -804,6 +988,7 @@ class Basis():
                             Program.PSI4: None,
                             Program.QCHEM5: None})
         P631PS = ('6-31+g*', {Program.CFOUR2: None,
+                              Program.ASE: None,
                               Program.ASE_PSI4: None,
                               Program.GAUSSIAN09: None,
                               Program.GAUSSIAN03: None,
@@ -815,6 +1000,7 @@ class Basis():
                               Program.ORCA4: None,
                               Program.PSI4: None})
         P6311SS = ('6-311g**', {Program.CFOUR2: None,
+                                Program.ASE: None,
                                 Program.ASE_PSI4: None,
                                 Program.GAUSSIAN09: None,
                                 Program.GAUSSIAN03: None,
@@ -826,6 +1012,7 @@ class Basis():
                                 Program.ORCA4: None,
                                 Program.PSI4: None})
         P6311PSS = ('6-311+g**', {Program.CFOUR2: None,
+                                  Program.ASE: None,
                                   Program.ASE_PSI4: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
@@ -837,6 +1024,7 @@ class Basis():
                                   Program.ORCA4: None,
                                   Program.PSI4: None})
         P6311PPSS = ('6-311++g**', {Program.CFOUR2: None,
+                                    Program.ASE: None,
                                     Program.ASE_PSI4: None,
                                     Program.GAUSSIAN09: None,
                                     Program.GAUSSIAN03: None,
@@ -852,6 +1040,7 @@ class Basis():
         """ Dunning basis sets """
         D = ('cc-pvdz', {Program.CFOUR2: None,
                          Program.ASE_PSI4: None,
+                         Program.ASE: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -863,6 +1052,7 @@ class Basis():
                          Program.PSI4: None})
         T = ('cc-pvtz', {Program.CFOUR2: None,
                          Program.ASE_PSI4: None,
+                         Program.ASE: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -874,6 +1064,7 @@ class Basis():
                          Program.PSI4: None})
         Q = ('cc-pvqz', {Program.CFOUR2: None,
                          Program.ASE_PSI4: None,
+                         Program.ASE: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -885,6 +1076,7 @@ class Basis():
                          Program.PSI4: None})
         P = ('cc-pv5z', {Program.CFOUR2: None,
                          Program.ASE_PSI4: None,
+                         Program.ASE: None,
                          Program.GAUSSIAN09: None,
                          Program.GAUSSIAN03: None,
                          Program.GAUSSIAN16: None,
@@ -896,6 +1088,7 @@ class Basis():
                          Program.PSI4: None})
         CD = ('cc-pcvdz', {Program.CFOUR2: None,
                            Program.ASE_PSI4: None,
+                           Program.ASE: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -907,6 +1100,7 @@ class Basis():
                            Program.PSI4: None})
         CT = ('cc-pcvtz', {Program.CFOUR2: None,
                            Program.ASE_PSI4: None,
+                           Program.ASE: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -918,6 +1112,7 @@ class Basis():
                            Program.PSI4: None})
         CQ = ('cc-pcvqz', {Program.CFOUR2: None,
                            Program.ASE_PSI4: None,
+                           Program.ASE: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -929,6 +1124,7 @@ class Basis():
                            Program.PSI4: None})
         CP = ('cc-pcv5z', {Program.CFOUR2: None,
                            Program.ASE_PSI4: None,
+                           Program.ASE: None,
                            Program.GAUSSIAN09: None,
                            Program.GAUSSIAN03: None,
                            Program.GAUSSIAN16: None,
@@ -943,6 +1139,7 @@ class Basis():
             """ Augmented Dunning basis sets """
             AD = ('aug-cc-pvdz', {Program.CFOUR2: None,
                                   Program.ASE_PSI4: None,
+                                  Program.ASE: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -954,6 +1151,7 @@ class Basis():
                                   Program.PSI4: None})
             AT = ('aug-cc-pvtz', {Program.CFOUR2: None,
                                   Program.ASE_PSI4: None,
+                                  Program.ASE: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -965,6 +1163,7 @@ class Basis():
                                   Program.PSI4: None})
             AQ = ('aug-cc-pvqz', {Program.CFOUR2: None,
                                   Program.ASE_PSI4: None,
+                                  Program.ASE: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,
@@ -976,6 +1175,7 @@ class Basis():
                                   Program.PSI4: None})
             A5 = ('aug-cc-pv5z', {Program.CFOUR2: None,
                                   Program.ASE_PSI4: None,
+                                  Program.ASE: None,
                                   Program.GAUSSIAN09: None,
                                   Program.GAUSSIAN03: None,
                                   Program.GAUSSIAN16: None,

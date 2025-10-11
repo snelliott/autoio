@@ -22,7 +22,7 @@ def call_module_function(prog, function, *args, **kwargs):
             prog = 'molpro2015'
         elif prog in ('gaussian03'):
             prog = 'gaussian09'
-        elif prog in ('ase_psi4'):
+        elif prog in ('ase_psi4', 'ase_mace', 'ase_uma'):
             prog = 'ase'
 
         return prog
@@ -94,6 +94,18 @@ READER_MODULE_DCT = {
     ),
     par.Program.ASE_PSI4: (
         Job.ENERGY, 
+        Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    par.Program.ASE_MACE: (
+        Job.ENERGY, 
+        Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
+        Job.ERR_MSG, Job.CONV_MSG,
+        Job.PROG_NAME, Job.PROG_VERS
+    ),
+    par.Program.ASE_UMA: (
+        Job.ENERGY,
         Job.EXIT_MSG, Job.ERR_LST, Job.SUCCESS_LST,
         Job.ERR_MSG, Job.CONV_MSG,
         Job.PROG_NAME, Job.PROG_VERS

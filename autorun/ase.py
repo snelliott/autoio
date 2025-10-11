@@ -1,29 +1,41 @@
 """Functions to run ASE calculators."""
 
-import psi4
 from ase import Atoms
-from ase.calculators.psi4 import Psi4
-from ase.calculators.nwchem import NWChem
+from ase import units
 from ase.optimize import BFGS
 # from sella import Sella
 
-ASE_CALCULATOR_CLASSES = {
-    'psi4': Psi4,
-    'nwx': NWChem
-}
-
-def get_calculator(program):
+def get_calculator(calculator, family=None):
     """Get a new instance of the appropriate ASE calculator.
     
     Args:
-        program: The program name ('psi4' or 'nwx')
+        program: The program name ('psi4', 'mace_mp', etc.)
     Returns:
-        An instance of the corresponding ASE calculator
+        The calculator class
+    Raises:
+        ValueError: If the program is not supported
     """
-    if program not in ASE_CALCULATOR_CLASSES:
-        raise ValueError(f"Unsupported calculator '{program}'. Supported programs are: {list(ASE_CALCULATOR_CLASSES.keys())}") 
-    
-    return ASE_CALCULATOR_CLASSES[program]
+    # Lazy import the appropriate calculator
+    if calculator == 'psi4':
+        import psi4
+        from ase.calculators.psi4 import Psi4
+        return Psi4
+    elif calculator == 'mace':
+        if family == 'mace_mp':
+            from mace.calculators import mace_mp
+            return mace_mp
+        elif family == 'mace_off':
+            from mace.calculators import mace_off
+            return mace_off
+        elif family == 'mace_anicc':
+            from mace.calculators import mace_anicc
+            return mace_anicc
+        else:
+            raise ValueError(f"Unsupported MACE family: {family}")
+    # elif calculator == 'uma':
+    # elif calculator == 'nwx':
+    #     from ase.calculators.nwchem import NWChem
+    #     return NWChem
 
 
 def from_calc_dictionary(input_dct, script_str):
@@ -61,23 +73,33 @@ def from_calc_dictionary(input_dct, script_str):
     calculator = None
     if len(script_str.split('ase_')) > 1:
         calculator = script_str.split('ase_')[-1].strip()
-    
-    kwargs = {
-        'atoms': atoms,
-        'basis': input_dct.get('basis'),
-        'method': input_dct.get('method'),
-        'charge': input_dct.get('charge', 0),
-        'multiplicity': input_dct.get('multiplicity', 1),
-        'reference': input_dct.get('reference')
-    }
-    calc = get_calculator(calculator)(**kwargs)
+        if 'method' in input_dct.keys():
+            kwargs = {
+                'atoms': atoms,
+                'basis': input_dct.get('basis'),
+                'method': input_dct.get('method'),
+                'charge': input_dct.get('charge', 0),
+                'multiplicity': input_dct.get('multiplicity', 1),
+                'reference': input_dct.get('reference')
+            }
+            family = None
+        elif 'family' in input_dct.keys():
+            family = input_dct.get('family')
+            if 'mlip' in input_dct.keys():
+                kwargs = {
+                    'model': input_dct.get('mlip'),
+                    'device': 'cpu' 
+                }
+            else:
+                kwargs = {}
+    calc = get_calculator(calculator, family)(**kwargs)
     
     # Attach calculator to atoms and run
     atoms.calc = calc
     
     # Run calculation and get basic properties that all calculators support
     if job == 'energy':
-        energy = atoms.get_potential_energy()
+        energy = atoms.get_potential_energy() / units.Hartree
         positions = atoms.get_positions()
     elif job == 'optimize':
         if not input_dct.get('saddle', False):
@@ -102,9 +124,18 @@ def from_calc_dictionary(input_dct, script_str):
 
     # Add calculator-specific properties based on calculator type
     if calculator == 'psi4':
-        results['version'] = f'ase-psi4_{psi4.__version__}'
+        results['version'] = f'ase-psi4'
         results['normal_termination'] = True
         # Psi4 supports both dipole moments and charges
+        # if 'properties' not in calc.parameters or 'dipole' in calc.parameters.get('properties', []):
+        #     results['dipole'] = atoms.get_dipole_moment().tolist()
+        # if 'properties' not in calc.parameters or 'mulliken' in calc.parameters.get('properties', []):
+        #     results['charges'] = atoms.get_charges().tolist()
+    elif 'mace' in calculator:
+        # MACE specific properties
+        results['version'] = f'ase-mace'
+        results['normal_termination'] = True
+        # MACE does not provide dipole moments or charges
         # if 'properties' not in calc.parameters or 'dipole' in calc.parameters.get('properties', []):
         #     results['dipole'] = atoms.get_dipole_moment().tolist()
         # if 'properties' not in calc.parameters or 'mulliken' in calc.parameters.get('properties', []):

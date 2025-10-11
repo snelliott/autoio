@@ -22,7 +22,7 @@ def call_module_function(prog, function, *args, **kwargs):
             prog = 'molpro2015'
         elif prog in ('gaussian03'):
             prog = 'gaussian09'
-        elif prog in ('ase_psi4'):
+        elif prog in ('ase_psi4', 'ase_mace', 'ase_uma'):
             prog = 'ase'
         return prog
 
@@ -69,6 +69,10 @@ WRITER_MODULE_DCT = {
     par.Program.ASE: (
         Job.ENERGY,),
     par.Program.ASE_PSI4: (
+        Job.ENERGY,),
+    par.Program.ASE_MACE: (
+        Job.ENERGY,),
+    par.Program.ASE_UMA: (
         Job.ENERGY,),
     par.Program.CFOUR2: (
         Job.ENERGY, Job.GRADIENT, Job.HESSIAN, Job.OPTIMIZATION),
