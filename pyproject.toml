@@ -1,6 +1,6 @@
 [project]
 name = "autoio"
-version = "2025.10.0"
+version = "2025.10.1"
 description = "I/O interfaces for external codes used by AutoMech"
 readme = "README.md"
 dependencies = []
@@ -14,44 +14,24 @@ build-backend = "hatchling.build"
 requires = ["hatchling"]
 
 # Hatchling configurations
-[tool.hatch.build.targets.sdist]
-include = [
-    "autoparse",
-    "autoread",
-    "autorun",
-    "autowrite",
-    "chemkin_io",
-    "elstruct",
-    "intder_io",
-    "ioformat",
-    "mess_io",
-    "nst_io",
-    "onedmin_io",
-    "pac99_io",
-    "polyrate_io",
-    "projrot_io",
-    "thermp_io",
-    "varecof_io",
-]
-
 [tool.hatch.build.targets.wheel]
-include = [
-    "autoparse",
-    "autoread",
-    "autorun",
-    "autowrite",
-    "chemkin_io",
-    "elstruct",
-    "intder_io",
-    "ioformat",
-    "mess_io",
-    "nst_io",
-    "onedmin_io",
-    "pac99_io",
-    "polyrate_io",
-    "projrot_io",
-    "thermp_io",
-    "varecof_io",
+packages = [
+    "src/autoparse",
+    "src/autoread",
+    "src/autorun",
+    "src/autowrite",
+    "src/chemkin_io",
+    "src/elstruct",
+    "src/intder_io",
+    "src/ioformat",
+    "src/mess_io",
+    "src/nst_io",
+    "src/onedmin_io",
+    "src/pac99_io",
+    "src/polyrate_io",
+    "src/projrot_io",
+    "src/thermp_io",
+    "src/varecof_io",
 ]
 
 # Pixi configurations
@@ -65,7 +45,7 @@ preview = ["pixi-build"]
 name = "autoio"
 
 [tool.pixi.package.build] 
-backend = { name = "pixi-build-python", version = "==0.3.2" }
+backend = { name = "pixi-build-python", version = "*" }
 
 [tool.pixi.package.host-dependencies] 
 hatchling = "==1.26.3"
@@ -80,7 +60,7 @@ pyyaml = ">=6.0.3"
 qcelemental = ">=0.29.0"
 autochem = ">=2025.10.0"
 
-#   - Other
+#   - Environments
 [tool.pixi.pypi-dependencies]
 autoio = { path = ".", editable = true }
 
@@ -100,24 +80,24 @@ rattler-build = ">=0.47.1"
 [tool.pixi.environments]
 test = ["test"]
 build = ["build"]
-dev = ["test", "build"]
 
+#   - Tasks
 [tool.pixi.feature.test.tasks]
-test-mess_io = "pytest -v mess_io"
-test-autoparse = "pytest -v autoparse"
-test-autoread = "pytest -v autoread"
-test-autowrite = "pytest -v autowrite"
-test-ioformat = "pytest -v ioformat"
-test-chemkin_io = "pytest -v chemkin_io"
-test-projrot_io = "pytest -v projrot_io"
-test-polyrate_io = "pytest -v polyrate_io"
-test-thermp_io = "pytest -v thermp_io"
-test-onedmin_io = "pytest -v onedmin_io"
+test-mess_io = "pytest -v src/mess_io"
+test-autoparse = "pytest -v src/autoparse"
+test-autoread = "pytest -v src/autoread"
+test-autowrite = "pytest -v src/autowrite"
+test-ioformat = "pytest -v src/ioformat"
+test-chemkin_io = "pytest -v src/chemkin_io"
+test-projrot_io = "pytest -v src/projrot_io"
+test-polyrate_io = "pytest -v src/polyrate_io"
+test-thermp_io = "pytest -v src/thermp_io"
+test-onedmin_io = "pytest -v src/onedmin_io"
 # Broken
-test-pac99_io = "pytest -v pac99_io"
-test-varecof_io = "pytest -v varecof_io"
-test-autorun = "pytest -v autorun"
-test-elstruct = "pytest -v elstruct"
+test-pac99_io = "pytest -v src/pac99_io"
+test-varecof_io = "pytest -v src/varecof_io"
+test-autorun = "pytest -v src/autorun"
+test-elstruct = "pytest -v src/elstruct"
 
 [tool.pixi.feature.test.tasks.test-working]
 depends-on = [
