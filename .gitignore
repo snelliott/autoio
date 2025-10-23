@@ -135,4 +135,7 @@ tmp/
 .pixi/*
 !.pixi/config.toml
 
+# Unignore log files needed by tests
+!src/mess_io/tests/data/out/*.log
+
 *.conda
