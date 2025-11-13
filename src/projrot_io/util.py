@@ -66,16 +66,16 @@ def _format_grad_str(geo, grad):
         :type grads: list
         :rtype: str
     """
-
     atom_list = []
     for i, (sym, _) in enumerate(geo):
         atom_list.append(int(ptab.to_number(sym)))
 
     # Format the strings for the xyz gradients
     full_grads_str = ''
-    for i, grads in enumerate(grad):
-        grads_str = f'{grads[0]:>14.8f}{grads[1]:>14.8f}{grads[2]:>14.8f}'
-        full_grads_str += f'{i+1:2d}{atom_list[i]:4d}{grads_str}\n'
+    if grad:
+        for i, grads in enumerate(grad):
+            grads_str = f'{grads[0]:>14.8f}{grads[1]:>14.8f}{grads[2]:>14.8f}'
+            full_grads_str += f'{i+1:2d}{atom_list[i]:4d}{grads_str}\n'
 
     return remove_trail_whitespace(full_grads_str)
 
