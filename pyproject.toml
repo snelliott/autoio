@@ -1,6 +1,6 @@
 [project]
 name = "autoio"
-version = "2025.10.2"
+version = "2025.11.0"
 description = "I/O interfaces for external codes used by AutoMech"
 readme = "README.md"
 dependencies = []
