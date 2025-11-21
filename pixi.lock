@@ -608,8 +608,8 @@ packages:
   timestamp: 1763746042074
 - pypi: ./
   name: autoio
-  version: 0.2024.0
-  sha256: 62d04584acb26d14fe2cdd84703fb8bb4f461d383ce71cce207d91d54345ad80
+  version: 0.2025.0
+  sha256: 9720401e7f430caa3b97ef6d736d056eed1eeb9fc08ab5e04d3b132882a216af
   requires_python: '>=3.11'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/brotli-1.1.0-hb03c661_4.conda
