@@ -58,7 +58,7 @@ pint = ">=0.25"
 pyparsing = ">=3.2.5"
 pyyaml = ">=6.0.3"
 qcelemental = ">=0.29.0"
-autochem = ">=2025.10.0"
+autochem = ">=0.2025.0,<2.0.0"
 
 #   - Environments
 [tool.pixi.pypi-dependencies]
@@ -72,7 +72,7 @@ pint = ">=0.25"
 pyparsing = ">=3.2.5"
 pyyaml = ">=6.0.3"
 qcelemental = ">=0.29.0"
-autochem = ">=2025.10.0"
+autochem = ">=0.2025.0,<2.0.0"
 
 [tool.pixi.feature.build.dependencies]
 rattler-build = ">=0.47.1"
