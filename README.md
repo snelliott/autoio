@@ -1,6 +1,6 @@
 # Library: AutoIO
 [//]: # (Badges)
-[![CircleCI](https://circleci.com/gh/Auto-Mech/autoio/tree/dev.svg?style=shield)](https://circleci.com/gh/Auto-Mech/autoio/tree/dev)
+[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoio/badges/version.svg)](https://anaconda.org/auto-mech/autoio)
 
 Andreas V. Copan, Kevin B. Moore III, Sarah N. Elliott, and Stephen J. Klippenstein
 
@@ -9,10 +9,7 @@ Input writing, output parsing, and job submission tools created as part of the A
 <hr size=20>
 
 ## Package: elstruct
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/elstruct/badges/version.svg)](https://anaconda.org/auto-mech/elstruct)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/elstruct/badges/platforms.svg)](https://anaconda.org/auto-mech/elstruct)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/elstruct/badges/installer/conda.svg)](https://conda.anaconda.org/auto-mech/elstruct)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/elstruct/badges/latest_release_date.svg)](https://conda.anaconda.org/auto-mech/elstruct)
+
 ### Installation
 ```python
 >>> conda install elstruct -c auto-mech
@@ -33,11 +30,7 @@ Our pytest tests serve as an example for building filesystems
 <hr>
 
 ## Package: autoparse
-[//]: # (Badges)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoparse/badges/version.svg)](https://anaconda.org/auto-mech/autoparse)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoparse/badges/platforms.svg)](https://anaconda.org/auto-mech/autoparse)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoparse/badges/installer/conda.svg)](https://conda.anaconda.org/auto-mech/autoparse)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoparse/badges/latest_release_date.svg)](https://conda.anaconda.org/auto-mech/autoparse)
+
 ### Installation
 ```python
 >>> conda install autoparse -c auto-mech
@@ -51,11 +44,7 @@ Our pytest tests serve as an example for building filesystems
 <hr>
 
 ## Package: autoio
-[//]: # (Badges)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoio/badges/version.svg)](https://anaconda.org/auto-mech/autoio)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoio/badges/platforms.svg)](https://anaconda.org/auto-mech/autoio)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoio/badges/installer/conda.svg)](https://conda.anaconda.org/auto-mech/autoio)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autoio/badges/latest_release_date.svg)](https://conda.anaconda.org/auto-mech/autoio)
+
 ### Installation
 ```python
 >>> conda install autoio -c auto-mech
@@ -101,11 +90,7 @@ Our pytest tests serve as an example for building filesystems
 <hr>
 
 ## Package: autorun
-[//]: # (Badges)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autorun/badges/version.svg)](https://anaconda.org/auto-mech/autorun)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autorun/badges/platforms.svg)](https://anaconda.org/auto-mech/autorun)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autorun/badges/installer/conda.svg)](https://conda.anaconda.org/auto-mech/autorun)
-[![Anaconda-Server Badge](https://anaconda.org/auto-mech/autorun/badges/latest_release_date.svg)](https://conda.anaconda.org/auto-mech/autorun)
+
 ### Installation
 ```python
 >>> conda install autorun -c auto-mech
