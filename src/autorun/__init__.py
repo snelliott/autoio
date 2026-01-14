@@ -7,6 +7,8 @@ from autorun._script import SCRIPT_DCT
 from autorun._run import from_input_string
 from autorun._run import run_script
 from autorun._run import write_input
+from autorun._run import dump_input
+from autorun._run import dump_output
 from autorun._run import read_output
 from autorun._host import host_node
 from autorun._host import process_id
@@ -23,6 +25,7 @@ from autorun import polyrate
 from autorun import projrot
 from autorun import thermp
 from autorun import varecof
+from autorun import ase
 
 # MultiProgram Runners
 from autorun._multiprog import projected_frequencies
@@ -35,6 +38,8 @@ __all__ = [
     'run_script',
     'from_input_string',
     'write_input',
+    'dump_input',
+    'dump_output',
     'read_output',
     'host_node',
     'process_id',
@@ -50,6 +55,7 @@ __all__ = [
     'projrot',
     'thermp',
     'varecof',
+    'ase',
     # MultiProgram Runners
     'projected_frequencies',
     'thermo'

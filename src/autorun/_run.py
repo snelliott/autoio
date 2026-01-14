@@ -5,6 +5,7 @@ import os
 import subprocess
 import warnings
 import stat
+import yaml
 
 
 SCRIPT_NAME = 'run.sh'
@@ -120,6 +121,90 @@ def write_input(run_dir, input_str,
                         aux_obj.write(fstring)
 
 
+def _simplify_data(obj):
+    """Convert numpy arrays, numpy scalars, and tuples to simple Python lists and values.
+    
+    Args:
+        obj: The object to simplify
+    Returns:
+        Simplified version of the object with standard Python types
+    """
+    import numpy as np
+    
+    if isinstance(obj, dict):
+        return {k: _simplify_data(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_simplify_data(x) for x in obj]
+    elif isinstance(obj, np.ndarray):
+        return _simplify_data(obj.tolist())
+    elif isinstance(obj, np.generic):
+        return obj.item()
+    return obj
+
+
+def dump_input(run_dir, input_dct,
+                aux_dct=None,
+                input_name=INPUT_NAME):
+    """ Write input from a dictionary to a file in YAML format
+
+    Args:
+        run_dir: Directory where input file will be written
+        input_dict: Dictionary containing input data to be written
+        aux_dct: Dictionary of auxiliary files to write {filename: content}
+        input_name: Name of the main input file
+    """
+    if not os.path.exists(run_dir):
+        os.makedirs(run_dir)
+
+    # Simplify the data structures before dumping
+    simplified_dct = _simplify_data(input_dct)
+
+    with EnterDirectory(run_dir):
+        # Write the main input file as YAML
+        with open(input_name, mode='w', encoding='utf-8') as input_obj:
+            input_obj.write('__yaml__\n') 
+            yaml.dump(
+                simplified_dct,
+                input_obj,
+                default_flow_style=False,
+                sort_keys=False,
+                allow_unicode=True)
+
+        # Write all auxiliary input files
+        if aux_dct is not None:
+            for fname, fstring in aux_dct.items():
+                if fstring:
+                    with open(fname, mode='w', encoding='utf-8') as aux_obj:
+                        aux_obj.write(fstring)
+
+
+
+def dump_output(run_dir, output_dct,
+                output_name=OUTPUT_NAME):
+    """ Write output from a dictionary to a file in YAML format
+    Args:
+        run_dir: Directory where output file will be written
+        output_dct: Dictionary containing output data to be written
+        output_name: Name of the main output file
+    """
+    if not os.path.exists(run_dir):
+        os.makedirs(run_dir)
+
+    # Simplify the data structures before dumping
+    simplified_dct = _simplify_data(output_dct)
+    
+    with EnterDirectory(run_dir):
+        # Write the main output file as YAML
+        with open(output_name, mode='w', encoding='utf-8') as output_obj:
+            output_obj.write('__yaml__\n') 
+            yaml.dump(
+                simplified_dct,
+                output_obj, 
+                default_flow_style=False, 
+                sort_keys=False,
+                allow_unicode=True)
+
+            
 def read_output(run_dir, output_names=(OUTPUT_NAME,)):
     """ Read the output string from the run directory
     """
